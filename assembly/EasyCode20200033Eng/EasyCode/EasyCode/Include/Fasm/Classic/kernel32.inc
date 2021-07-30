@@ -1,0 +1,3563 @@
+; ====================================================;
+;                                                     ;
+;    kernel32.inc for EC v2 Fasm classic projects     ;
+;                   (version 1.0.5)                   ;
+;                                                     ;
+;         Copyright © Ramon Sala - 2018-2020          ;
+;                                                     ;
+; ====================================================;
+
+if ~defined KERNEL32_INC
+define KERNEL32_INC 1
+
+SIZE_OF_80387_REGISTERS                         equ     80
+MAXIMUM_SUPPORTED_EXTENSION                     equ     512
+
+if ~defined EXCEPTION_MAXIMUM_PARAMETERS
+    EXCEPTION_MAXIMUM_PARAMETERS                equ     15
+end if
+
+ExceptionContinueExecution                      equ     00H
+ExceptionContinueSearch                         equ     01H
+ExceptionNestedException                        equ     02H
+ExceptionCollidedUnwind                         equ     03H
+
+IMAGE_BASE                                      equ     400000H
+
+if  ~defined COORD_DEF
+    COORD_DEF equ 1
+    struct COORD
+        X dw ?
+        Y dw ?
+    ends
+end if
+
+if  ~defined CONSOLE_FONT_INFO_DEF
+    CONSOLE_FONT_INFO_DEF equ 1
+    struct CONSOLE_FONT_INFO
+        nFont      dd    ?
+        dwFontSize COORD
+    ends
+end if
+
+if  ~defined OSVERSIONINFOEX_DEF
+    OSVERSIONINFOEX_DEF equ 1
+    struct OSVERSIONINFOEXA
+        dwOSVersionInfoSize dd ?
+        dwMajorVersion      dd ?
+        dwMinorVersion      dd ?
+        dwBuildNumber       dd ?
+        dwPlatformId        dd ?
+        szCSDVersion        db 128 dup(?)
+        wServicePackMajor   dw  ?
+        wServicePackMinor   dw  ?
+        wSuiteMask          dw  ?
+        wProductType        db  ?
+        wReserved           db  ?
+    ends
+    struct OSVERSIONINFOEXW
+        dwOSVersionInfoSize dd ?
+        dwMajorVersion      dd ?
+        dwMinorVersion      dd ?
+        dwBuildNumber       dd ?
+        dwPlatformId        dd ?
+        szCSDVersion        dw 128 dup(?)
+        wServicePackMajor   dw  ?
+        wServicePackMinor   dw  ?
+        wSuiteMask          dw  ?
+        wProductType        db  ?
+        wReserved           db  ?
+    ends
+    api OSVERSIONINFOEX
+end if
+
+if ~defined CONTEXT_DEF
+    CONTEXT_DEF equ 1
+    struct M128A
+        Low_    dq ?
+        High_   dq ?
+    ends
+
+    struct FLOATING_SAVE_AREA
+        ControlWord     dd ?
+        StatusWord      dd ?
+        TagWord         dd ?
+        ErrorOffset     dd ?
+        ErrorSelector   dd ?
+        DataOffset      dd ?
+        DataSelector    dd ?
+        RegisterArea    db SIZE_OF_80387_REGISTERS dup(?)
+        Cr0NpxState     dd ?
+    ends
+
+    if defined APP_WIN64
+        struct CONTEXT
+            P1Home                  dq ?
+            P2Home                  dq ?
+            P3Home                  dq ?
+            P4Home                  dq ?
+            P5Home                  dq ?
+            P6Home                  dq ?
+            ContextFlags            dd ?
+            MxCsr                   dd ?
+            SegCs                   dw ?
+            SegDs                   dw ?
+            SegEs                   dw ?
+            SegFs                   dw ?
+            SegGs                   dw ?
+            SegSs                   dw ?
+            EFlags                  dd ?
+            _Dr0                    dq ?
+            _Dr1                    dq ?
+            _Dr2                    dq ?
+            _Dr3                    dq ?
+            _Dr6                    dq ?
+            _Dr7                    dq ?
+            regRax                  dq ?
+            regRcx                  dq ?
+            regRdx                  dq ?
+            regRbx                  dq ?
+            regRsp                  dq ?
+            regRbp                  dq ?
+            regRsi                  dq ?
+            regRdi                  dq ?
+            regR8                   dq ?
+            regR9                   dq ?
+            regR10                  dq ?
+            regR11                  dq ?
+            regR12                  dq ?
+            regR13                  dq ?
+            regR14                  dq ?
+            regR15                  dq ?
+            regRip                  dq ?
+            regXmm0                 M128A
+            regXmm1                 M128A
+            regXmm2                 M128A
+            regXmm3                 M128A
+            regXmm4                 M128A
+            regXmm5                 M128A
+            regXmm6                 M128A
+            regXmm7                 M128A
+            regXmm8                 M128A
+            regXmm9                 M128A
+            regXmm10                M128A
+            regXmm11                M128A
+            regXmm12                M128A
+            regXmm13                M128A
+            regXmm14                M128A
+            regXmm15                M128A
+            FltSave                 FLOATING_SAVE_AREA
+            Fill                    dd ?
+            DebugControl            dq ?
+            LastBranchToRip         dq ?
+            LastBranchFromRip       dq ?
+            LastExceptionToRip      dq ?
+            LastExceptionFromRip    dq ?
+            Fill1                   dq ?
+        ends
+    else
+        struct CONTEXT
+            ContextFlags      dd ?
+            iDr0              dd ?
+            iDr1              dd ?
+            iDr2              dd ?
+            iDr3              dd ?
+            iDr6              dd ?
+            iDr7              dd ?
+            FloatSave         FLOATING_SAVE_AREA
+            regGs             dd ?
+            regFs             dd ?
+            regEs             dd ?
+            regDs             dd ?
+            regEdi            dd ?
+            regEsi            dd ?
+            regEbx            dd ?
+            regEdx            dd ?
+            regEcx            dd ?
+            regEax            dd ?
+            regEbp            dd ?
+            regEip            dd ?
+            regCs             dd ?
+            regFlag           dd ?
+            regEsp            dd ?
+            regSs             dd ?
+            ExtendedRegisters db MAXIMUM_SUPPORTED_EXTENSION dup(?)
+        ends
+    end if
+end if
+
+if ~defined DISPATCHER_CONTEXT_DEF
+    DISPATCHER_CONTEXT_DEF equ 1
+    struct DISPATCHER_CONTEXT
+        ControlPc        xptr ? 
+        ImageBase        xptr ?
+        FunctionEntry    xptr ?
+        EstablisherFrame xptr ?
+        TargetIp         xptr ?
+        ContextRecord    xptr ?
+        LanguageHandler  xptr ?
+        HandlerData      xptr ?
+        HistoryTable     xptr ?
+        ScopeIndex       dd   ?
+        Fill0            dd   ?
+    ends
+end if
+
+if ~defined EXCEPTION_RECORD32_DEF
+    EXCEPTION_RECORD32_DEF equ 1
+    struct EXCEPTION_RECORD32
+        ExceptionCode        dd ?
+        ExceptionFlags       dd ?
+        ExceptionRecord      dd ?
+        ExceptionAddress     dd ?
+        NumberParameters     dd ?
+        ExceptionInformation dd EXCEPTION_MAXIMUM_PARAMETERS dup(?)
+    ends
+end if
+
+if ~defined EXCEPTION_RECORD64_DEF
+    EXCEPTION_RECORD64_DEF equ 1
+    struct EXCEPTION_RECORD64
+        ExceptionCode        dd ?
+        ExceptionFlags       dd ?
+        ExceptionRecord      dq ?
+        ExceptionAddress     dq ?
+        NumberParameters     dd ?
+        __unusedAlignment    dd ?
+        ExceptionInformation dq EXCEPTION_MAXIMUM_PARAMETERS dup(?)
+    ends
+end if
+
+if ~defined EXCEPTION_POINTERS_DEF
+    EXCEPTION_POINTERS_DEF equ 1
+    struct EXCEPTION_POINTERS
+        ExceptionRecord xptr ?
+        ContextRecord   xptr ?
+    ends
+end if
+
+struct LIST_ENTRY32
+    Flink   dd  ?
+    Blink   dd  ?
+ends
+
+struct LIST_ENTRY64
+    Flink   dq ?
+    Blink   dq ?
+ends
+
+struct GENERIC_MAPPING
+    GenericRead     dd ?
+    GenericWrite    dd ?
+    GenericExecute  dd ?
+    GenericAll      dd ?
+ends
+
+if defined APP_WIN64
+    import kernel32,\
+    __C_specific_handler,'__C_specific_handler',\
+    __chkstk,'__chkstk',\
+    _hread,'_hread',\
+    _hwrite,'_hwrite',\
+    _lclose,'_lclose',\
+    _lcreat,'_lcreat',\
+    _llseek,'_llseek',\
+    _lopen,'_lopen',\
+    _lread,'_lread',\
+    _lwrite,'_lwrite',\
+    AcquireSRWLockExclusive,'AcquireSRWLockExclusive',\
+    AcquireSRWLockShared,'AcquireSRWLockShared',\
+    AcquireStateLock,'AcquireStateLock',\
+    ActivateActCtx,'ActivateActCtx',\
+    AddAtomA,'AddAtomA',\
+    AddAtomW,'AddAtomW',\
+    AddConsoleAliasA,'AddConsoleAliasA',\
+    AddConsoleAliasW,'AddConsoleAliasW',\
+    AddDllDirectory,'AddDllDirectory',\
+    AddIntegrityLabelToBoundaryDescriptor,'AddIntegrityLabelToBoundaryDescriptor',\
+    AddLocalAlternateComputerNameA,'AddLocalAlternateComputerNameA',\
+    AddLocalAlternateComputerNameW,'AddLocalAlternateComputerNameW',\
+    AddRefActCtx,'AddRefActCtx',\
+    AddResourceAttributeAce,'AddResourceAttributeAce',\
+    AddScopedPolicyIDAce,'AddScopedPolicyIDAce',\
+    AddSecureMemoryCacheCallback,'AddSecureMemoryCacheCallback',\
+    AddSIDToBoundaryDescriptor,'AddSIDToBoundaryDescriptor',\
+    AddVectoredContinueHandler,'AddVectoredContinueHandler',\
+    AddVectoredExceptionHandler,'AddVectoredExceptionHandler',\
+    AdjustCalendarDate,'AdjustCalendarDate',\
+    AllocateUserPhysicalPages,'AllocateUserPhysicalPages',\
+    AllocateUserPhysicalPagesNuma,'AllocateUserPhysicalPagesNuma',\
+    AllocConsole,'AllocConsole',\
+    ApplicationRecoveryFinished,'ApplicationRecoveryFinished',\
+    ApplicationRecoveryInProgress,'ApplicationRecoveryInProgress',\
+    AreFileApisANSI,'AreFileApisANSI',\
+    AssignProcessToJobObject,'AssignProcessToJobObject',\
+    AttachConsole,'AttachConsole',\
+    BackupRead,'BackupRead',\
+    BackupSeek,'BackupSeek',\
+    BackupWrite,'BackupWrite',\
+    BaseFormatTimeOut,'BaseFormatTimeOut',\
+    BaseGetNamedObjectDirectory,'BaseGetNamedObjectDirectory',\
+    Basep8BitStringToDynamicUnicodeString,'Basep8BitStringToDynamicUnicodeString',\
+    Beep,'Beep',\
+    BeginUpdateResourceA,'BeginUpdateResourceA',\
+    BeginUpdateResourceW,'BeginUpdateResourceW',\
+    BindIoCompletionCallback,'BindIoCompletionCallback',\
+    BuildCommDCBA,'BuildCommDCBA',\
+    BuildCommDCBAndTimeoutsA,'BuildCommDCBAndTimeoutsA',\
+    BuildCommDCBAndTimeoutsW,'BuildCommDCBAndTimeoutsW',\
+    BuildCommDCBW,'BuildCommDCBW',\
+    CallbackMayRunLong,'CallbackMayRunLong',\
+    CallNamedPipeA,'CallNamedPipeA',\
+    CallNamedPipeW,'CallNamedPipeW',\
+    CalloutOnFiberStack,'CalloutOnFiberStack',\
+    CancelDeviceWakeupRequest,'CancelDeviceWakeupRequest',\
+    CancelIo,'CancelIo',\
+    CancelIoEx,'CancelIoEx',\
+    CancelSynchronousIo,'CancelSynchronousIo',\
+    CancelThreadpoolIo,'CancelThreadpoolIo',\
+    CancelWaitableTimer,'CancelWaitableTimer',\
+    CeipIsOptedIn,'CeipIsOptedIn',\
+    ChangeTimerQueueTimer,'ChangeTimerQueueTimer',\
+    CheckElevationEnabled,'CheckElevationEnabled',\
+    CheckNameLegalDOS8Dot3A,'CheckNameLegalDOS8Dot3A',\
+    CheckNameLegalDOS8Dot3W,'CheckNameLegalDOS8Dot3W',\
+    CheckRemoteDebuggerPresent,'CheckRemoteDebuggerPresent',\
+    CheckTokenCapability,'CheckTokenCapability',\
+    CheckTokenMembershipEx,'CheckTokenMembershipEx',\
+    ClearCommBreak,'ClearCommBreak',\
+    ClearCommError,'ClearCommError',\
+    CloseHandle,'CloseHandle',\
+    ClosePackageInfo,'ClosePackageInfo',\
+    ClosePrivateNamespace,'ClosePrivateNamespace',\
+    CloseProfileUserMapping,'CloseProfileUserMapping',\
+    CloseThreadpool,'CloseThreadpool',\
+    CloseThreadpoolCleanupGroup,'CloseThreadpoolCleanupGroup',\
+    CloseThreadpoolCleanupGroupMembers,'CloseThreadpoolCleanupGroupMembers',\
+    CloseThreadpoolIo,'CloseThreadpoolIo',\
+    CloseThreadpoolTimer,'CloseThreadpoolTimer',\
+    CloseThreadpoolWait,'CloseThreadpoolWait',\
+    CloseThreadpoolWork,'CloseThreadpoolWork',\
+    CommConfigDialogA,'CommConfigDialogA',\
+    CommConfigDialogW,'CommConfigDialogW',\
+    CompareFileTime,'CompareFileTime',\
+    CompareStringA,'CompareStringA',\
+    CompareStringEx,'CompareStringEx',\
+    CompareStringOrdinal,'CompareStringOrdinal',\
+    CompareStringW,'CompareStringW',\
+    ConnectNamedPipe,'ConnectNamedPipe',\
+    ConsoleMenuControl,'ConsoleMenuControl',\
+    ContinueDebugEvent,'ContinueDebugEvent',\
+    ConvertCalDateTimeToSystemTime,'ConvertCalDateTimeToSystemTime',\
+    ConvertDefaultLocale,'ConvertDefaultLocale',\
+    ConvertFiberToThread,'ConvertFiberToThread',\
+    ConvertSystemTimeToCalDateTime,'ConvertSystemTimeToCalDateTime',\
+    ConvertThreadToFiber,'ConvertThreadToFiber',\
+    ConvertThreadToFiberEx,'ConvertThreadToFiberEx',\
+    CopyContext,'CopyContext',\
+    CopyExtendedContext,'CopyExtendedContext',\
+    CopyFile2,'CopyFile2',\
+    CopyFileA,'CopyFileA',\
+    CopyFileExA,'CopyFileExA',\
+    CopyFileExW,'CopyFileExW',\
+    CopyFileTransactedA,'CopyFileTransactedA',\
+    CopyFileTransactedW,'CopyFileTransactedW',\
+    CopyFileW,'CopyFileW',\
+    CreateActCtxA,'CreateActCtxA',\
+    CreateActCtxW,'CreateActCtxW',\
+    CreateBoundaryDescriptorA,'CreateBoundaryDescriptorA',\
+    CreateBoundaryDescriptorW,'CreateBoundaryDescriptorW',\
+    CreateConsoleScreenBuffer,'CreateConsoleScreenBuffer',\
+    CreateDirectoryA,'CreateDirectoryA',\
+    CreateDirectoryExA,'CreateDirectoryExA',\
+    CreateDirectoryExW,'CreateDirectoryExW',\
+    CreateDirectoryTransactedA,'CreateDirectoryTransactedA',\
+    CreateDirectoryTransactedW,'CreateDirectoryTransactedW',\
+    CreateDirectoryW,'CreateDirectoryW',\
+    CreateEnclave,'CreateEnclave',\
+    CreateEventA,'CreateEventA',\
+    CreateEventExA,'CreateEventExA',\
+    CreateEventExW,'CreateEventExW',\
+    CreateEventW,'CreateEventW',\
+    CreateFiber,'CreateFiber',\
+    CreateFiberEx,'CreateFiberEx',\
+    CreateFile2,'CreateFile2',\
+    CreateFileA,'CreateFileA',\
+    CreateFileMappingA,'CreateFileMappingA',\
+    CreateFileMappingFromApp,'CreateFileMappingFromApp',\
+    CreateFileMappingNumaA,'CreateFileMappingNumaA',\
+    CreateFileMappingNumaW,'CreateFileMappingNumaW',\
+    CreateFileMappingW,'CreateFileMappingW',\
+    CreateFileTransactedA,'CreateFileTransactedA',\
+    CreateFileTransactedW,'CreateFileTransactedW',\
+    CreateFileW,'CreateFileW',\
+    CreateHardLinkA,'CreateHardLinkA',\
+    CreateHardLinkTransactedA,'CreateHardLinkTransactedA',\
+    CreateHardLinkTransactedW,'CreateHardLinkTransactedW',\
+    CreateHardLinkW,'CreateHardLinkW',\
+    CreateIoCompletionPort,'CreateIoCompletionPort',\
+    CreateJobObjectA,'CreateJobObjectA',\
+    CreateJobObjectW,'CreateJobObjectW',\
+    CreateJobSet,'CreateJobSet',\
+    CreateMailslotA,'CreateMailslotA',\
+    CreateMailslotW,'CreateMailslotW',\
+    CreateMemoryResourceNotification,'CreateMemoryResourceNotification',\
+    CreateMutexA,'CreateMutexA',\
+    CreateMutexExA,'CreateMutexExA',\
+    CreateMutexExW,'CreateMutexExW',\
+    CreateMutexW,'CreateMutexW',\
+    CreateNamedPipeA,'CreateNamedPipeA',\
+    CreateNamedPipeW,'CreateNamedPipeW',\
+    CreatePipe,'CreatePipe',\
+    CreatePrivateNamespaceA,'CreatePrivateNamespaceA',\
+    CreatePrivateNamespaceW,'CreatePrivateNamespaceW',\
+    CreateProcessA,'CreateProcessA',\
+    CreateProcessInternalA,'CreateProcessInternalA',\
+    CreateProcessInternalW,'CreateProcessInternalW',\
+    CreateProcessW,'CreateProcessW',\
+    CreateRemoteThread,'CreateRemoteThread',\
+    CreateRemoteThreadEx,'CreateRemoteThreadEx',\
+    CreateSemaphoreA,'CreateSemaphoreA',\
+    CreateSemaphoreExA,'CreateSemaphoreExA',\
+    CreateSemaphoreExW,'CreateSemaphoreExW',\
+    CreateSemaphoreW,'CreateSemaphoreW',\
+    CreateSymbolicLinkA,'CreateSymbolicLinkA',\
+    CreateSymbolicLinkTransactedA,'CreateSymbolicLinkTransactedA',\
+    CreateSymbolicLinkTransactedW,'CreateSymbolicLinkTransactedW',\
+    CreateSymbolicLinkW,'CreateSymbolicLinkW',\
+    CreateTapePartition,'CreateTapePartition',\
+    CreateThread,'CreateThread',\
+    CreateThreadpool,'CreateThreadpool',\
+    CreateThreadpoolCleanupGroup,'CreateThreadpoolCleanupGroup',\
+    CreateThreadpoolIo,'CreateThreadpoolIo',\
+    CreateThreadpoolTimer,'CreateThreadpoolTimer',\
+    CreateThreadpoolWait,'CreateThreadpoolWait',\
+    CreateThreadpoolWork,'CreateThreadpoolWork',\
+    CreateTimerQueue,'CreateTimerQueue',\
+    CreateTimerQueueTimer,'CreateTimerQueueTimer',\
+    CreateToolhelp32Snapshot,'CreateToolhelp32Snapshot',\
+    CreateUmsCompletionList,'CreateUmsCompletionList',\
+    CreateUmsThreadContext,'CreateUmsThreadContext',\
+    CreateWaitableTimerA,'CreateWaitableTimerA',\
+    CreateWaitableTimerExA,'CreateWaitableTimerExA',\
+    CreateWaitableTimerExW,'CreateWaitableTimerExW',\
+    CreateWaitableTimerW,'CreateWaitableTimerW',\
+    DeactivateActCtx,'DeactivateActCtx',\
+    DebugActiveProcess,'DebugActiveProcess',\
+    DebugActiveProcessStop,'DebugActiveProcessStop',\
+    DebugBreak,'DebugBreak',\
+    DebugBreakProcess,'DebugBreakProcess',\
+    DebugSetProcessKillOnExit,'DebugSetProcessKillOnExit',\
+    DecodePointer,'DecodePointer',\
+    DecodeSystemPointer,'DecodeSystemPointer',\
+    DefineDosDeviceA,'DefineDosDeviceA',\
+    DefineDosDeviceW,'DefineDosDeviceW',\
+    DelayLoadFailureHook,'DelayLoadFailureHook',\
+    DeleteAtom,'DeleteAtom',\
+    DeleteBoundaryDescriptor,'DeleteBoundaryDescriptor',\
+    DeleteCriticalSection,'DeleteCriticalSection',\
+    DeleteFiber,'DeleteFiber',\
+    DeleteFileA,'DeleteFileA',\
+    DeleteFileTransactedA,'DeleteFileTransactedA',\
+    DeleteFileTransactedW,'DeleteFileTransactedW',\
+    DeleteFileW,'DeleteFileW',\
+    DeleteProcThreadAttributeList,'DeleteProcThreadAttributeList',\
+    DeleteSynchronizationBarrier,'DeleteSynchronizationBarrier',\
+    DeleteTimerQueue,'DeleteTimerQueue',\
+    DeleteTimerQueueEx,'DeleteTimerQueueEx',\
+    DeleteTimerQueueTimer,'DeleteTimerQueueTimer',\
+    DeleteUmsCompletionList,'DeleteUmsCompletionList',\
+    DeleteUmsThreadContext,'DeleteUmsThreadContext',\
+    DeleteVolumeMountPointA,'DeleteVolumeMountPointA',\
+    DeleteVolumeMountPointW,'DeleteVolumeMountPointW',\
+    DequeueUmsCompletionListItems,'DequeueUmsCompletionListItems',\
+    DeviceIoControl,'DeviceIoControl',\
+    DisableThreadLibraryCalls,'DisableThreadLibraryCalls',\
+    DisableThreadProfiling,'DisableThreadProfiling',\
+    DisassociateCurrentThreadFromCallback,'DisassociateCurrentThreadFromCallback',\
+    DiscardVirtualMemory,'DiscardVirtualMemory',\
+    DisconnectNamedPipe,'DisconnectNamedPipe',\
+    DnsHostnameToComputerNameA,'DnsHostnameToComputerNameA',\
+    DnsHostnameToComputerNameW,'DnsHostnameToComputerNameW',\
+    DosDateTimeToFileTime,'DosDateTimeToFileTime',\
+    DosPathToSessionPathA,'DosPathToSessionPathA',\
+    DosPathToSessionPathW,'DosPathToSessionPathW',\
+    DuplicateConsoleHandle,'DuplicateConsoleHandle',\
+    DuplicateHandle,'DuplicateHandle',\
+    EnableThreadProfiling,'EnableThreadProfiling',\
+    EncodePointer,'EncodePointer',\
+    EncodeSystemPointer,'EncodeSystemPointer',\
+    EndUpdateResourceA,'EndUpdateResourceA',\
+    EndUpdateResourceW,'EndUpdateResourceW',\
+    EnterCriticalSection,'EnterCriticalSection',\
+    EnterSynchronizationBarrier,'EnterSynchronizationBarrier',\
+    EnterUmsSchedulingMode,'EnterUmsSchedulingMode',\
+    EnumCalendarInfoA,'EnumCalendarInfoA',\
+    EnumCalendarInfoExA,'EnumCalendarInfoExA',\
+    EnumCalendarInfoExEx,'EnumCalendarInfoExEx',\
+    EnumCalendarInfoExW,'EnumCalendarInfoExW',\
+    EnumCalendarInfoW,'EnumCalendarInfoW',\
+    EnumDateFormatsA,'EnumDateFormatsA',\
+    EnumDateFormatsExA,'EnumDateFormatsExA',\
+    EnumDateFormatsExEx,'EnumDateFormatsExEx',\
+    EnumDateFormatsExW,'EnumDateFormatsExW',\
+    EnumDateFormatsW,'EnumDateFormatsW',\
+    EnumerateLocalComputerNamesA,'EnumerateLocalComputerNamesA',\
+    EnumerateLocalComputerNamesW,'EnumerateLocalComputerNamesW',\
+    EnumLanguageGroupLocalesA,'EnumLanguageGroupLocalesA',\
+    EnumLanguageGroupLocalesW,'EnumLanguageGroupLocalesW',\
+    EnumResourceLanguagesA,'EnumResourceLanguagesA',\
+    EnumResourceLanguagesExA,'EnumResourceLanguagesExA',\
+    EnumResourceLanguagesExW,'EnumResourceLanguagesExW',\
+    EnumResourceLanguagesW,'EnumResourceLanguagesW',\
+    EnumResourceNamesA,'EnumResourceNamesA',\
+    EnumResourceNamesExA,'EnumResourceNamesExA',\
+    EnumResourceNamesExW,'EnumResourceNamesExW',\
+    EnumResourceNamesW,'EnumResourceNamesW',\
+    EnumResourceTypesA,'EnumResourceTypesA',\
+    EnumResourceTypesExA,'EnumResourceTypesExA',\
+    EnumResourceTypesExW,'EnumResourceTypesExW',\
+    EnumResourceTypesW,'EnumResourceTypesW',\
+    EnumSystemCodePagesA,'EnumSystemCodePagesA',\
+    EnumSystemCodePagesW,'EnumSystemCodePagesW',\
+    EnumSystemFirmwareTables,'EnumSystemFirmwareTables',\
+    EnumSystemGeoID,'EnumSystemGeoID',\
+    EnumSystemLanguageGroupsA,'EnumSystemLanguageGroupsA',\
+    EnumSystemLanguageGroupsW,'EnumSystemLanguageGroupsW',\
+    EnumSystemLocalesA,'EnumSystemLocalesA',\
+    EnumSystemLocalesEx,'EnumSystemLocalesEx',\
+    EnumSystemLocalesW,'EnumSystemLocalesW',\
+    EnumTimeFormatsA,'EnumTimeFormatsA',\
+    EnumTimeFormatsEx,'EnumTimeFormatsEx',\
+    EnumTimeFormatsW,'EnumTimeFormatsW',\
+    EnumUILanguagesA,'EnumUILanguagesA',\
+    EnumUILanguagesW,'EnumUILanguagesW',\
+    EraseTape,'EraseTape',\
+    EscapeCommFunction,'EscapeCommFunction',\
+    ExecuteUmsThread,'ExecuteUmsThread',\
+    ExitProcess,'ExitProcess',\
+    ExitThread,'ExitThread',\
+    ExitVDM,'ExitVDM',\
+    ExpandEnvironmentStringsA,'ExpandEnvironmentStringsA',\
+    ExpandEnvironmentStringsW,'ExpandEnvironmentStringsW',\
+    ExpungeConsoleCommandHistoryA,'ExpungeConsoleCommandHistoryA',\
+    ExpungeConsoleCommandHistoryW,'ExpungeConsoleCommandHistoryW',\
+    FatalAppExitA,'FatalAppExitA',\
+    FatalAppExitW,'FatalAppExitW',\
+    FatalExit,'FatalExit',\
+    FileTimeToDosDateTime,'FileTimeToDosDateTime',\
+    FileTimeToLocalFileTime,'FileTimeToLocalFileTime',\
+    FileTimeToSystemTime,'FileTimeToSystemTime',\
+    FillConsoleOutputAttribute,'FillConsoleOutputAttribute',\
+    FillConsoleOutputCharacterA,'FillConsoleOutputCharacterA',\
+    FillConsoleOutputCharacterW,'FillConsoleOutputCharacterW',\
+    FindActCtxSectionGuid,'FindActCtxSectionGuid',\
+    FindActCtxSectionStringA,'FindActCtxSectionStringA',\
+    FindActCtxSectionStringW,'FindActCtxSectionStringW',\
+    FindAtomA,'FindAtomA',\
+    FindAtomW,'FindAtomW',\
+    FindClose,'FindClose',\
+    FindCloseChangeNotification,'FindCloseChangeNotification',\
+    FindFirstChangeNotificationA,'FindFirstChangeNotificationA',\
+    FindFirstChangeNotificationW,'FindFirstChangeNotificationW',\
+    FindFirstFileA,'FindFirstFileA',\
+    FindFirstFileExA,'FindFirstFileExA',\
+    FindFirstFileExW,'FindFirstFileExW',\
+    FindFirstFileNameTransactedW,'FindFirstFileNameTransactedW',\
+    FindFirstFileNameW,'FindFirstFileNameW',\
+    FindFirstFileTransactedA,'FindFirstFileTransactedA',\
+    FindFirstFileTransactedW,'FindFirstFileTransactedW',\
+    FindFirstFileW,'FindFirstFileW',\
+    FindFirstStreamTransactedW,'FindFirstStreamTransactedW',\
+    FindFirstStreamW,'FindFirstStreamW',\
+    FindFirstVolumeA,'FindFirstVolumeA',\
+    FindFirstVolumeMountPointA,'FindFirstVolumeMountPointA',\
+    FindFirstVolumeMountPointW,'FindFirstVolumeMountPointW',\
+    FindFirstVolumeW,'FindFirstVolumeW',\
+    FindNextChangeNotification,'FindNextChangeNotification',\
+    FindNextFileA,'FindNextFileA',\
+    FindNextFileNameW,'FindNextFileNameW',\
+    FindNextFileW,'FindNextFileW',\
+    FindNextStreamW,'FindNextStreamW',\
+    FindNextVolumeA,'FindNextVolumeA',\
+    FindNextVolumeMountPointA,'FindNextVolumeMountPointA',\
+    FindNextVolumeMountPointW,'FindNextVolumeMountPointW',\
+    FindNextVolumeW,'FindNextVolumeW',\
+    FindNLSString,'FindNLSString',\
+    FindNLSStringEx,'FindNLSStringEx',\
+    FindPackagesByPackageFamily,'FindPackagesByPackageFamily',\
+    FindResourceA,'FindResourceA',\
+    FindResourceExA,'FindResourceExA',\
+    FindResourceExW,'FindResourceExW',\
+    FindResourceW,'FindResourceW',\
+    FindStringOrdinal,'FindStringOrdinal',\
+    FindVolumeClose,'FindVolumeClose',\
+    FindVolumeMountPointClose,'FindVolumeMountPointClose',\
+    FlsAlloc,'FlsAlloc',\
+    FlsFree,'FlsFree',\
+    FlsGetValue,'FlsGetValue',\
+    FlsSetValue,'FlsSetValue',\
+    FlushConsoleInputBuffer,'FlushConsoleInputBuffer',\
+    FlushFileBuffers,'FlushFileBuffers',\
+    FlushInstructionCache,'FlushInstructionCache',\
+    FlushProcessWriteBuffers,'FlushProcessWriteBuffers',\
+    FlushViewOfFile,'FlushViewOfFile',\
+    FoldStringA,'FoldStringA',\
+    FoldStringW,'FoldStringW',\
+    FormatApplicationUserModelId,'FormatApplicationUserModelId',\
+    FormatMessageA,'FormatMessageA',\
+    FormatMessageW,'FormatMessageW',\
+    FreeConsole,'FreeConsole',\
+    FreeEnvironmentStringsA,'FreeEnvironmentStringsA',\
+    FreeEnvironmentStringsW,'FreeEnvironmentStringsW',\
+    FreeLibrary,'FreeLibrary',\
+    FreeLibraryAndExitThread,'FreeLibraryAndExitThread',\
+    FreeLibraryWhenCallbackReturns,'FreeLibraryWhenCallbackReturns',\
+    FreeMemoryJobObject,'FreeMemoryJobObject',\
+    FreeResource,'FreeResource',\
+    FreeUserPhysicalPages,'FreeUserPhysicalPages',\
+    GenerateConsoleCtrlEvent,'GenerateConsoleCtrlEvent',\
+    GetACP,'GetACP',\
+    GetActiveProcessorCount,'GetActiveProcessorCount',\
+    GetActiveProcessorGroupCount,'GetActiveProcessorGroupCount',\
+    GetAppContainerNamedObjectPath,'GetAppContainerNamedObjectPath',\
+    GetApplicationRecoveryCallback,'GetApplicationRecoveryCallback',\
+    GetApplicationRestartSettings,'GetApplicationRestartSettings',\
+    GetApplicationUserModelId,'GetApplicationUserModelId',\
+    GetAtomNameA,'GetAtomNameA',\
+    GetAtomNameW,'GetAtomNameW',\
+    GetBinaryTypeA,'GetBinaryTypeA',\
+    GetBinaryTypeW,'GetBinaryTypeW',\
+    GetCachedSigningLevel,'GetCachedSigningLevel',\
+    GetCalendarDateFormatEx,'GetCalendarDateFormatEx',\
+    GetCalendarInfoA,'GetCalendarInfoA',\
+    GetCalendarInfoEx,'GetCalendarInfoEx',\
+    GetCalendarInfoW,'GetCalendarInfoW',\
+    GetCalendarSupportedDateRange,'GetCalendarSupportedDateRange',\
+    GetCommandLineA,'GetCommandLineA',\
+    GetCommandLineW,'GetCommandLineW',\
+    GetCommConfig,'GetCommConfig',\
+    GetCommMask,'GetCommMask',\
+    GetCommModemStatus,'GetCommModemStatus',\
+    GetCommProperties,'GetCommProperties',\
+    GetCommState,'GetCommState',\
+    GetCommTimeouts,'GetCommTimeouts',\
+    GetComPlusPackageInstallStatus,'GetComPlusPackageInstallStatus',\
+    GetCompressedFileSizeA,'GetCompressedFileSizeA',\
+    GetCompressedFileSizeTransactedA,'GetCompressedFileSizeTransactedA',\
+    GetCompressedFileSizeTransactedW,'GetCompressedFileSizeTransactedW',\
+    GetCompressedFileSizeW,'GetCompressedFileSizeW',\
+    GetComputerNameA,'GetComputerNameA',\
+    GetComputerNameExA,'GetComputerNameExA',\
+    GetComputerNameExW,'GetComputerNameExW',\
+    GetComputerNameW,'GetComputerNameW',\
+    GetConsoleAliasA,'GetConsoleAliasA',\
+    GetConsoleAliasesA,'GetConsoleAliasesA',\
+    GetConsoleAliasesLengthA,'GetConsoleAliasesLengthA',\
+    GetConsoleAliasesLengthW,'GetConsoleAliasesLengthW',\
+    GetConsoleAliasesW,'GetConsoleAliasesW',\
+    GetConsoleAliasExesA,'GetConsoleAliasExesA',\
+    GetConsoleAliasExesLengthA,'GetConsoleAliasExesLengthA',\
+    GetConsoleAliasExesLengthW,'GetConsoleAliasExesLengthW',\
+    GetConsoleAliasExesW,'GetConsoleAliasExesW',\
+    GetConsoleAliasW,'GetConsoleAliasW',\
+    GetConsoleCP,'GetConsoleCP',\
+    GetConsoleCursorInfo,'GetConsoleCursorInfo',\
+    GetConsoleDisplayMode,'GetConsoleDisplayMode',\
+    GetConsoleFontInfo,'GetConsoleFontInfo',\
+    GetConsoleFontSize,'GetConsoleFontSize',\
+    GetConsoleHistoryInfo,'GetConsoleHistoryInfo',\
+    GetConsoleMode,'GetConsoleMode',\
+    GetConsoleNlsMode,'GetConsoleNlsMode',\
+    GetConsoleOriginalTitleA,'GetConsoleOriginalTitleA',\
+    GetConsoleOriginalTitleW,'GetConsoleOriginalTitleW',\
+    GetConsoleOutputCP,'GetConsoleOutputCP',\
+    GetConsoleProcessList,'GetConsoleProcessList',\
+    GetConsoleScreenBufferInfo,'GetConsoleScreenBufferInfo',\
+    GetConsoleScreenBufferInfoEx,'GetConsoleScreenBufferInfoEx',\
+    GetConsoleSelectionInfo,'GetConsoleSelectionInfo',\
+    GetConsoleTitleA,'GetConsoleTitleA',\
+    GetConsoleTitleW,'GetConsoleTitleW',\
+    GetConsoleWindow,'GetConsoleWindow',\
+    GetCPInfo,'GetCPInfo',\
+    GetCPInfoExA,'GetCPInfoExA',\
+    GetCPInfoExW,'GetCPInfoExW',\
+    GetCurrencyFormatA,'GetCurrencyFormatA',\
+    GetCurrencyFormatEx,'GetCurrencyFormatEx',\
+    GetCurrencyFormatW,'GetCurrencyFormatW',\
+    GetCurrentActCtx,'GetCurrentActCtx',\
+    GetCurrentApplicationUserModelId,'GetCurrentApplicationUserModelId',\
+    GetCurrentConsoleFont,'GetCurrentConsoleFont',\
+    GetCurrentConsoleFontEx,'GetCurrentConsoleFontEx',\
+    GetCurrentDirectoryA,'GetCurrentDirectoryA',\
+    GetCurrentDirectoryW,'GetCurrentDirectoryW',\
+    GetCurrentPackageFamilyName,'GetCurrentPackageFamilyName',\
+    GetCurrentPackageFullName,'GetCurrentPackageFullName',\
+    GetCurrentPackageId,'GetCurrentPackageId',\
+    GetCurrentPackageInfo,'GetCurrentPackageInfo',\
+    GetCurrentPackagePath,'GetCurrentPackagePath',\
+    GetCurrentProcess,'GetCurrentProcess',\
+    GetCurrentProcessId,'GetCurrentProcessId',\
+    GetCurrentProcessorNumber,'GetCurrentProcessorNumber',\
+    GetCurrentProcessorNumberEx,'GetCurrentProcessorNumberEx',\
+    GetCurrentThread,'GetCurrentThread',\
+    GetCurrentThreadId,'GetCurrentThreadId',\
+    GetCurrentThreadStackLimits,'GetCurrentThreadStackLimits',\
+    GetCurrentUmsThread,'GetCurrentUmsThread',\
+    GetDateFormatA,'GetDateFormatA',\
+    GetDateFormatEx,'GetDateFormatEx',\
+    GetDateFormatW,'GetDateFormatW',\
+    GetDefaultCommConfigA,'GetDefaultCommConfigA',\
+    GetDefaultCommConfigW,'GetDefaultCommConfigW',\
+    GetDevicePowerState,'GetDevicePowerState',\
+    GetDiskFreeSpaceA,'GetDiskFreeSpaceA',\
+    GetDiskFreeSpaceExA,'GetDiskFreeSpaceExA',\
+    GetDiskFreeSpaceExW,'GetDiskFreeSpaceExW',\
+    GetDiskFreeSpaceW,'GetDiskFreeSpaceW',\
+    GetDllDirectoryA,'GetDllDirectoryA',\
+    GetDllDirectoryW,'GetDllDirectoryW',\
+    GetDriveTypeA,'GetDriveTypeA',\
+    GetDriveTypeW,'GetDriveTypeW',\
+    GetDurationFormat,'GetDurationFormat',\
+    GetDurationFormatEx,'GetDurationFormatEx',\
+    GetDynamicTimeZoneInformation,'GetDynamicTimeZoneInformation',\
+    GetEnabledXStateFeatures,'GetEnabledXStateFeatures',\
+    GetEnvironmentStringsA,'GetEnvironmentStringsA',\
+    GetEnvironmentStringsW,'GetEnvironmentStringsW',\
+    GetEnvironmentVariableA,'GetEnvironmentVariableA',\
+    GetEnvironmentVariableW,'GetEnvironmentVariableW',\
+    GetErrorMode,'GetErrorMode',\
+    GetExitCodeProcess,'GetExitCodeProcess',\
+    GetExitCodeThread,'GetExitCodeThread',\
+    GetFileAttributesA,'GetFileAttributesA',\
+    GetFileAttributesExA,'GetFileAttributesExA',\
+    GetFileAttributesExW,'GetFileAttributesExW',\
+    GetFileAttributesTransactedA,'GetFileAttributesTransactedA',\
+    GetFileAttributesTransactedW,'GetFileAttributesTransactedW',\
+    GetFileAttributesW,'GetFileAttributesW',\
+    GetFileBandwidthReservation,'GetFileBandwidthReservation',\
+    GetFileInformationByHandle,'GetFileInformationByHandle',\
+    GetFileInformationByHandleEx,'GetFileInformationByHandleEx',\
+    GetFileMUIInfo,'GetFileMUIInfo',\
+    GetFileMUIPath,'GetFileMUIPath',\
+    GetFileSize,'GetFileSize',\
+    GetFileSizeEx,'GetFileSizeEx',\
+    GetFileTime,'GetFileTime',\
+    GetFileType,'GetFileType',\
+    GetFinalPathNameByHandleA,'GetFinalPathNameByHandleA',\
+    GetFinalPathNameByHandleW,'GetFinalPathNameByHandleW',\
+    GetFirmwareEnvironmentVariableA,'GetFirmwareEnvironmentVariableA',\
+    GetFirmwareEnvironmentVariableExA,'GetFirmwareEnvironmentVariableExA',\
+    GetFirmwareEnvironmentVariableExW,'GetFirmwareEnvironmentVariableExW',\
+    GetFirmwareEnvironmentVariableW,'GetFirmwareEnvironmentVariableW',\
+    GetFirmwareType,'GetFirmwareType',\
+    GetFullPathNameA,'GetFullPathNameA',\
+    GetFullPathNameTransactedA,'GetFullPathNameTransactedA',\
+    GetFullPathNameTransactedW,'GetFullPathNameTransactedW',\
+    GetFullPathNameW,'GetFullPathNameW',\
+    GetGeoInfoA,'GetGeoInfoA',\
+    GetGeoInfoW,'GetGeoInfoW',\
+    GetHandleInformation,'GetHandleInformation',\
+    GetLargePageMinimum,'GetLargePageMinimum',\
+    GetLargestConsoleWindowSize,'GetLargestConsoleWindowSize',\
+    GetLastError,'GetLastError',\
+    GetLocaleInfoA,'GetLocaleInfoA',\
+    GetLocaleInfoEx,'GetLocaleInfoEx',\
+    GetLocaleInfoW,'GetLocaleInfoW',\
+    GetLocalTime,'GetLocalTime',\
+    GetLogicalDrives,'GetLogicalDrives',\
+    GetLogicalDriveStringsA,'GetLogicalDriveStringsA',\
+    GetLogicalDriveStringsW,'GetLogicalDriveStringsW',\
+    GetLogicalProcessorInformation,'GetLogicalProcessorInformation',\
+    GetLogicalProcessorInformationEx,'GetLogicalProcessorInformationEx',\
+    GetLongPathNameA,'GetLongPathNameA',\
+    GetLongPathNameTransactedA,'GetLongPathNameTransactedA',\
+    GetLongPathNameTransactedW,'GetLongPathNameTransactedW',\
+    GetLongPathNameW,'GetLongPathNameW',\
+    GetMailslotInfo,'GetMailslotInfo',\
+    GetMaximumProcessorCount,'GetMaximumProcessorCount',\
+    GetMaximumProcessorGroupCount,'GetMaximumProcessorGroupCount',\
+    GetMemoryErrorHandlingCapabilities,'GetMemoryErrorHandlingCapabilities',\
+    GetModuleFileNameA,'GetModuleFileNameA',\
+    GetModuleFileNameW,'GetModuleFileNameW',\
+    GetModuleHandleA,'GetModuleHandleA',\
+    GetModuleHandleExA,'GetModuleHandleExA',\
+    GetModuleHandleExW,'GetModuleHandleExW',\
+    GetModuleHandleW,'GetModuleHandleW',\
+    GetNamedPipeAttribute,'GetNamedPipeAttribute',\
+    GetNamedPipeClientComputerNameA,'GetNamedPipeClientComputerNameA',\
+    GetNamedPipeClientComputerNameW,'GetNamedPipeClientComputerNameW',\
+    GetNamedPipeClientProcessId,'GetNamedPipeClientProcessId',\
+    GetNamedPipeClientSessionId,'GetNamedPipeClientSessionId',\
+    GetNamedPipeHandleStateA,'GetNamedPipeHandleStateA',\
+    GetNamedPipeHandleStateW,'GetNamedPipeHandleStateW',\
+    GetNamedPipeInfo,'GetNamedPipeInfo',\
+    GetNamedPipeServerProcessId,'GetNamedPipeServerProcessId',\
+    GetNamedPipeServerSessionId,'GetNamedPipeServerSessionId',\
+    GetNativeSystemInfo,'GetNativeSystemInfo',\
+    GetNextUmsListItem,'GetNextUmsListItem',\
+    GetNextVDMCommand,'GetNextVDMCommand',\
+    GetNLSVersion,'GetNLSVersion',\
+    GetNLSVersionEx,'GetNLSVersionEx',\
+    GetNumaAvailableMemoryNode,'GetNumaAvailableMemoryNode',\
+    GetNumaAvailableMemoryNodeEx,'GetNumaAvailableMemoryNodeEx',\
+    GetNumaHighestNodeNumber,'GetNumaHighestNodeNumber',\
+    GetNumaNodeNumberFromHandle,'GetNumaNodeNumberFromHandle',\
+    GetNumaNodeProcessorMask,'GetNumaNodeProcessorMask',\
+    GetNumaNodeProcessorMaskEx,'GetNumaNodeProcessorMaskEx',\
+    GetNumaProcessorNode,'GetNumaProcessorNode',\
+    GetNumaProcessorNodeEx,'GetNumaProcessorNodeEx',\
+    GetNumaProximityNode,'GetNumaProximityNode',\
+    GetNumaProximityNodeEx,'GetNumaProximityNodeEx',\
+    GetNumberFormatA,'GetNumberFormatA',\
+    GetNumberFormatEx,'GetNumberFormatEx',\
+    GetNumberFormatW,'GetNumberFormatW',\
+    GetNumberOfConsoleFonts,'GetNumberOfConsoleFonts',\
+    GetNumberOfConsoleInputEvents,'GetNumberOfConsoleInputEvents',\
+    GetNumberOfConsoleMouseButtons,'GetNumberOfConsoleMouseButtons',\
+    GetOEMCP,'GetOEMCP',\
+    GetOverlappedResult,'GetOverlappedResult',\
+    GetOverlappedResultEx,'GetOverlappedResultEx',\
+    GetPackageApplicationIds,'GetPackageApplicationIds',\
+    GetPackageFamilyName,'GetPackageFamilyName',\
+    GetPackageFullName,'GetPackageFullName',\
+    GetPackageId,'GetPackageId',\
+    GetPackageInfo,'GetPackageInfo',\
+    GetPackagePath,'GetPackagePath',\
+    GetPackagePathByFullName,'GetPackagePathByFullName',\
+    GetPackagesByPackageFamily,'GetPackagesByPackageFamily',\
+    GetPhysicallyInstalledSystemMemory,'GetPhysicallyInstalledSystemMemory',\
+    GetPriorityClass,'GetPriorityClass',\
+    GetPrivateProfileIntA,'GetPrivateProfileIntA',\
+    GetPrivateProfileIntW,'GetPrivateProfileIntW',\
+    GetPrivateProfileSectionA,'GetPrivateProfileSectionA',\
+    GetPrivateProfileSectionNamesA,'GetPrivateProfileSectionNamesA',\
+    GetPrivateProfileSectionNamesW,'GetPrivateProfileSectionNamesW',\
+    GetPrivateProfileSectionW,'GetPrivateProfileSectionW',\
+    GetPrivateProfileStringA,'GetPrivateProfileStringA',\
+    GetPrivateProfileStringW,'GetPrivateProfileStringW',\
+    GetPrivateProfileStructA,'GetPrivateProfileStructA',\
+    GetPrivateProfileStructW,'GetPrivateProfileStructW',\
+    GetProcAddress,'GetProcAddress',\
+    GetProcessAffinityMask,'GetProcessAffinityMask',\
+    GetProcessDefaultCpuSets,'GetProcessDefaultCpuSets',\
+    GetProcessDEPPolicy,'GetProcessDEPPolicy',\
+    GetProcessGroupAffinity,'GetProcessGroupAffinity',\
+    GetProcessHandleCount,'GetProcessHandleCount',\
+    GetProcessHeap,'GetProcessHeap',\
+    GetProcessHeaps,'GetProcessHeaps',\
+    GetProcessId,'GetProcessId',\
+    GetProcessIdOfThread,'GetProcessIdOfThread',\
+    GetProcessInformation,'GetProcessInformation',\
+    GetProcessIoCounters,'GetProcessIoCounters',\
+    GetProcessMitigationPolicy,'GetProcessMitigationPolicy',\
+    GetProcessorSystemCycleTime,'GetProcessorSystemCycleTime',\
+    GetProcessPreferredUILanguages,'GetProcessPreferredUILanguages',\
+    GetProcessPriorityBoost,'GetProcessPriorityBoost',\
+    GetProcessShutdownParameters,'GetProcessShutdownParameters',\
+    GetProcessTimes,'GetProcessTimes',\
+    GetProcessUserModeExceptionPolicy,'GetProcessUserModeExceptionPolicy',\
+    GetProcessVersion,'GetProcessVersion',\
+    GetProcessWorkingSetSize,'GetProcessWorkingSetSize',\
+    GetProcessWorkingSetSizeEx,'GetProcessWorkingSetSizeEx',\
+    GetProductInfo,'GetProductInfo',\
+    GetProfileIntA,'GetProfileIntA',\
+    GetProfileIntW,'GetProfileIntW',\
+    GetProfileSectionA,'GetProfileSectionA',\
+    GetProfileSectionW,'GetProfileSectionW',\
+    GetProfileStringA,'GetProfileStringA',\
+    GetProfileStringW,'GetProfileStringW',\
+    GetQueuedCompletionStatus,'GetQueuedCompletionStatus',\
+    GetQueuedCompletionStatusEx,'GetQueuedCompletionStatusEx',\
+    GetShortPathNameA,'GetShortPathNameA',\
+    GetShortPathNameW,'GetShortPathNameW',\
+    GetStagedPackagePathByFullName,'GetStagedPackagePathByFullName',\
+    GetStartupInfoA,'GetStartupInfoA',\
+    GetStartupInfoW,'GetStartupInfoW',\
+    GetStdHandle,'GetStdHandle',\
+    GetStringScripts,'GetStringScripts',\
+    GetStringTypeA,'GetStringTypeA',\
+    GetStringTypeExA,'GetStringTypeExA',\
+    GetStringTypeExW,'GetStringTypeExW',\
+    GetStringTypeW,'GetStringTypeW',\
+    GetSystemCpuSetInformation,'GetSystemCpuSetInformation',\
+    GetSystemDefaultLangID,'GetSystemDefaultLangID',\
+    GetSystemDefaultLCID,'GetSystemDefaultLCID',\
+    GetSystemDefaultLocaleName,'GetSystemDefaultLocaleName',\
+    GetSystemDefaultUILanguage,'GetSystemDefaultUILanguage',\
+    GetSystemDEPPolicy,'GetSystemDEPPolicy',\
+    GetSystemDirectoryA,'GetSystemDirectoryA',\
+    GetSystemDirectoryW,'GetSystemDirectoryW',\
+    GetSystemFileCacheSize,'GetSystemFileCacheSize',\
+    GetSystemFirmwareTable,'GetSystemFirmwareTable',\
+    GetSystemInfo,'GetSystemInfo',\
+    GetSystemPowerStatus,'GetSystemPowerStatus',\
+    GetSystemPreferredUILanguages,'GetSystemPreferredUILanguages',\
+    GetSystemRegistryQuota,'GetSystemRegistryQuota',\
+    GetSystemTime,'GetSystemTime',\
+    GetSystemTimeAdjustment,'GetSystemTimeAdjustment',\
+    GetSystemTimeAsFileTime,'GetSystemTimeAsFileTime',\
+    GetSystemTimePreciseAsFileTime,'GetSystemTimePreciseAsFileTime',\
+    GetSystemTimes,'GetSystemTimes',\
+    GetSystemWindowsDirectoryA,'GetSystemWindowsDirectoryA',\
+    GetSystemWindowsDirectoryW,'GetSystemWindowsDirectoryW',\
+    GetSystemWow64DirectoryA,'GetSystemWow64DirectoryA',\
+    GetSystemWow64DirectoryW,'GetSystemWow64DirectoryW',\
+    GetTapeParameters,'GetTapeParameters',\
+    GetTapePosition,'GetTapePosition',\
+    GetTapeStatus,'GetTapeStatus',\
+    GetTempFileNameA,'GetTempFileNameA',\
+    GetTempFileNameW,'GetTempFileNameW',\
+    GetTempPathA,'GetTempPathA',\
+    GetTempPathW,'GetTempPathW',\
+    GetThreadContext,'GetThreadContext',\
+    GetThreadErrorMode,'GetThreadErrorMode',\
+    GetThreadGroupAffinity,'GetThreadGroupAffinity',\
+    GetThreadId,'GetThreadId',\
+    GetThreadIdealProcessorEx,'GetThreadIdealProcessorEx',\
+    GetThreadInformation,'GetThreadInformation',\
+    GetThreadIOPendingFlag,'GetThreadIOPendingFlag',\
+    GetThreadLocale,'GetThreadLocale',\
+    GetThreadPreferredUILanguages,'GetThreadPreferredUILanguages',\
+    GetThreadPriority,'GetThreadPriority',\
+    GetThreadPriorityBoost,'GetThreadPriorityBoost',\
+    GetThreadSelectedCpuSets,'GetThreadSelectedCpuSets',\
+    GetThreadSelectorEntry,'GetThreadSelectorEntry',\
+    GetThreadTimes,'GetThreadTimes',\
+    GetThreadUILanguage,'GetThreadUILanguage',\
+    GetTickCount,'GetTickCount',\
+    GetTickCount64,'GetTickCount64',\
+    GetTimeFormatA,'GetTimeFormatA',\
+    GetTimeFormatEx,'GetTimeFormatEx',\
+    GetTimeFormatW,'GetTimeFormatW',\
+    GetTimeZoneInformation,'GetTimeZoneInformation',\
+    GetTimeZoneInformationForYear,'GetTimeZoneInformationForYear',\
+    GetUILanguageInfo,'GetUILanguageInfo',\
+    GetUmsCompletionListEvent,'GetUmsCompletionListEvent',\
+    GetUmsSystemThreadInformation,'GetUmsSystemThreadInformation',\
+    GetUserDefaultLangID,'GetUserDefaultLangID',\
+    GetUserDefaultLCID,'GetUserDefaultLCID',\
+    GetUserDefaultLocaleName,'GetUserDefaultLocaleName',\
+    GetUserDefaultUILanguage,'GetUserDefaultUILanguage',\
+    GetUserGeoID,'GetUserGeoID',\
+    GetUserPreferredUILanguages,'GetUserPreferredUILanguages',\
+    GetVDMCurrentDirectories,'GetVDMCurrentDirectories',\
+    GetUserNameA,'GetUserNameA',\
+    GetUserNameW,'GetUserNameW',\
+    GetVersion,'GetVersion',\
+    GetVersionExA,'GetVersionExA',\
+    GetVersionExW,'GetVersionExW',\
+    GetVolumeInformationA,'GetVolumeInformationA',\
+    GetVolumeInformationByHandleW,'GetVolumeInformationByHandleW',\
+    GetVolumeInformationW,'GetVolumeInformationW',\
+    GetVolumeNameForVolumeMountPointA,'GetVolumeNameForVolumeMountPointA',\
+    GetVolumeNameForVolumeMountPointW,'GetVolumeNameForVolumeMountPointW',\
+    GetVolumePathNameA,'GetVolumePathNameA',\
+    GetVolumePathNamesForVolumeNameA,'GetVolumePathNamesForVolumeNameA',\
+    GetVolumePathNamesForVolumeNameW,'GetVolumePathNamesForVolumeNameW',\
+    GetVolumePathNameW,'GetVolumePathNameW',\
+    GetWindowsDirectoryA,'GetWindowsDirectoryA',\
+    GetWindowsDirectoryW,'GetWindowsDirectoryW',\
+    GetWriteWatch,'GetWriteWatch',\
+    GetXStateFeaturesMask,'GetXStateFeaturesMask',\
+    GlobalAddAtomA,'GlobalAddAtomA',\
+    GlobalAddAtomExA,'GlobalAddAtomExA',\
+    GlobalAddAtomExW,'GlobalAddAtomExW',\
+    GlobalAddAtomW,'GlobalAddAtomW',\
+    GlobalAlloc,'GlobalAlloc',\
+    GlobalCompact,'GlobalCompact',\
+    GlobalDeleteAtom,'GlobalDeleteAtom',\
+    GlobalFindAtomA,'GlobalFindAtomA',\
+    GlobalFindAtomW,'GlobalFindAtomW',\
+    GlobalFix,'GlobalFix',\
+    GlobalFlags,'GlobalFlags',\
+    GlobalFree,'GlobalFree',\
+    GlobalGetAtomNameA,'GlobalGetAtomNameA',\
+    GlobalGetAtomNameW,'GlobalGetAtomNameW',\
+    GlobalHandle,'GlobalHandle',\
+    GlobalLock,'GlobalLock',\
+    GlobalMemoryStatus,'GlobalMemoryStatus',\
+    GlobalMemoryStatusEx,'GlobalMemoryStatusEx',\
+    GlobalReAlloc,'GlobalReAlloc',\
+    GlobalSize,'GlobalSize',\
+    GlobalUnfix,'GlobalUnfix',\
+    GlobalUnlock,'GlobalUnlock',\
+    GlobalUnWire,'GlobalUnWire',\
+    GlobalWire,'GlobalWire',\
+    Heap32First,'Heap32First',\
+    Heap32ListFirst,'Heap32ListFirst',\
+    Heap32ListNext,'Heap32ListNext',\
+    Heap32Next,'Heap32Next',\
+    HeapAlloc,'HeapAlloc',\
+    HeapCompact,'HeapCompact',\
+    HeapCreate,'HeapCreate',\
+    HeapDestroy,'HeapDestroy',\
+    HeapFree,'HeapFree',\
+    HeapLock,'HeapLock',\
+    HeapQueryInformation,'HeapQueryInformation',\
+    HeapReAlloc,'HeapReAlloc',\
+    HeapSetInformation,'HeapSetInformation',\
+    HeapSize,'HeapSize',\
+    HeapUnlock,'HeapUnlock',\
+    HeapValidate,'HeapValidate',\
+    HeapWalk,'HeapWalk',\
+    IdnToAscii,'IdnToAscii',\
+    IdnToNameprepUnicode,'IdnToNameprepUnicode',\
+    IdnToUnicode,'IdnToUnicode',\
+    InitAtomTable,'InitAtomTable',\
+    InitializeConditionVariable,'InitializeConditionVariable',\
+    InitializeContext,'InitializeContext',\
+    InitializeCriticalSection,'InitializeCriticalSection',\
+    InitializeCriticalSectionAndSpinCount,'InitializeCriticalSectionAndSpinCount',\
+    InitializeCriticalSectionEx,'InitializeCriticalSectionEx',\
+    InitializeEnclave,'InitializeEnclave',\
+    InitializeProcThreadAttributeList,'InitializeProcThreadAttributeList',\
+    InitializeSListHead,'InitializeSListHead',\
+    InitializeSRWLock,'InitializeSRWLock',\
+    InitializeSynchronizationBarrier,'InitializeSynchronizationBarrier',\
+    InitOnceBeginInitialize,'InitOnceBeginInitialize',\
+    InitOnceComplete,'InitOnceComplete',\
+    InitOnceExecuteOnce,'InitOnceExecuteOnce',\
+    InitOnceInitialize,'InitOnceInitialize',\
+    InstallELAMCertificateInfo,'InstallELAMCertificateInfo',\
+    InterlockedExchangeAdd,'InterlockedExchangeAdd',\
+    InterlockedFlushSList,'InterlockedFlushSList',\
+    InterlockedPopEntrySList,'InterlockedPopEntrySList',\
+    InterlockedPushEntrySList,'InterlockedPushEntrySList',\
+    InterlockedPushListSList,'InterlockedPushListSList',\
+    InterlockedPushListSListEx,'InterlockedPushListSListEx',\
+    InvalidateConsoleDIBits,'InvalidateConsoleDIBits',\
+    IsBadCodePtr,'IsBadCodePtr',\
+    IsBadHugeReadPtr,'IsBadHugeReadPtr',\
+    IsBadHugeWritePtr,'IsBadHugeWritePtr',\
+    IsBadReadPtr,'IsBadReadPtr',\
+    IsBadStringPtrA,'IsBadStringPtrA',\
+    IsBadStringPtrW,'IsBadStringPtrW',\
+    IsBadWritePtr,'IsBadWritePtr',\
+    IsCalendarLeapDay,'IsCalendarLeapDay',\
+    IsCalendarLeapMonth,'IsCalendarLeapMonth',\
+    IsCalendarLeapYear,'IsCalendarLeapYear',\
+    IsDBCSLeadByte,'IsDBCSLeadByte',\
+    IsDBCSLeadByteEx,'IsDBCSLeadByteEx',\
+    IsDebuggerPresent,'IsDebuggerPresent',\
+    IsEnclaveTypeSupported,'IsEnclaveTypeSupported',\
+    IsNativeVhdBoot,'IsNativeVhdBoot',\
+    IsNLSDefinedString,'IsNLSDefinedString',\
+    IsNormalizedString,'IsNormalizedString',\
+    IsProcessCritical,'IsProcessCritical',\
+    IsProcessInJob,'IsProcessInJob',\
+    IsProcessorFeaturePresent,'IsProcessorFeaturePresent',\
+    IsSystemResumeAutomatic,'IsSystemResumeAutomatic',\
+    IsThreadAFiber,'IsThreadAFiber',\
+    IsThreadpoolTimerSet,'IsThreadpoolTimerSet',\
+    IsTimeZoneRedirectionEnabled,'IsTimeZoneRedirectionEnabled',\
+    IsValidCalDateTime,'IsValidCalDateTime',\
+    IsValidCodePage,'IsValidCodePage',\
+    IsValidLanguageGroup,'IsValidLanguageGroup',\
+    IsValidLocale,'IsValidLocale',\
+    IsValidLocaleName,'IsValidLocaleName',\
+    IsValidNLSVersion,'IsValidNLSVersion',\
+    IsWow64Process,'IsWow64Process',\
+    K32EmptyWorkingSet,'K32EmptyWorkingSet',\
+    K32EnumDeviceDrivers,'K32EnumDeviceDrivers',\
+    K32EnumPageFilesA,'K32EnumPageFilesA',\
+    K32EnumPageFilesW,'K32EnumPageFilesW',\
+    K32EnumProcesses,'K32EnumProcesses',\
+    K32EnumProcessModules,'K32EnumProcessModules',\
+    K32EnumProcessModulesEx,'K32EnumProcessModulesEx',\
+    K32GetDeviceDriverBaseNameA,'K32GetDeviceDriverBaseNameA',\
+    K32GetDeviceDriverBaseNameW,'K32GetDeviceDriverBaseNameW',\
+    K32GetDeviceDriverFileNameA,'K32GetDeviceDriverFileNameA',\
+    K32GetDeviceDriverFileNameW,'K32GetDeviceDriverFileNameW',\
+    K32GetMappedFileNameA,'K32GetMappedFileNameA',\
+    K32GetMappedFileNameW,'K32GetMappedFileNameW',\
+    K32GetModuleBaseNameA,'K32GetModuleBaseNameA',\
+    K32GetModuleBaseNameW,'K32GetModuleBaseNameW',\
+    K32GetModuleFileNameExA,'K32GetModuleFileNameExA',\
+    K32GetModuleFileNameExW,'K32GetModuleFileNameExW',\
+    K32GetModuleInformation,'K32GetModuleInformation',\
+    K32GetPerformanceInfo,'K32GetPerformanceInfo',\
+    K32GetProcessImageFileNameA,'K32GetProcessImageFileNameA',\
+    K32GetProcessImageFileNameW,'K32GetProcessImageFileNameW',\
+    K32GetProcessMemoryInfo,'K32GetProcessMemoryInfo',\
+    K32GetWsChanges,'K32GetWsChanges',\
+    K32GetWsChangesEx,'K32GetWsChangesEx',\
+    K32InitializeProcessForWsWatch,'K32InitializeProcessForWsWatch',\
+    K32QueryWorkingSet,'K32QueryWorkingSet',\
+    K32QueryWorkingSetEx,'K32QueryWorkingSetEx',\
+    LCIDToLocaleName,'LCIDToLocaleName',\
+    LCMapStringA,'LCMapStringA',\
+    LCMapStringEx,'LCMapStringEx',\
+    LCMapStringW,'LCMapStringW',\
+    LeaveCriticalSection,'LeaveCriticalSection',\
+    LeaveCriticalSectionWhenCallbackReturns,'LeaveCriticalSectionWhenCallbackReturns',\
+    LoadAppInitDlls,'LoadAppInitDlls',\
+    LoadEnclaveData,'LoadEnclaveData',\
+    LoadLibraryA,'LoadLibraryA',\
+    LoadLibraryExA,'LoadLibraryExA',\
+    LoadLibraryExW,'LoadLibraryExW',\
+    LoadLibraryW,'LoadLibraryW',\
+    LoadModule,'LoadModule',\
+    LoadPackagedLibrary,'LoadPackagedLibrary',\
+    LoadResource,'LoadResource',\
+    LoadStringBaseExW,'LoadStringBaseExW',\
+    LoadStringBaseW,'LoadStringBaseW',\
+    LocalAlloc,'LocalAlloc',\
+    LocalCompact,'LocalCompact',\
+    LocaleNameToLCID,'LocaleNameToLCID',\
+    LocalFileTimeToFileTime,'LocalFileTimeToFileTime',\
+    LocalFlags,'LocalFlags',\
+    LocalFree,'LocalFree',\
+    LocalHandle,'LocalHandle',\
+    LocalLock,'LocalLock',\
+    LocalReAlloc,'LocalReAlloc',\
+    LocalShrink,'LocalShrink',\
+    LocalSize,'LocalSize',\
+    LocalUnlock,'LocalUnlock',\
+    LocateXStateFeature,'LocateXStateFeature',\
+    LockFile,'LockFile',\
+    LockFileEx,'LockFileEx',\
+    LockResource,'LockResource',\
+    lstrcatA,'lstrcatA',\
+    lstrcatW,'lstrcatW',\
+    lstrcmpA,'lstrcmpA',\
+    lstrcmpiA,'lstrcmpiA',\
+    lstrcmpiW,'lstrcmpiW',\
+    lstrcmpW,'lstrcmpW',\
+    lstrcpyA,'lstrcpyA',\
+    lstrcpynA,'lstrcpynA',\
+    lstrcpynW,'lstrcpynW',\
+    lstrcpyW,'lstrcpyW',\
+    lstrlenA,'lstrlenA',\
+    lstrlenW,'lstrlenW',\
+    MapUserPhysicalPages,'MapUserPhysicalPages',\
+    MapUserPhysicalPagesScatter,'MapUserPhysicalPagesScatter',\
+    MapViewOfFile,'MapViewOfFile',\
+    MapViewOfFileEx,'MapViewOfFileEx',\
+    MapViewOfFileExNuma,'MapViewOfFileExNuma',\
+    MapViewOfFileFromApp,'MapViewOfFileFromApp',\
+    Module32First,'Module32First',\
+    Module32FirstW,'Module32FirstW',\
+    Module32Next,'Module32Next',\
+    Module32NextW,'Module32NextW',\
+    MoveFileA,'MoveFileA',\
+    MoveFileExA,'MoveFileExA',\
+    MoveFileExW,'MoveFileExW',\
+    MoveFileTransactedA,'MoveFileTransactedA',\
+    MoveFileTransactedW,'MoveFileTransactedW',\
+    MoveFileW,'MoveFileW',\
+    MoveFileWithProgressA,'MoveFileWithProgressA',\
+    MoveFileWithProgressW,'MoveFileWithProgressW',\
+    MulDiv,'MulDiv',\
+    MultiByteToWideChar,'MultiByteToWideChar',\
+    NeedCurrentDirectoryForExePathA,'NeedCurrentDirectoryForExePathA',\
+    NeedCurrentDirectoryForExePathW,'NeedCurrentDirectoryForExePathW',\
+    NormalizeString,'NormalizeString',\
+    NotifyUILanguageChange,'NotifyUILanguageChange',\
+    OfferVirtualMemory,'OfferVirtualMemory',\
+    OOBEComplete,'OOBEComplete',\
+    OpenConsoleW,'OpenConsoleW',\
+    OpenEncryptedFileRawA,'OpenEncryptedFileRawA',\
+    OpenEncryptedFileRawW,'OpenEncryptedFileRawW',\
+    OpenEventA,'OpenEventA',\
+    OpenEventW,'OpenEventW',\
+    OpenFile,'OpenFile',\
+    OpenFileById,'OpenFileById',\
+    OpenFileMappingA,'OpenFileMappingA',\
+    OpenFileMappingW,'OpenFileMappingW',\
+    OpenJobObjectA,'OpenJobObjectA',\
+    OpenJobObjectW,'OpenJobObjectW',\
+    OpenMutexA,'OpenMutexA',\
+    OpenMutexW,'OpenMutexW',\
+    OpenPackageInfoByFullName,'OpenPackageInfoByFullName',\
+    OpenPrivateNamespaceA,'OpenPrivateNamespaceA',\
+    OpenPrivateNamespaceW,'OpenPrivateNamespaceW',\
+    OpenProcess,'OpenProcess',\
+    OpenProcessToken,'OpenProcessToken',\
+    OpenProfileUserMapping,'OpenProfileUserMapping',\
+    OpenSemaphoreA,'OpenSemaphoreA',\
+    OpenSemaphoreW,'OpenSemaphoreW',\
+    OpenThread,'OpenThread',\
+    OpenThreadToken,'OpenThreadToken',\
+    OpenWaitableTimerA,'OpenWaitableTimerA',\
+    OpenWaitableTimerW,'OpenWaitableTimerW',\
+    OutputDebugStringA,'OutputDebugStringA',\
+    OutputDebugStringW,'OutputDebugStringW',\
+    PackageFamilyNameFromFullName,'PackageFamilyNameFromFullName',\
+    PackageFamilyNameFromId,'PackageFamilyNameFromId',\
+    PackageFullNameFromId,'PackageFullNameFromId',\
+    PackageIdFromFullName,'PackageIdFromFullName',\
+    PackageNameAndPublisherIdFromFamilyName,'PackageNameAndPublisherIdFromFamilyName',\
+    ParseApplicationUserModelId,'ParseApplicationUserModelId',\
+    PeekConsoleInputA,'PeekConsoleInputA',\
+    PeekConsoleInputW,'PeekConsoleInputW',\
+    PeekNamedPipe,'PeekNamedPipe',\
+    PostQueuedCompletionStatus,'PostQueuedCompletionStatus',\
+    PowerClearRequest,'PowerClearRequest',\
+    PowerCreateRequest,'PowerCreateRequest',\
+    PowerSetRequest,'PowerSetRequest',\
+    PrefetchVirtualMemory,'PrefetchVirtualMemory',\
+    PrepareTape,'PrepareTape',\
+    PrivCopyFileExW,'PrivCopyFileExW',\
+    Process32First,'Process32First',\
+    Process32FirstW,'Process32FirstW',\
+    Process32Next,'Process32Next',\
+    Process32NextW,'Process32NextW',\
+    ProcessIdToSessionId,'ProcessIdToSessionId',\
+    PssCaptureSnapshot,'PssCaptureSnapshot',\
+    PssDuplicateSnapshot,'PssDuplicateSnapshot',\
+    PssFreeSnapshot,'PssFreeSnapshot',\
+    PssQuerySnapshot,'PssQuerySnapshot',\
+    PssWalkMarkerCreate,'PssWalkMarkerCreate',\
+    PssWalkMarkerFree,'PssWalkMarkerFree',\
+    PssWalkMarkerGetPosition,'PssWalkMarkerGetPosition',\
+    PssWalkMarkerSeekToBeginning,'PssWalkMarkerSeekToBeginning',\
+    PssWalkMarkerSetPosition,'PssWalkMarkerSetPosition',\
+    PssWalkSnapshot,'PssWalkSnapshot',\
+    PulseEvent,'PulseEvent',\
+    PurgeComm,'PurgeComm',\
+    QueryActCtxSettingsW,'QueryActCtxSettingsW',\
+    QueryActCtxW,'QueryActCtxW',\
+    QueryDepthSList,'QueryDepthSList',\
+    QueryDosDeviceA,'QueryDosDeviceA',\
+    QueryDosDeviceW,'QueryDosDeviceW',\
+    QueryFullProcessImageNameA,'QueryFullProcessImageNameA',\
+    QueryFullProcessImageNameW,'QueryFullProcessImageNameW',\
+    QueryIdleProcessorCycleTime,'QueryIdleProcessorCycleTime',\
+    QueryIdleProcessorCycleTimeEx,'QueryIdleProcessorCycleTimeEx',\
+    QueryInformationJobObject,'QueryInformationJobObject',\
+    QueryIoRateControlInformationJobObject,'QueryIoRateControlInformationJobObject',\
+    QueryMemoryResourceNotification,'QueryMemoryResourceNotification',\
+    QueryPerformanceCounter,'QueryPerformanceCounter',\
+    QueryPerformanceFrequency,'QueryPerformanceFrequency',\
+    QueryProcessAffinityUpdateMode,'QueryProcessAffinityUpdateMode',\
+    QueryProcessCycleTime,'QueryProcessCycleTime',\
+    QueryProtectedPolicy,'QueryProtectedPolicy',\
+    QueryThreadCycleTime,'QueryThreadCycleTime',\
+    QueryThreadpoolStackInformation,'QueryThreadpoolStackInformation',\
+    QueryThreadProfiling,'QueryThreadProfiling',\
+    QueryUmsThreadInformation,'QueryUmsThreadInformation',\
+    QueryUnbiasedInterruptTime,'QueryUnbiasedInterruptTime',\
+    QueueUserAPC,'QueueUserAPC',\
+    QueueUserWorkItem,'QueueUserWorkItem',\
+    RaiseException,'RaiseException',\
+    RaiseFailFastException,'RaiseFailFastException',\
+    ReadConsoleA,'ReadConsoleA',\
+    ReadConsoleInputA,'ReadConsoleInputA',\
+    ReadConsoleInputExA,'ReadConsoleInputExA',\
+    ReadConsoleInputExW,'ReadConsoleInputExW',\
+    ReadConsoleInputW,'ReadConsoleInputW',\
+    ReadConsoleOutputA,'ReadConsoleOutputA',\
+    ReadConsoleOutputAttribute,'ReadConsoleOutputAttribute',\
+    ReadConsoleOutputCharacterA,'ReadConsoleOutputCharacterA',\
+    ReadConsoleOutputCharacterW,'ReadConsoleOutputCharacterW',\
+    ReadConsoleOutputW,'ReadConsoleOutputW',\
+    ReadConsoleW,'ReadConsoleW',\
+    ReadDirectoryChangesW,'ReadDirectoryChangesW',\
+    ReadFile,'ReadFile',\
+    ReadFileEx,'ReadFileEx',\
+    ReadFileScatter,'ReadFileScatter',\
+    ReadProcessMemory,'ReadProcessMemory',\
+    ReadThreadProfilingData,'ReadThreadProfilingData',\
+    ReclaimVirtualMemory,'ReclaimVirtualMemory',\
+    RegCloseKey,'RegCloseKey',\
+    RegCopyTreeW,'RegCopyTreeW',\
+    RegCreateKeyExA,'RegCreateKeyExA',\
+    RegCreateKeyExW,'RegCreateKeyExW',\
+    RegDeleteKeyExA,'RegDeleteKeyExA',\
+    RegDeleteKeyExW,'RegDeleteKeyExW',\
+    RegDeleteTreeA,'RegDeleteTreeA',\
+    RegDeleteTreeW,'RegDeleteTreeW',\
+    RegDeleteValueA,'RegDeleteValueA',\
+    RegDeleteValueW,'RegDeleteValueW',\
+    RegDisablePredefinedCacheEx,'RegDisablePredefinedCacheEx',\
+    RegEnumKeyExA,'RegEnumKeyExA',\
+    RegEnumKeyExW,'RegEnumKeyExW',\
+    RegEnumValueA,'RegEnumValueA',\
+    RegEnumValueW,'RegEnumValueW',\
+    RegFlushKey,'RegFlushKey',\
+    RegGetKeySecurity,'RegGetKeySecurity',\
+    RegGetValueA,'RegGetValueA',\
+    RegGetValueW,'RegGetValueW',\
+    RegisterApplicationRecoveryCallback,'RegisterApplicationRecoveryCallback',\
+    RegisterApplicationRestart,'RegisterApplicationRestart',\
+    RegisterBadMemoryNotification,'RegisterBadMemoryNotification',\
+    RegisterWaitForSingleObject,'RegisterWaitForSingleObject',\
+    RegisterWaitUntilOOBECompleted,'RegisterWaitUntilOOBECompleted',\
+    RegLoadKeyA,'RegLoadKeyA',\
+    RegLoadKeyW,'RegLoadKeyW',\
+    RegLoadMUIStringA,'RegLoadMUIStringA',\
+    RegLoadMUIStringW,'RegLoadMUIStringW',\
+    RegNotifyChangeKeyValue,'RegNotifyChangeKeyValue',\
+    RegOpenCurrentUser,'RegOpenCurrentUser',\
+    RegOpenKeyExA,'RegOpenKeyExA',\
+    RegOpenKeyExW,'RegOpenKeyExW',\
+    RegOpenUserClassesRoot,'RegOpenUserClassesRoot',\
+    RegQueryInfoKeyA,'RegQueryInfoKeyA',\
+    RegQueryInfoKeyW,'RegQueryInfoKeyW',\
+    RegQueryValueExA,'RegQueryValueExA',\
+    RegQueryValueExW,'RegQueryValueExW',\
+    RegRestoreKeyA,'RegRestoreKeyA',\
+    RegRestoreKeyW,'RegRestoreKeyW',\
+    RegSaveKeyExA,'RegSaveKeyExA',\
+    RegSaveKeyExW,'RegSaveKeyExW',\
+    RegSetKeySecurity,'RegSetKeySecurity',\
+    RegSetValueExA,'RegSetValueExA',\
+    RegSetValueExW,'RegSetValueExW',\
+    RegUnLoadKeyA,'RegUnLoadKeyA',\
+    RegUnLoadKeyW,'RegUnLoadKeyW',\
+    ReleaseActCtx,'ReleaseActCtx',\
+    ReleaseMutex,'ReleaseMutex',\
+    ReleaseMutexWhenCallbackReturns,'ReleaseMutexWhenCallbackReturns',\
+    ReleaseSemaphore,'ReleaseSemaphore',\
+    ReleaseSemaphoreWhenCallbackReturns,'ReleaseSemaphoreWhenCallbackReturns',\
+    ReleaseSRWLockExclusive,'ReleaseSRWLockExclusive',\
+    ReleaseSRWLockShared,'ReleaseSRWLockShared',\
+    RemoveDirectoryA,'RemoveDirectoryA',\
+    RemoveDirectoryTransactedA,'RemoveDirectoryTransactedA',\
+    RemoveDirectoryTransactedW,'RemoveDirectoryTransactedW',\
+    RemoveDirectoryW,'RemoveDirectoryW',\
+    RemoveDllDirectory,'RemoveDllDirectory',\
+    RemoveSecureMemoryCacheCallback,'RemoveSecureMemoryCacheCallback',\
+    RemoveVectoredContinueHandler,'RemoveVectoredContinueHandler',\
+    RemoveVectoredExceptionHandler,'RemoveVectoredExceptionHandler',\
+    ReOpenFile,'ReOpenFile',\
+    ReplaceFileA,'ReplaceFileA',\
+    ReplaceFileW,'ReplaceFileW',\
+    ReplacePartitionUnit,'ReplacePartitionUnit',\
+    RequestDeviceWakeup,'RequestDeviceWakeup',\
+    RequestWakeupLatency,'RequestWakeupLatency',\
+    ResetEvent,'ResetEvent',\
+    ResetWriteWatch,'ResetWriteWatch',\
+    ResolveDelayLoadedAPI,'ResolveDelayLoadedAPI',\
+    ResolveDelayLoadsFromDll,'ResolveDelayLoadsFromDll',\
+    ResolveLocaleName,'ResolveLocaleName',\
+    RestoreLastError,'RestoreLastError',\
+    ResumeThread,'ResumeThread',\
+    RtlAddFunctionTable,'RtlAddFunctionTable',\
+    RtlCaptureContext,'RtlCaptureContext',\
+    RtlCaptureStackBackTrace,'RtlCaptureStackBackTrace',\
+    RtlCompareMemory,'RtlCompareMemory',\
+    RtlCopyMemory,'RtlCopyMemory',\
+    RtlDeleteFunctionTable,'RtlDeleteFunctionTable',\
+    RtlFillMemory,'RtlFillMemory',\
+    RtlInstallFunctionTableCallback,'RtlInstallFunctionTableCallback',\
+    RtlLookupFunctionEntry,'RtlLookupFunctionEntry',\
+    RtlMoveMemory,'RtlMoveMemory',\
+    RtlPcToFileHeader,'RtlPcToFileHeader',\
+    RtlRaiseException,'RtlRaiseException',\
+    RtlRestoreContext,'RtlRestoreContext',\
+    RtlUnwind,'RtlUnwind',\
+    RtlUnwindEx,'RtlUnwindEx',\
+    RtlVirtualUnwind,'RtlVirtualUnwind',\
+    RtlZeroMemory,'RtlZeroMemory',\
+    ScrollConsoleScreenBufferA,'ScrollConsoleScreenBufferA',\
+    ScrollConsoleScreenBufferW,'ScrollConsoleScreenBufferW',\
+    SearchPathA,'SearchPathA',\
+    SearchPathW,'SearchPathW',\
+    SetCachedSigningLevel,'SetCachedSigningLevel',\
+    SetCalendarInfoA,'SetCalendarInfoA',\
+    SetCalendarInfoW,'SetCalendarInfoW',\
+    SetCommBreak,'SetCommBreak',\
+    SetCommConfig,'SetCommConfig',\
+    SetCommMask,'SetCommMask',\
+    SetCommState,'SetCommState',\
+    SetCommTimeouts,'SetCommTimeouts',\
+    SetComputerNameA,'SetComputerNameA',\
+    SetComputerNameExA,'SetComputerNameExA',\
+    SetComputerNameExW,'SetComputerNameExW',\
+    SetComputerNameW,'SetComputerNameW',\
+    SetConsoleActiveScreenBuffer,'SetConsoleActiveScreenBuffer',\
+    SetConsoleCP,'SetConsoleCP',\
+    SetConsoleCtrlHandler,'SetConsoleCtrlHandler',\
+    SetConsoleCursor,'SetConsoleCursor',\
+    SetConsoleCursorInfo,'SetConsoleCursorInfo',\
+    SetConsoleCursorPosition,'SetConsoleCursorPosition',\
+    SetConsoleDisplayMode,'SetConsoleDisplayMode',\
+    SetConsoleFont,'SetConsoleFont',\
+    SetConsoleHardwareState,'SetConsoleHardwareState',\
+    SetConsoleHistoryInfo,'SetConsoleHistoryInfo',\
+    SetConsoleIcon,'SetConsoleIcon',\
+    SetConsoleMaximumWindowSize,'SetConsoleMaximumWindowSize',\
+    SetConsoleMode,'SetConsoleMode',\
+    SetConsoleNlsMode,'SetConsoleNlsMode',\
+    SetConsoleNumberOfCommandsA,'SetConsoleNumberOfCommandsA',\
+    SetConsoleNumberOfCommandsW,'SetConsoleNumberOfCommandsW',\
+    SetConsoleOS2OemFormat,'SetConsoleOS2OemFormat',\
+    SetConsoleOutputCP,'SetConsoleOutputCP',\
+    SetConsolePalette,'SetConsolePalette',\
+    SetConsoleScreenBufferInfoEx,'SetConsoleScreenBufferInfoEx',\
+    SetConsoleScreenBufferSize,'SetConsoleScreenBufferSize',\
+    SetConsoleTextAttribute,'SetConsoleTextAttribute',\
+    SetConsoleTitleA,'SetConsoleTitleA',\
+    SetConsoleTitleW,'SetConsoleTitleW',\
+    SetConsoleWindowInfo,'SetConsoleWindowInfo',\
+    SetCriticalSectionSpinCount,'SetCriticalSectionSpinCount',\
+    SetCurrentConsoleFontEx,'SetCurrentConsoleFontEx',\
+    SetCurrentDirectoryA,'SetCurrentDirectoryA',\
+    SetCurrentDirectoryW,'SetCurrentDirectoryW',\
+    SetDefaultCommConfigA,'SetDefaultCommConfigA',\
+    SetDefaultCommConfigW,'SetDefaultCommConfigW',\
+    SetDefaultDllDirectories,'SetDefaultDllDirectories',\
+    SetDllDirectoryA,'SetDllDirectoryA',\
+    SetDllDirectoryW,'SetDllDirectoryW',\
+    SetDynamicTimeZoneInformation,'SetDynamicTimeZoneInformation',\
+    SetEndOfFile,'SetEndOfFile',\
+    SetEnvironmentStringsA,'SetEnvironmentStringsA',\
+    SetEnvironmentStringsW,'SetEnvironmentStringsW',\
+    SetEnvironmentVariableA,'SetEnvironmentVariableA',\
+    SetEnvironmentVariableW,'SetEnvironmentVariableW',\
+    SetErrorMode,'SetErrorMode',\
+    SetEvent,'SetEvent',\
+    SetEventWhenCallbackReturns,'SetEventWhenCallbackReturns',\
+    SetFileApisToANSI,'SetFileApisToANSI',\
+    SetFileApisToOEM,'SetFileApisToOEM',\
+    SetFileAttributesA,'SetFileAttributesA',\
+    SetFileAttributesTransactedA,'SetFileAttributesTransactedA',\
+    SetFileAttributesTransactedW,'SetFileAttributesTransactedW',\
+    SetFileAttributesW,'SetFileAttributesW',\
+    SetFileBandwidthReservation,'SetFileBandwidthReservation',\
+    SetFileCompletionNotificationModes,'SetFileCompletionNotificationModes',\
+    SetFileInformationByHandle,'SetFileInformationByHandle',\
+    SetFileIoOverlappedRange,'SetFileIoOverlappedRange',\
+    SetFilePointer,'SetFilePointer',\
+    SetFilePointerEx,'SetFilePointerEx',\
+    SetFileShortNameA,'SetFileShortNameA',\
+    SetFileShortNameW,'SetFileShortNameW',\
+    SetFileTime,'SetFileTime',\
+    SetFileValidData,'SetFileValidData',\
+    SetFirmwareEnvironmentVariableA,'SetFirmwareEnvironmentVariableA',\
+    SetFirmwareEnvironmentVariableExA,'SetFirmwareEnvironmentVariableExA',\
+    SetFirmwareEnvironmentVariableExW,'SetFirmwareEnvironmentVariableExW',\
+    SetFirmwareEnvironmentVariableW,'SetFirmwareEnvironmentVariableW',\
+    SetHandleCount,'SetHandleCount',\
+    SetHandleInformation,'SetHandleInformation',\
+    SetInformationJobObject,'SetInformationJobObject',\
+    SetIoRateControlInformationJobObject,'SetIoRateControlInformationJobObject',\
+    SetLastConsoleEventActive,'SetLastConsoleEventActive',\
+    SetLastError,'SetLastError',\
+    SetLocaleInfoA,'SetLocaleInfoA',\
+    SetLocaleInfoW,'SetLocaleInfoW',\
+    SetLocalPrimaryComputerNameA,'SetLocalPrimaryComputerNameA',\
+    SetLocalPrimaryComputerNameW,'SetLocalPrimaryComputerNameW',\
+    SetLocalTime,'SetLocalTime',\
+    SetMailslotInfo,'SetMailslotInfo',\
+    SetMessageWaitingIndicator,'SetMessageWaitingIndicator',\
+    SetNamedPipeAttribute,'SetNamedPipeAttribute',\
+    SetNamedPipeHandleState,'SetNamedPipeHandleState',\
+    SetPriorityClass,'SetPriorityClass',\
+    SetProcessAffinityMask,'SetProcessAffinityMask',\
+    SetProcessAffinityUpdateMode,'SetProcessAffinityUpdateMode',\
+    SetProcessDefaultCpuSets,'SetProcessDefaultCpuSets',\
+    SetProcessDEPPolicy,'SetProcessDEPPolicy',\
+    SetProcessInformation,'SetProcessInformation',\
+    SetProcessMitigationPolicy,'SetProcessMitigationPolicy',\
+    SetProcessPreferredUILanguages,'SetProcessPreferredUILanguages',\
+    SetProcessPriorityBoost,'SetProcessPriorityBoost',\
+    SetProcessShutdownParameters,'SetProcessShutdownParameters',\
+    SetProcessUserModeExceptionPolicy,'SetProcessUserModeExceptionPolicy',\
+    SetProcessWorkingSetSize,'SetProcessWorkingSetSize',\
+    SetProcessWorkingSetSizeEx,'SetProcessWorkingSetSizeEx',\
+    SetProtectedPolicy,'SetProtectedPolicy',\
+    SetSearchPathMode,'SetSearchPathMode',\
+    SetStdHandle,'SetStdHandle',\
+    SetStdHandleEx,'SetStdHandleEx',\
+    SetSystemFileCacheSize,'SetSystemFileCacheSize',\
+    SetSystemPowerState,'SetSystemPowerState',\
+    SetSystemTime,'SetSystemTime',\
+    SetSystemTimeAdjustment,'SetSystemTimeAdjustment',\
+    SetTapeParameters,'SetTapeParameters',\
+    SetTapePosition,'SetTapePosition',\
+    SetTermsrvAppInstallMode,'SetTermsrvAppInstallMode',\
+    SetThreadAffinityMask,'SetThreadAffinityMask',\
+    SetThreadContext,'SetThreadContext',\
+    SetThreadErrorMode,'SetThreadErrorMode',\
+    SetThreadExecutionState,'SetThreadExecutionState',\
+    SetThreadGroupAffinity,'SetThreadGroupAffinity',\
+    SetThreadIdealProcessor,'SetThreadIdealProcessor',\
+    SetThreadIdealProcessorEx,'SetThreadIdealProcessorEx',\
+    SetThreadInformation,'SetThreadInformation',\
+    SetThreadLocale,'SetThreadLocale',\
+    SetThreadpoolStackInformation,'SetThreadpoolStackInformation',\
+    SetThreadpoolThreadMaximum,'SetThreadpoolThreadMaximum',\
+    SetThreadpoolThreadMinimum,'SetThreadpoolThreadMinimum',\
+    SetThreadpoolTimer,'SetThreadpoolTimer',\
+    SetThreadpoolWait,'SetThreadpoolWait',\
+    SetThreadpoolWaitEx,'SetThreadpoolWaitEx',\
+    SetThreadPreferredUILanguages,'SetThreadPreferredUILanguages',\
+    SetThreadPriority,'SetThreadPriority',\
+    SetThreadPriorityBoost,'SetThreadPriorityBoost',\
+    SetThreadSelectedCpuSets,'SetThreadSelectedCpuSets',\
+    SetThreadStackGuarantee,'SetThreadStackGuarantee',\
+    SetThreadToken,'SetThreadToken',\
+    SetThreadUILanguage,'SetThreadUILanguage',\
+    SetTimerQueueTimer,'SetTimerQueueTimer',\
+    SetTimeZoneInformation,'SetTimeZoneInformation',\
+    SetUmsThreadInformation,'SetUmsThreadInformation',\
+    SetUnhandledExceptionFilter,'SetUnhandledExceptionFilter',\
+    SetupComm,'SetupComm',\
+    SetUserGeoID,'SetUserGeoID',\
+    SetVDMCurrentDirectories,'SetVDMCurrentDirectories',\
+    SetVolumeLabelA,'SetVolumeLabelA',\
+    SetVolumeLabelW,'SetVolumeLabelW',\
+    SetVolumeMountPointA,'SetVolumeMountPointA',\
+    SetVolumeMountPointW,'SetVolumeMountPointW',\
+    SetWaitableTimer,'SetWaitableTimer',\
+    SetXStateFeaturesMask,'SetXStateFeaturesMask',\
+    ShowConsoleCursor,'ShowConsoleCursor',\
+    SignalObjectAndWait,'SignalObjectAndWait',\
+    SizeofResource,'SizeofResource',\
+    Sleep,'Sleep',\
+    SleepConditionVariableCS,'SleepConditionVariableCS',\
+    SleepConditionVariableSRW,'SleepConditionVariableSRW',\
+    SleepEx,'SleepEx',\
+    StartThreadpoolIo,'StartThreadpoolIo',\
+    SubmitThreadpoolWork,'SubmitThreadpoolWork',\
+    SuspendThread,'SuspendThread',\
+    SwitchToFiber,'SwitchToFiber',\
+    SwitchToThread,'SwitchToThread',\
+    SystemTimeToFileTime,'SystemTimeToFileTime',\
+    SystemTimeToTzSpecificLocalTime,'SystemTimeToTzSpecificLocalTime',\
+    SystemTimeToTzSpecificLocalTimeEx,'SystemTimeToTzSpecificLocalTimeEx',\
+    TerminateJobObject,'TerminateJobObject',\
+    TerminateProcess,'TerminateProcess',\
+    TerminateThread,'TerminateThread',\
+    Thread32First,'Thread32First',\
+    Thread32Next,'Thread32Next',\
+    timeBeginPeriod,'timeBeginPeriod',\
+    timeEndPeriod,'timeEndPeriod',\
+    timeGetDevCaps,'timeGetDevCaps',\
+    timeGetSystemTime,'timeGetSystemTime',\
+    timeGetTime,'timeGetTime',\
+    TlsAlloc,'TlsAlloc',\
+    TlsFree,'TlsFree',\
+    TlsGetValue,'TlsGetValue',\
+    TlsSetValue,'TlsSetValue',\
+    Toolhelp32ReadProcessMemory,'Toolhelp32ReadProcessMemory',\
+    TransactNamedPipe,'TransactNamedPipe',\
+    TransmitCommChar,'TransmitCommChar',\
+    TryAcquireSRWLockExclusive,'TryAcquireSRWLockExclusive',\
+    TryAcquireSRWLockShared,'TryAcquireSRWLockShared',\
+    TryEnterCriticalSection,'TryEnterCriticalSection',\
+    TrySubmitThreadpoolCallback,'TrySubmitThreadpoolCallback',\
+    TzSpecificLocalTimeToSystemTime,'TzSpecificLocalTimeToSystemTime',\
+    TzSpecificLocalTimeToSystemTimeEx,'TzSpecificLocalTimeToSystemTimeEx',\
+    uaw_lstrcmpiW,'uaw_lstrcmpiW',\
+    uaw_lstrcmpW,'uaw_lstrcmpW',\
+    uaw_lstrlenW,'uaw_lstrlenW',\
+    uaw_wcschr,'uaw_wcschr',\
+    uaw_wcscpy,'uaw_wcscpy',\
+    uaw_wcsicmp,'uaw_wcsicmp',\
+    uaw_wcslen,'uaw_wcslen',\
+    uaw_wcsrchr,'uaw_wcsrchr',\
+    UmsThreadYield,'UmsThreadYield',\
+    UnhandledExceptionFilter,'UnhandledExceptionFilter',\
+    UnlockFile,'UnlockFile',\
+    UnlockFileEx,'UnlockFileEx',\
+    UnmapViewOfFile,'UnmapViewOfFile',\
+    UnregisterApplicationRecoveryCallback,'UnregisterApplicationRecoveryCallback',\
+    UnregisterApplicationRestart,'UnregisterApplicationRestart',\
+    UnregisterBadMemoryNotification,'UnregisterBadMemoryNotification',\
+    UnregisterWait,'UnregisterWait',\
+    UnregisterWaitEx,'UnregisterWaitEx',\
+    UnregisterWaitUntilOOBECompleted,'UnregisterWaitUntilOOBECompleted',\
+    UpdateCalendarDayOfWeek,'UpdateCalendarDayOfWeek',\
+    UpdateProcThreadAttribute,'UpdateProcThreadAttribute',\
+    UpdateResourceA,'UpdateResourceA',\
+    UpdateResourceW,'UpdateResourceW',\
+    VerifyScripts,'VerifyScripts',\
+    VerifyVersionInfoA,'VerifyVersionInfoA',\
+    VerifyVersionInfoW,'VerifyVersionInfoW',\
+    VerSetConditionMask,'VerSetConditionMask',\
+    VirtualAlloc,'VirtualAlloc',\
+    VirtualAllocEx,'VirtualAllocEx',\
+    VirtualAllocExNuma,'VirtualAllocExNuma',\
+    VirtualFree,'VirtualFree',\
+    VirtualFreeEx,'VirtualFreeEx',\
+    VirtualLock,'VirtualLock',\
+    VirtualProtect,'VirtualProtect',\
+    VirtualProtectEx,'VirtualProtectEx',\
+    VirtualQuery,'VirtualQuery',\
+    VirtualQueryEx,'VirtualQueryEx',\
+    VirtualUnlock,'VirtualUnlock',\
+    WaitCommEvent,'WaitCommEvent',\
+    WaitForDebugEvent,'WaitForDebugEvent',\
+    WaitForDebugEventEx,'WaitForDebugEventEx',\
+    WaitForMultipleObjects,'WaitForMultipleObjects',\
+    WaitForMultipleObjectsEx,'WaitForMultipleObjectsEx',\
+    WaitForSingleObject,'WaitForSingleObject',\
+    WaitForSingleObjectEx,'WaitForSingleObjectEx',\
+    WaitForThreadpoolIoCallbacks,'WaitForThreadpoolIoCallbacks',\
+    WaitForThreadpoolTimerCallbacks,'WaitForThreadpoolTimerCallbacks',\
+    WaitForThreadpoolWaitCallbacks,'WaitForThreadpoolWaitCallbacks',\
+    WaitForThreadpoolWorkCallbacks,'WaitForThreadpoolWorkCallbacks',\
+    WaitNamedPipeA,'WaitNamedPipeA',\
+    WaitNamedPipeW,'WaitNamedPipeW',\
+    WakeAllConditionVariable,'WakeAllConditionVariable',\
+    WakeConditionVariable,'WakeConditionVariable',\
+    WerGetFlags,'WerGetFlags',\
+    WerRegisterFile,'WerRegisterFile',\
+    WerRegisterMemoryBlock,'WerRegisterMemoryBlock',\
+    WerRegisterRuntimeExceptionModule,'WerRegisterRuntimeExceptionModule',\
+    WerSetFlags,'WerSetFlags',\
+    WerUnregisterFile,'WerUnregisterFile',\
+    WerUnregisterMemoryBlock,'WerUnregisterMemoryBlock',\
+    WerUnregisterRuntimeExceptionModule,'WerUnregisterRuntimeExceptionModule',\
+    WideCharToMultiByte,'WideCharToMultiByte',\
+    WinExec,'WinExec',\
+    Wow64DisableWow64FsRedirection,'Wow64DisableWow64FsRedirection',\
+    Wow64EnableWow64FsRedirection,'Wow64EnableWow64FsRedirection',\
+    Wow64GetThreadContext,'Wow64GetThreadContext',\
+    Wow64GetThreadSelectorEntry,'Wow64GetThreadSelectorEntry',\
+    Wow64RevertWow64FsRedirection,'Wow64RevertWow64FsRedirection',\
+    Wow64SetThreadContext,'Wow64SetThreadContext',\
+    Wow64SuspendThread,'Wow64SuspendThread',\
+    WriteConsoleA,'WriteConsoleA',\
+    WriteConsoleInputA,'WriteConsoleInputA',\
+    WriteConsoleInputW,'WriteConsoleInputW',\
+    WriteConsoleOutputA,'WriteConsoleOutputA',\
+    WriteConsoleOutputAttribute,'WriteConsoleOutputAttribute',\
+    WriteConsoleOutputCharacterA,'WriteConsoleOutputCharacterA',\
+    WriteConsoleOutputCharacterW,'WriteConsoleOutputCharacterW',\
+    WriteConsoleOutputW,'WriteConsoleOutputW',\
+    WriteConsoleW,'WriteConsoleW',\
+    WriteFile,'WriteFile',\
+    WriteFileEx,'WriteFileEx',\
+    WriteFileGather,'WriteFileGather',\
+    WritePrivateProfileSectionA,'WritePrivateProfileSectionA',\
+    WritePrivateProfileSectionW,'WritePrivateProfileSectionW',\
+    WritePrivateProfileStringA,'WritePrivateProfileStringA',\
+    WritePrivateProfileStringW,'WritePrivateProfileStringW',\
+    WritePrivateProfileStructA,'WritePrivateProfileStructA',\
+    WritePrivateProfileStructW,'WritePrivateProfileStructW',\
+    WriteProcessMemory,'WriteProcessMemory',\
+    WriteProfileSectionA,'WriteProfileSectionA',\
+    WriteProfileSectionW,'WriteProfileSectionW',\
+    WriteProfileStringA,'WriteProfileStringA',\
+    WriteProfileStringW,'WriteProfileStringW',\
+    WriteTapemark,'WriteTapemark',\
+    WTSGetActiveConsoleSessionId,'WTSGetActiveConsoleSessionId',\
+    ZombifyActCtx,'ZombifyActCtx'
+else
+    import kernel32,\
+    _hread,'_hread',\
+    _hwrite,'_hwrite',\
+    _lclose,'_lclose',\
+    _lcreat,'_lcreat',\
+    _llseek,'_llseek',\
+    _lopen,'_lopen',\
+    _lread,'_lread',\
+    _lwrite,'_lwrite',\
+    AcquireSRWLockExclusive,'AcquireSRWLockExclusive',\
+    AcquireSRWLockShared,'AcquireSRWLockShared',\
+    AcquireStateLock,'AcquireStateLock',\
+    ActivateActCtx,'ActivateActCtx',\
+    AddAtomA,'AddAtomA',\
+    AddAtomW,'AddAtomW',\
+    AddConsoleAliasA,'AddConsoleAliasA',\
+    AddConsoleAliasW,'AddConsoleAliasW',\
+    AddDllDirectory,'AddDllDirectory',\
+    AddIntegrityLabelToBoundaryDescriptor,'AddIntegrityLabelToBoundaryDescriptor',\
+    AddLocalAlternateComputerNameA,'AddLocalAlternateComputerNameA',\
+    AddLocalAlternateComputerNameW,'AddLocalAlternateComputerNameW',\
+    AddRefActCtx,'AddRefActCtx',\
+    AddResourceAttributeAce,'AddResourceAttributeAce',\
+    AddScopedPolicyIDAce,'AddScopedPolicyIDAce',\
+    AddSecureMemoryCacheCallback,'AddSecureMemoryCacheCallback',\
+    AddSIDToBoundaryDescriptor,'AddSIDToBoundaryDescriptor',\
+    AddVectoredContinueHandler,'AddVectoredContinueHandler',\
+    AddVectoredExceptionHandler,'AddVectoredExceptionHandler',\
+    AdjustCalendarDate,'AdjustCalendarDate',\
+    AllocateUserPhysicalPages,'AllocateUserPhysicalPages',\
+    AllocateUserPhysicalPagesNuma,'AllocateUserPhysicalPagesNuma',\
+    AllocConsole,'AllocConsole',\
+    ApplicationRecoveryFinished,'ApplicationRecoveryFinished',\
+    ApplicationRecoveryInProgress,'ApplicationRecoveryInProgress',\
+    AreFileApisANSI,'AreFileApisANSI',\
+    AssignProcessToJobObject,'AssignProcessToJobObject',\
+    AttachConsole,'AttachConsole',\
+    BackupRead,'BackupRead',\
+    BackupSeek,'BackupSeek',\
+    BackupWrite,'BackupWrite',\
+    BaseFormatTimeOut,'BaseFormatTimeOut',\
+    BaseGetNamedObjectDirectory,'BaseGetNamedObjectDirectory',\
+    Basep8BitStringToDynamicUnicodeString,'Basep8BitStringToDynamicUnicodeString',\
+    Beep,'Beep',\
+    BeginUpdateResourceA,'BeginUpdateResourceA',\
+    BeginUpdateResourceW,'BeginUpdateResourceW',\
+    BindIoCompletionCallback,'BindIoCompletionCallback',\
+    BuildCommDCBA,'BuildCommDCBA',\
+    BuildCommDCBAndTimeoutsA,'BuildCommDCBAndTimeoutsA',\
+    BuildCommDCBAndTimeoutsW,'BuildCommDCBAndTimeoutsW',\
+    BuildCommDCBW,'BuildCommDCBW',\
+    CallbackMayRunLong,'CallbackMayRunLong',\
+    CallNamedPipeA,'CallNamedPipeA',\
+    CallNamedPipeW,'CallNamedPipeW',\
+    CalloutOnFiberStack,'CalloutOnFiberStack',\
+    CancelDeviceWakeupRequest,'CancelDeviceWakeupRequest',\
+    CancelIo,'CancelIo',\
+    CancelIoEx,'CancelIoEx',\
+    CancelSynchronousIo,'CancelSynchronousIo',\
+    CancelThreadpoolIo,'CancelThreadpoolIo',\
+    CancelWaitableTimer,'CancelWaitableTimer',\
+    CeipIsOptedIn,'CeipIsOptedIn',\
+    ChangeTimerQueueTimer,'ChangeTimerQueueTimer',\
+    CheckElevationEnabled,'CheckElevationEnabled',\
+    CheckNameLegalDOS8Dot3A,'CheckNameLegalDOS8Dot3A',\
+    CheckNameLegalDOS8Dot3W,'CheckNameLegalDOS8Dot3W',\
+    CheckRemoteDebuggerPresent,'CheckRemoteDebuggerPresent',\
+    CheckTokenCapability,'CheckTokenCapability',\
+    CheckTokenMembershipEx,'CheckTokenMembershipEx',\
+    ClearCommBreak,'ClearCommBreak',\
+    ClearCommError,'ClearCommError',\
+    CloseHandle,'CloseHandle',\
+    ClosePackageInfo,'ClosePackageInfo',\
+    ClosePrivateNamespace,'ClosePrivateNamespace',\
+    CloseThreadpool,'CloseThreadpool',\
+    CloseThreadpoolCleanupGroup,'CloseThreadpoolCleanupGroup',\
+    CloseThreadpoolCleanupGroupMembers,'CloseThreadpoolCleanupGroupMembers',\
+    CloseThreadpoolIo,'CloseThreadpoolIo',\
+    CloseThreadpoolTimer,'CloseThreadpoolTimer',\
+    CloseThreadpoolWait,'CloseThreadpoolWait',\
+    CloseThreadpoolWork,'CloseThreadpoolWork',\
+    CommConfigDialogA,'CommConfigDialogA',\
+    CommConfigDialogW,'CommConfigDialogW',\
+    CompareFileTime,'CompareFileTime',\
+    CompareStringA,'CompareStringA',\
+    CompareStringEx,'CompareStringEx',\
+    CompareStringOrdinal,'CompareStringOrdinal',\
+    CompareStringW,'CompareStringW',\
+    ConnectNamedPipe,'ConnectNamedPipe',\
+    ConsoleMenuControl,'ConsoleMenuControl',\
+    ContinueDebugEvent,'ContinueDebugEvent',\
+    ConvertCalDateTimeToSystemTime,'ConvertCalDateTimeToSystemTime',\
+    ConvertDefaultLocale,'ConvertDefaultLocale',\
+    ConvertFiberToThread,'ConvertFiberToThread',\
+    ConvertSystemTimeToCalDateTime,'ConvertSystemTimeToCalDateTime',\
+    ConvertThreadToFiber,'ConvertThreadToFiber',\
+    ConvertThreadToFiberEx,'ConvertThreadToFiberEx',\
+    CopyContext,'CopyContext',\
+    CopyExtendedContext,'CopyExtendedContext',\
+    CopyFile2,'CopyFile2',\
+    CopyFileA,'CopyFileA',\
+    CopyFileExA,'CopyFileExA',\
+    CopyFileExW,'CopyFileExW',\
+    CopyFileTransactedA,'CopyFileTransactedA',\
+    CopyFileTransactedW,'CopyFileTransactedW',\
+    CopyFileW,'CopyFileW',\
+    CreateActCtxA,'CreateActCtxA',\
+    CreateActCtxW,'CreateActCtxW',\
+    CreateBoundaryDescriptorA,'CreateBoundaryDescriptorA',\
+    CreateBoundaryDescriptorW,'CreateBoundaryDescriptorW',\
+    CreateConsoleScreenBuffer,'CreateConsoleScreenBuffer',\
+    CreateDirectoryA,'CreateDirectoryA',\
+    CreateDirectoryExA,'CreateDirectoryExA',\
+    CreateDirectoryExW,'CreateDirectoryExW',\
+    CreateDirectoryTransactedA,'CreateDirectoryTransactedA',\
+    CreateDirectoryTransactedW,'CreateDirectoryTransactedW',\
+    CreateDirectoryW,'CreateDirectoryW',\
+    CreateEnclave,'CreateEnclave',\
+    CreateEventA,'CreateEventA',\
+    CreateEventExA,'CreateEventExA',\
+    CreateEventExW,'CreateEventExW',\
+    CreateEventW,'CreateEventW',\
+    CreateFiber,'CreateFiber',\
+    CreateFiberEx,'CreateFiberEx',\
+    CreateFile2,'CreateFile2',\
+    CreateFileA,'CreateFileA',\
+    CreateFileMappingA,'CreateFileMappingA',\
+    CreateFileMappingFromApp,'CreateFileMappingFromApp',\
+    CreateFileMappingNumaA,'CreateFileMappingNumaA',\
+    CreateFileMappingNumaW,'CreateFileMappingNumaW',\
+    CreateFileMappingW,'CreateFileMappingW',\
+    CreateFileTransactedA0,'CreateFileTransactedA',\
+    CreateFileTransactedW0,'CreateFileTransactedW',\
+    CreateFileW,'CreateFileW',\
+    CreateHardLinkA,'CreateHardLinkA',\
+    CreateHardLinkTransactedA,'CreateHardLinkTransactedA',\
+    CreateHardLinkTransactedW,'CreateHardLinkTransactedW',\
+    CreateHardLinkW,'CreateHardLinkW',\
+    CreateIoCompletionPort,'CreateIoCompletionPort',\
+    CreateJobObjectA,'CreateJobObjectA',\
+    CreateJobObjectW,'CreateJobObjectW',\
+    CreateJobSet,'CreateJobSet',\
+    CreateMailslotA,'CreateMailslotA',\
+    CreateMailslotW,'CreateMailslotW',\
+    CreateMemoryResourceNotification,'CreateMemoryResourceNotification',\
+    CreateMutexA,'CreateMutexA',\
+    CreateMutexExA,'CreateMutexExA',\
+    CreateMutexExW,'CreateMutexExW',\
+    CreateMutexW,'CreateMutexW',\
+    CreateNamedPipeA,'CreateNamedPipeA',\
+    CreateNamedPipeW,'CreateNamedPipeW',\
+    CreatePipe,'CreatePipe',\
+    CreatePrivateNamespaceA,'CreatePrivateNamespaceA',\
+    CreatePrivateNamespaceW,'CreatePrivateNamespaceW',\
+    CreateProcessA0,'CreateProcessA',\
+    CreateProcessInternalA0,'CreateProcessInternalA',\
+    CreateProcessInternalW0,'CreateProcessInternalW',\
+    CreateProcessW0,'CreateProcessW',\
+    CreateRemoteThread,'CreateRemoteThread',\
+    CreateRemoteThreadEx,'CreateRemoteThreadEx',\
+    CreateSemaphoreA,'CreateSemaphoreA',\
+    CreateSemaphoreExA,'CreateSemaphoreExA',\
+    CreateSemaphoreExW,'CreateSemaphoreExW',\
+    CreateSemaphoreW,'CreateSemaphoreW',\
+    CreateSymbolicLinkA,'CreateSymbolicLinkA',\
+    CreateSymbolicLinkTransactedA,'CreateSymbolicLinkTransactedA',\
+    CreateSymbolicLinkTransactedW,'CreateSymbolicLinkTransactedW',\
+    CreateSymbolicLinkW,'CreateSymbolicLinkW',\
+    CreateTapePartition,'CreateTapePartition',\
+    CreateThread,'CreateThread',\
+    CreateThreadpool,'CreateThreadpool',\
+    CreateThreadpoolCleanupGroup,'CreateThreadpoolCleanupGroup',\
+    CreateThreadpoolIo,'CreateThreadpoolIo',\
+    CreateThreadpoolTimer,'CreateThreadpoolTimer',\
+    CreateThreadpoolWait,'CreateThreadpoolWait',\
+    CreateThreadpoolWork,'CreateThreadpoolWork',\
+    CreateTimerQueue,'CreateTimerQueue',\
+    CreateTimerQueueTimer,'CreateTimerQueueTimer',\
+    CreateToolhelp32Snapshot,'CreateToolhelp32Snapshot',\
+    CreateWaitableTimerA,'CreateWaitableTimerA',\
+    CreateWaitableTimerExA,'CreateWaitableTimerExA',\
+    CreateWaitableTimerExW,'CreateWaitableTimerExW',\
+    CreateWaitableTimerW,'CreateWaitableTimerW',\
+    DeactivateActCtx,'DeactivateActCtx',\
+    DebugActiveProcess,'DebugActiveProcess',\
+    DebugActiveProcessStop,'DebugActiveProcessStop',\
+    DebugBreak,'DebugBreak',\
+    DebugBreakProcess,'DebugBreakProcess',\
+    DebugSetProcessKillOnExit,'DebugSetProcessKillOnExit',\
+    DecodePointer,'DecodePointer',\
+    DecodeSystemPointer,'DecodeSystemPointer',\
+    DefineDosDeviceA,'DefineDosDeviceA',\
+    DefineDosDeviceW,'DefineDosDeviceW',\
+    DelayLoadFailureHook,'DelayLoadFailureHook',\
+    DeleteAtom,'DeleteAtom',\
+    DeleteBoundaryDescriptor,'DeleteBoundaryDescriptor',\
+    DeleteCriticalSection,'DeleteCriticalSection',\
+    DeleteFiber,'DeleteFiber',\
+    DeleteFileA,'DeleteFileA',\
+    DeleteFileTransactedA,'DeleteFileTransactedA',\
+    DeleteFileTransactedW,'DeleteFileTransactedW',\
+    DeleteFileW,'DeleteFileW',\
+    DeleteProcThreadAttributeList,'DeleteProcThreadAttributeList',\
+    DeleteSynchronizationBarrier,'DeleteSynchronizationBarrier',\
+    DeleteTimerQueue,'DeleteTimerQueue',\
+    DeleteTimerQueueEx,'DeleteTimerQueueEx',\
+    DeleteTimerQueueTimer,'DeleteTimerQueueTimer',\
+    DeleteVolumeMountPointA,'DeleteVolumeMountPointA',\
+    DeleteVolumeMountPointW,'DeleteVolumeMountPointW',\
+    DeviceIoControl,'DeviceIoControl',\
+    DisableThreadLibraryCalls,'DisableThreadLibraryCalls',\
+    DisableThreadProfiling,'DisableThreadProfiling',\
+    DisassociateCurrentThreadFromCallback,'DisassociateCurrentThreadFromCallback',\
+    DiscardVirtualMemory,'DiscardVirtualMemory',\
+    DisconnectNamedPipe,'DisconnectNamedPipe',\
+    DnsHostnameToComputerNameA,'DnsHostnameToComputerNameA',\
+    DnsHostnameToComputerNameW,'DnsHostnameToComputerNameW',\
+    DosDateTimeToFileTime,'DosDateTimeToFileTime',\
+    DosPathToSessionPathA,'DosPathToSessionPathA',\
+    DosPathToSessionPathW,'DosPathToSessionPathW',\
+    DuplicateConsoleHandle,'DuplicateConsoleHandle',\
+    DuplicateHandle,'DuplicateHandle',\
+    EnableThreadProfiling,'EnableThreadProfiling',\
+    EncodePointer,'EncodePointer',\
+    EncodeSystemPointer,'EncodeSystemPointer',\
+    EndUpdateResourceA,'EndUpdateResourceA',\
+    EndUpdateResourceW,'EndUpdateResourceW',\
+    EnterCriticalSection,'EnterCriticalSection',\
+    EnterSynchronizationBarrier,'EnterSynchronizationBarrier',\
+    EnumCalendarInfoA,'EnumCalendarInfoA',\
+    EnumCalendarInfoExA,'EnumCalendarInfoExA',\
+    EnumCalendarInfoExEx,'EnumCalendarInfoExEx',\
+    EnumCalendarInfoExW,'EnumCalendarInfoExW',\
+    EnumCalendarInfoW,'EnumCalendarInfoW',\
+    EnumDateFormatsA,'EnumDateFormatsA',\
+    EnumDateFormatsExA,'EnumDateFormatsExA',\
+    EnumDateFormatsExEx,'EnumDateFormatsExEx',\
+    EnumDateFormatsExW,'EnumDateFormatsExW',\
+    EnumDateFormatsW,'EnumDateFormatsW',\
+    EnumerateLocalComputerNamesA,'EnumerateLocalComputerNamesA',\
+    EnumerateLocalComputerNamesW,'EnumerateLocalComputerNamesW',\
+    EnumLanguageGroupLocalesA,'EnumLanguageGroupLocalesA',\
+    EnumLanguageGroupLocalesW,'EnumLanguageGroupLocalesW',\
+    EnumResourceLanguagesA,'EnumResourceLanguagesA',\
+    EnumResourceLanguagesExA,'EnumResourceLanguagesExA',\
+    EnumResourceLanguagesExW,'EnumResourceLanguagesExW',\
+    EnumResourceLanguagesW,'EnumResourceLanguagesW',\
+    EnumResourceNamesA,'EnumResourceNamesA',\
+    EnumResourceNamesExA,'EnumResourceNamesExA',\
+    EnumResourceNamesExW,'EnumResourceNamesExW',\
+    EnumResourceNamesW,'EnumResourceNamesW',\
+    EnumResourceTypesA,'EnumResourceTypesA',\
+    EnumResourceTypesExA,'EnumResourceTypesExA',\
+    EnumResourceTypesExW,'EnumResourceTypesExW',\
+    EnumResourceTypesW,'EnumResourceTypesW',\
+    EnumSystemCodePagesA,'EnumSystemCodePagesA',\
+    EnumSystemCodePagesW,'EnumSystemCodePagesW',\
+    EnumSystemFirmwareTables,'EnumSystemFirmwareTables',\
+    EnumSystemGeoID,'EnumSystemGeoID',\
+    EnumSystemLanguageGroupsA,'EnumSystemLanguageGroupsA',\
+    EnumSystemLanguageGroupsW,'EnumSystemLanguageGroupsW',\
+    EnumSystemLocalesA,'EnumSystemLocalesA',\
+    EnumSystemLocalesEx,'EnumSystemLocalesEx',\
+    EnumSystemLocalesW,'EnumSystemLocalesW',\
+    EnumTimeFormatsA,'EnumTimeFormatsA',\
+    EnumTimeFormatsEx,'EnumTimeFormatsEx',\
+    EnumTimeFormatsW,'EnumTimeFormatsW',\
+    EnumUILanguagesA,'EnumUILanguagesA',\
+    EnumUILanguagesW,'EnumUILanguagesW',\
+    EraseTape,'EraseTape',\
+    EscapeCommFunction,'EscapeCommFunction',\
+    ExitProcess,'ExitProcess',\
+    ExitThread,'ExitThread',\
+    ExitVDM,'ExitVDM',\
+    ExpandEnvironmentStringsA,'ExpandEnvironmentStringsA',\
+    ExpandEnvironmentStringsW,'ExpandEnvironmentStringsW',\
+    ExpungeConsoleCommandHistoryA,'ExpungeConsoleCommandHistoryA',\
+    ExpungeConsoleCommandHistoryW,'ExpungeConsoleCommandHistoryW',\
+    FatalAppExitA,'FatalAppExitA',\
+    FatalAppExitW,'FatalAppExitW',\
+    FatalExit,'FatalExit',\
+    FileTimeToDosDateTime,'FileTimeToDosDateTime',\
+    FileTimeToLocalFileTime,'FileTimeToLocalFileTime',\
+    FileTimeToSystemTime,'FileTimeToSystemTime',\
+    FillConsoleOutputAttribute,'FillConsoleOutputAttribute',\
+    FillConsoleOutputCharacterA,'FillConsoleOutputCharacterA',\
+    FillConsoleOutputCharacterW,'FillConsoleOutputCharacterW',\
+    FindActCtxSectionGuid,'FindActCtxSectionGuid',\
+    FindActCtxSectionStringA,'FindActCtxSectionStringA',\
+    FindActCtxSectionStringW,'FindActCtxSectionStringW',\
+    FindAtomA,'FindAtomA',\
+    FindAtomW,'FindAtomW',\
+    FindClose,'FindClose',\
+    FindCloseChangeNotification,'FindCloseChangeNotification',\
+    FindFirstChangeNotificationA,'FindFirstChangeNotificationA',\
+    FindFirstChangeNotificationW,'FindFirstChangeNotificationW',\
+    FindFirstFileA,'FindFirstFileA',\
+    FindFirstFileExA,'FindFirstFileExA',\
+    FindFirstFileExW,'FindFirstFileExW',\
+    FindFirstFileNameTransactedW,'FindFirstFileNameTransactedW',\
+    FindFirstFileNameW,'FindFirstFileNameW',\
+    FindFirstFileTransactedA,'FindFirstFileTransactedA',\
+    FindFirstFileTransactedW,'FindFirstFileTransactedW',\
+    FindFirstFileW,'FindFirstFileW',\
+    FindFirstStreamTransactedW,'FindFirstStreamTransactedW',\
+    FindFirstStreamW,'FindFirstStreamW',\
+    FindFirstVolumeA,'FindFirstVolumeA',\
+    FindFirstVolumeMountPointA,'FindFirstVolumeMountPointA',\
+    FindFirstVolumeMountPointW,'FindFirstVolumeMountPointW',\
+    FindFirstVolumeW,'FindFirstVolumeW',\
+    FindNextChangeNotification,'FindNextChangeNotification',\
+    FindNextFileA,'FindNextFileA',\
+    FindNextFileNameW,'FindNextFileNameW',\
+    FindNextFileW,'FindNextFileW',\
+    FindNextStreamW,'FindNextStreamW',\
+    FindNextVolumeA,'FindNextVolumeA',\
+    FindNextVolumeMountPointA,'FindNextVolumeMountPointA',\
+    FindNextVolumeMountPointW,'FindNextVolumeMountPointW',\
+    FindNextVolumeW,'FindNextVolumeW',\
+    FindNLSString,'FindNLSString',\
+    FindNLSStringEx0,'FindNLSStringEx',\
+    FindPackagesByPackageFamily,'FindPackagesByPackageFamily',\
+    FindResourceA,'FindResourceA',\
+    FindResourceExA,'FindResourceExA',\
+    FindResourceExW,'FindResourceExW',\
+    FindResourceW,'FindResourceW',\
+    FindStringOrdinal,'FindStringOrdinal',\
+    FindVolumeClose,'FindVolumeClose',\
+    FindVolumeMountPointClose,'FindVolumeMountPointClose',\
+    FlsAlloc,'FlsAlloc',\
+    FlsFree,'FlsFree',\
+    FlsGetValue,'FlsGetValue',\
+    FlsSetValue,'FlsSetValue',\
+    FlushConsoleInputBuffer,'FlushConsoleInputBuffer',\
+    FlushFileBuffers,'FlushFileBuffers',\
+    FlushInstructionCache,'FlushInstructionCache',\
+    FlushProcessWriteBuffers,'FlushProcessWriteBuffers',\
+    FlushViewOfFile,'FlushViewOfFile',\
+    FoldStringA,'FoldStringA',\
+    FoldStringW,'FoldStringW',\
+    FormatApplicationUserModelId,'FormatApplicationUserModelId',\
+    FormatMessageA,'FormatMessageA',\
+    FormatMessageW,'FormatMessageW',\
+    FreeConsole,'FreeConsole',\
+    FreeEnvironmentStringsA,'FreeEnvironmentStringsA',\
+    FreeEnvironmentStringsW,'FreeEnvironmentStringsW',\
+    FreeLibrary,'FreeLibrary',\
+    FreeLibraryAndExitThread,'FreeLibraryAndExitThread',\
+    FreeLibraryWhenCallbackReturns,'FreeLibraryWhenCallbackReturns',\
+    FreeMemoryJobObject,'FreeMemoryJobObject',\
+    FreeResource,'FreeResource',\
+    FreeUserPhysicalPages,'FreeUserPhysicalPages',\
+    GenerateConsoleCtrlEvent,'GenerateConsoleCtrlEvent',\
+    GetACP,'GetACP',\
+    GetActiveProcessorCount,'GetActiveProcessorCount',\
+    GetActiveProcessorGroupCount,'GetActiveProcessorGroupCount',\
+    GetAppContainerNamedObjectPath,'GetAppContainerNamedObjectPath',\
+    GetApplicationRecoveryCallback,'GetApplicationRecoveryCallback',\
+    GetApplicationRestartSettings,'GetApplicationRestartSettings',\
+    GetApplicationUserModelId,'GetApplicationUserModelId',\
+    GetAtomNameA,'GetAtomNameA',\
+    GetAtomNameW,'GetAtomNameW',\
+    GetBinaryTypeA,'GetBinaryTypeA',\
+    GetBinaryTypeW,'GetBinaryTypeW',\
+    GetCachedSigningLevel,'GetCachedSigningLevel',\
+    GetCalendarDateFormatEx,'GetCalendarDateFormatEx',\
+    GetCalendarInfoA,'GetCalendarInfoA',\
+    GetCalendarInfoEx,'GetCalendarInfoEx',\
+    GetCalendarInfoW,'GetCalendarInfoW',\
+    GetCalendarSupportedDateRange,'GetCalendarSupportedDateRange',\
+    GetCommandLineA,'GetCommandLineA',\
+    GetCommandLineW,'GetCommandLineW',\
+    GetCommConfig,'GetCommConfig',\
+    GetCommMask,'GetCommMask',\
+    GetCommModemStatus,'GetCommModemStatus',\
+    GetCommProperties,'GetCommProperties',\
+    GetCommState,'GetCommState',\
+    GetCommTimeouts,'GetCommTimeouts',\
+    GetComPlusPackageInstallStatus,'GetComPlusPackageInstallStatus',\
+    GetCompressedFileSizeA,'GetCompressedFileSizeA',\
+    GetCompressedFileSizeTransactedA,'GetCompressedFileSizeTransactedA',\
+    GetCompressedFileSizeTransactedW,'GetCompressedFileSizeTransactedW',\
+    GetCompressedFileSizeW,'GetCompressedFileSizeW',\
+    GetComputerNameA,'GetComputerNameA',\
+    GetComputerNameExA,'GetComputerNameExA',\
+    GetComputerNameExW,'GetComputerNameExW',\
+    GetComputerNameW,'GetComputerNameW',\
+    GetConsoleAliasA,'GetConsoleAliasA',\
+    GetConsoleAliasesA,'GetConsoleAliasesA',\
+    GetConsoleAliasesLengthA,'GetConsoleAliasesLengthA',\
+    GetConsoleAliasesLengthW,'GetConsoleAliasesLengthW',\
+    GetConsoleAliasesW,'GetConsoleAliasesW',\
+    GetConsoleAliasExesA,'GetConsoleAliasExesA',\
+    GetConsoleAliasExesLengthA,'GetConsoleAliasExesLengthA',\
+    GetConsoleAliasExesLengthW,'GetConsoleAliasExesLengthW',\
+    GetConsoleAliasExesW,'GetConsoleAliasExesW',\
+    GetConsoleAliasW,'GetConsoleAliasW',\
+    GetConsoleCP,'GetConsoleCP',\
+    GetConsoleCursorInfo,'GetConsoleCursorInfo',\
+    GetConsoleDisplayMode,'GetConsoleDisplayMode',\
+    GetConsoleFontInfo,'GetConsoleFontInfo',\
+    GetConsoleFontSize,'GetConsoleFontSize',\
+    GetConsoleHistoryInfo,'GetConsoleHistoryInfo',\
+    GetConsoleMode,'GetConsoleMode',\
+    GetConsoleNlsMode,'GetConsoleNlsMode',\
+    GetConsoleOriginalTitleA,'GetConsoleOriginalTitleA',\
+    GetConsoleOriginalTitleW,'GetConsoleOriginalTitleW',\
+    GetConsoleOutputCP,'GetConsoleOutputCP',\
+    GetConsoleProcessList,'GetConsoleProcessList',\
+    GetConsoleScreenBufferInfo,'GetConsoleScreenBufferInfo',\
+    GetConsoleScreenBufferInfoEx,'GetConsoleScreenBufferInfoEx',\
+    GetConsoleSelectionInfo,'GetConsoleSelectionInfo',\
+    GetConsoleTitleA,'GetConsoleTitleA',\
+    GetConsoleTitleW,'GetConsoleTitleW',\
+    GetConsoleWindow,'GetConsoleWindow',\
+    GetCPInfo,'GetCPInfo',\
+    GetCPInfoExA,'GetCPInfoExA',\
+    GetCPInfoExW,'GetCPInfoExW',\
+    GetCurrencyFormatA,'GetCurrencyFormatA',\
+    GetCurrencyFormatEx,'GetCurrencyFormatEx',\
+    GetCurrencyFormatW,'GetCurrencyFormatW',\
+    GetCurrentActCtx,'GetCurrentActCtx',\
+    GetCurrentApplicationUserModelId,'GetCurrentApplicationUserModelId',\
+    GetCurrentConsoleFont,'GetCurrentConsoleFont',\
+    GetCurrentConsoleFontEx,'GetCurrentConsoleFontEx',\
+    GetCurrentDirectoryA,'GetCurrentDirectoryA',\
+    GetCurrentDirectoryW,'GetCurrentDirectoryW',\
+    GetCurrentPackageFamilyName,'GetCurrentPackageFamilyName',\
+    GetCurrentPackageFullName,'GetCurrentPackageFullName',\
+    GetCurrentPackageId,'GetCurrentPackageId',\
+    GetCurrentPackageInfo,'GetCurrentPackageInfo',\
+    GetCurrentPackagePath,'GetCurrentPackagePath',\
+    GetCurrentProcess,'GetCurrentProcess',\
+    GetCurrentProcessId,'GetCurrentProcessId',\
+    GetCurrentProcessorNumber,'GetCurrentProcessorNumber',\
+    GetCurrentProcessorNumberEx,'GetCurrentProcessorNumberEx',\
+    GetCurrentThread,'GetCurrentThread',\
+    GetCurrentThreadId,'GetCurrentThreadId',\
+    GetCurrentThreadStackLimits,'GetCurrentThreadStackLimits',\
+    GetDateFormatA,'GetDateFormatA',\
+    GetDateFormatEx,'GetDateFormatEx',\
+    GetDateFormatW,'GetDateFormatW',\
+    GetDefaultCommConfigA,'GetDefaultCommConfigA',\
+    GetDefaultCommConfigW,'GetDefaultCommConfigW',\
+    GetDevicePowerState,'GetDevicePowerState',\
+    GetDiskFreeSpaceA,'GetDiskFreeSpaceA',\
+    GetDiskFreeSpaceExA,'GetDiskFreeSpaceExA',\
+    GetDiskFreeSpaceExW,'GetDiskFreeSpaceExW',\
+    GetDiskFreeSpaceW,'GetDiskFreeSpaceW',\
+    GetDllDirectoryA,'GetDllDirectoryA',\
+    GetDllDirectoryW,'GetDllDirectoryW',\
+    GetDriveTypeA,'GetDriveTypeA',\
+    GetDriveTypeW,'GetDriveTypeW',\
+    GetDurationFormat,'GetDurationFormat',\
+    GetDurationFormatEx,'GetDurationFormatEx',\
+    GetDynamicTimeZoneInformation,'GetDynamicTimeZoneInformation',\
+    GetEnabledXStateFeatures,'GetEnabledXStateFeatures',\
+    GetEnvironmentStringsA,'GetEnvironmentStringsA',\
+    GetEnvironmentStringsW,'GetEnvironmentStringsW',\
+    GetEnvironmentVariableA,'GetEnvironmentVariableA',\
+    GetEnvironmentVariableW,'GetEnvironmentVariableW',\
+    GetExitCodeProcess,'GetExitCodeProcess',\
+    GetExitCodeThread,'GetExitCodeThread',\
+    GetFileAttributesA,'GetFileAttributesA',\
+    GetFileAttributesExA,'GetFileAttributesExA',\
+    GetFileAttributesExW,'GetFileAttributesExW',\
+    GetFileAttributesTransactedA,'GetFileAttributesTransactedA',\
+    GetFileAttributesTransactedW,'GetFileAttributesTransactedW',\
+    GetFileAttributesW,'GetFileAttributesW',\
+    GetFileBandwidthReservation,'GetFileBandwidthReservation',\
+    GetFileInformationByHandle,'GetFileInformationByHandle',\
+    GetFileInformationByHandleEx,'GetFileInformationByHandleEx',\
+    GetFileMUIInfo,'GetFileMUIInfo',\
+    GetFileMUIPath,'GetFileMUIPath',\
+    GetFileSize,'GetFileSize',\
+    GetFileSizeEx,'GetFileSizeEx',\
+    GetFileTime,'GetFileTime',\
+    GetFileType,'GetFileType',\
+    GetFinalPathNameByHandleA,'GetFinalPathNameByHandleA',\
+    GetFinalPathNameByHandleW,'GetFinalPathNameByHandleW',\
+    GetFirmwareEnvironmentVariableA,'GetFirmwareEnvironmentVariableA',\
+    GetFirmwareEnvironmentVariableExA,'GetFirmwareEnvironmentVariableExA',\
+    GetFirmwareEnvironmentVariableExW,'GetFirmwareEnvironmentVariableExW',\
+    GetFirmwareEnvironmentVariableW,'GetFirmwareEnvironmentVariableW',\
+    GetFirmwareType,'GetFirmwareType',\
+    GetFullPathNameA,'GetFullPathNameA',\
+    GetFullPathNameTransactedA,'GetFullPathNameTransactedA',\
+    GetFullPathNameTransactedW,'GetFullPathNameTransactedW',\
+    GetFullPathNameW,'GetFullPathNameW',\
+    GetGeoInfoA,'GetGeoInfoA',\
+    GetGeoInfoW,'GetGeoInfoW',\
+    GetHandleInformation,'GetHandleInformation',\
+    GetLargePageMinimum,'GetLargePageMinimum',\
+    GetLargestConsoleWindowSize,'GetLargestConsoleWindowSize',\
+    GetLastError,'GetLastError',\
+    GetLocaleInfoA,'GetLocaleInfoA',\
+    GetLocaleInfoEx,'GetLocaleInfoEx',\
+    GetLocaleInfoW,'GetLocaleInfoW',\
+    GetLocalTime,'GetLocalTime',\
+    GetLogicalDrives,'GetLogicalDrives',\
+    GetLogicalDriveStringsA,'GetLogicalDriveStringsA',\
+    GetLogicalDriveStringsW,'GetLogicalDriveStringsW',\
+    GetLogicalProcessorInformation,'GetLogicalProcessorInformation',\
+    GetLogicalProcessorInformationEx,'GetLogicalProcessorInformationEx',\
+    GetLongPathNameA,'GetLongPathNameA',\
+    GetLongPathNameTransactedA,'GetLongPathNameTransactedA',\
+    GetLongPathNameTransactedW,'GetLongPathNameTransactedW',\
+    GetLongPathNameW,'GetLongPathNameW',\
+    GetMailslotInfo,'GetMailslotInfo',\
+    GetMaximumProcessorCount,'GetMaximumProcessorCount',\
+    GetMaximumProcessorGroupCount,'GetMaximumProcessorGroupCount',\
+    GetMemoryErrorHandlingCapabilities,'GetMemoryErrorHandlingCapabilities',\
+    GetModuleFileNameA,'GetModuleFileNameA',\
+    GetModuleFileNameW,'GetModuleFileNameW',\
+    GetModuleHandleA,'GetModuleHandleA',\
+    GetModuleHandleExA,'GetModuleHandleExA',\
+    GetModuleHandleExW,'GetModuleHandleExW',\
+    GetModuleHandleW,'GetModuleHandleW',\
+    GetNamedPipeAttribute,'GetNamedPipeAttribute',\
+    GetNamedPipeClientComputerNameA,'GetNamedPipeClientComputerNameA',\
+    GetNamedPipeClientComputerNameW,'GetNamedPipeClientComputerNameW',\
+    GetNamedPipeClientProcessId,'GetNamedPipeClientProcessId',\
+    GetNamedPipeClientSessionId,'GetNamedPipeClientSessionId',\
+    GetNamedPipeHandleStateA,'GetNamedPipeHandleStateA',\
+    GetNamedPipeHandleStateW,'GetNamedPipeHandleStateW',\
+    GetNamedPipeInfo,'GetNamedPipeInfo',\
+    GetNamedPipeServerProcessId,'GetNamedPipeServerProcessId',\
+    GetNamedPipeServerSessionId,'GetNamedPipeServerSessionId',\
+    GetNativeSystemInfo,'GetNativeSystemInfo',\
+    GetNextVDMCommand,'GetNextVDMCommand',\
+    GetNLSVersion,'GetNLSVersion',\
+    GetNLSVersionEx,'GetNLSVersionEx',\
+    GetNumaAvailableMemoryNode,'GetNumaAvailableMemoryNode',\
+    GetNumaAvailableMemoryNodeEx,'GetNumaAvailableMemoryNodeEx',\
+    GetNumaHighestNodeNumber,'GetNumaHighestNodeNumber',\
+    GetNumaNodeNumberFromHandle,'GetNumaNodeNumberFromHandle',\
+    GetNumaNodeProcessorMask,'GetNumaNodeProcessorMask',\
+    GetNumaNodeProcessorMaskEx,'GetNumaNodeProcessorMaskEx',\
+    GetNumaProcessorNode,'GetNumaProcessorNode',\
+    GetNumaProcessorNodeEx,'GetNumaProcessorNodeEx',\
+    GetNumaProximityNode,'GetNumaProximityNode',\
+    GetNumaProximityNodeEx,'GetNumaProximityNodeEx',\
+    GetNumberFormatA,'GetNumberFormatA',\
+    GetNumberFormatEx,'GetNumberFormatEx',\
+    GetNumberFormatW,'GetNumberFormatW',\
+    GetNumberOfConsoleFonts,'GetNumberOfConsoleFonts',\
+    GetNumberOfConsoleInputEvents,'GetNumberOfConsoleInputEvents',\
+    GetNumberOfConsoleMouseButtons,'GetNumberOfConsoleMouseButtons',\
+    GetOEMCP,'GetOEMCP',\
+    GetOverlappedResult,'GetOverlappedResult',\
+    GetOverlappedResultEx,'GetOverlappedResultEx',\
+    GetPackageApplicationIds,'GetPackageApplicationIds',\
+    GetPackageFamilyName,'GetPackageFamilyName',\
+    GetPackageFullName,'GetPackageFullName',\
+    GetPackageId,'GetPackageId',\
+    GetPackageInfo,'GetPackageInfo',\
+    GetPackagePath,'GetPackagePath',\
+    GetPackagePathByFullName,'GetPackagePathByFullName',\
+    GetPackagesByPackageFamily,'GetPackagesByPackageFamily',\
+    GetPhysicallyInstalledSystemMemory,'GetPhysicallyInstalledSystemMemory',\
+    GetPriorityClass,'GetPriorityClass',\
+    GetPrivateProfileIntA,'GetPrivateProfileIntA',\
+    GetPrivateProfileIntW,'GetPrivateProfileIntW',\
+    GetPrivateProfileSectionA,'GetPrivateProfileSectionA',\
+    GetPrivateProfileSectionNamesA,'GetPrivateProfileSectionNamesA',\
+    GetPrivateProfileSectionNamesW,'GetPrivateProfileSectionNamesW',\
+    GetPrivateProfileSectionW,'GetPrivateProfileSectionW',\
+    GetPrivateProfileStringA,'GetPrivateProfileStringA',\
+    GetPrivateProfileStringW,'GetPrivateProfileStringW',\
+    GetPrivateProfileStructA,'GetPrivateProfileStructA',\
+    GetPrivateProfileStructW,'GetPrivateProfileStructW',\
+    GetProcAddress,'GetProcAddress',\
+    GetProcessAffinityMask,'GetProcessAffinityMask',\
+    GetProcessDefaultCpuSets,'GetProcessDefaultCpuSets',\
+    GetProcessDEPPolicy,'GetProcessDEPPolicy',\
+    GetProcessGroupAffinity,'GetProcessGroupAffinity',\
+    GetProcessHandleCount,'GetProcessHandleCount',\
+    GetProcessHeap,'GetProcessHeap',\
+    GetProcessHeaps,'GetProcessHeaps',\
+    GetProcessId,'GetProcessId',\
+    GetProcessIdOfThread,'GetProcessIdOfThread',\
+    GetProcessInformation,'GetProcessInformation',\
+    GetProcessIoCounters,'GetProcessIoCounters',\
+    GetProcessMitigationPolicy,'GetProcessMitigationPolicy',\
+    GetProcessorSystemCycleTime,'GetProcessorSystemCycleTime',\
+    GetProcessPreferredUILanguages,'GetProcessPreferredUILanguages',\
+    GetProcessPriorityBoost,'GetProcessPriorityBoost',\
+    GetProcessShutdownParameters,'GetProcessShutdownParameters',\
+    GetProcessTimes,'GetProcessTimes',\
+    GetProcessUserModeExceptionPolicy,'GetProcessUserModeExceptionPolicy',\
+    GetProcessVersion,'GetProcessVersion',\
+    GetProcessWorkingSetSize,'GetProcessWorkingSetSize',\
+    GetProcessWorkingSetSizeEx,'GetProcessWorkingSetSizeEx',\
+    GetProductInfo,'GetProductInfo',\
+    GetProfileIntA,'GetProfileIntA',\
+    GetProfileIntW,'GetProfileIntW',\
+    GetProfileSectionA,'GetProfileSectionA',\
+    GetProfileSectionW,'GetProfileSectionW',\
+    GetProfileStringA,'GetProfileStringA',\
+    GetProfileStringW,'GetProfileStringW',\
+    GetQueuedCompletionStatus,'GetQueuedCompletionStatus',\
+    GetQueuedCompletionStatusEx,'GetQueuedCompletionStatusEx',\
+    GetShortPathNameA,'GetShortPathNameA',\
+    GetShortPathNameW,'GetShortPathNameW',\
+    GetStagedPackagePathByFullName,'GetStagedPackagePathByFullName',\
+    GetStartupInfoA,'GetStartupInfoA',\
+    GetStartupInfoW,'GetStartupInfoW',\
+    GetStdHandle,'GetStdHandle',\
+    GetStringScripts,'GetStringScripts',\
+    GetStringTypeA,'GetStringTypeA',\
+    GetStringTypeExA,'GetStringTypeExA',\
+    GetStringTypeExW,'GetStringTypeExW',\
+    GetStringTypeW,'GetStringTypeW',\
+    GetSystemCpuSetInformation,'GetSystemCpuSetInformation',\
+    GetSystemDefaultLangID,'GetSystemDefaultLangID',\
+    GetSystemDefaultLCID,'GetSystemDefaultLCID',\
+    GetSystemDefaultLocaleName,'GetSystemDefaultLocaleName',\
+    GetSystemDefaultUILanguage,'GetSystemDefaultUILanguage',\
+    GetSystemDEPPolicy,'GetSystemDEPPolicy',\
+    GetSystemDirectoryA,'GetSystemDirectoryA',\
+    GetSystemDirectoryW,'GetSystemDirectoryW',\
+    GetSystemFileCacheSize,'GetSystemFileCacheSize',\
+    GetSystemFirmwareTable,'GetSystemFirmwareTable',\
+    GetSystemInfo,'GetSystemInfo',\
+    GetSystemPowerStatus,'GetSystemPowerStatus',\
+    GetSystemPreferredUILanguages,'GetSystemPreferredUILanguages',\
+    GetSystemRegistryQuota,'GetSystemRegistryQuota',\
+    GetSystemTime,'GetSystemTime',\
+    GetSystemTimeAdjustment,'GetSystemTimeAdjustment',\
+    GetSystemTimeAsFileTime,'GetSystemTimeAsFileTime',\
+    GetSystemTimePreciseAsFileTime,'GetSystemTimePreciseAsFileTime',\
+    GetSystemTimes,'GetSystemTimes',\
+    GetSystemWindowsDirectoryA,'GetSystemWindowsDirectoryA',\
+    GetSystemWindowsDirectoryW,'GetSystemWindowsDirectoryW',\
+    GetSystemWow64DirectoryA,'GetSystemWow64DirectoryA',\
+    GetSystemWow64DirectoryW,'GetSystemWow64DirectoryW',\
+    GetTapeParameters,'GetTapeParameters',\
+    GetTapePosition,'GetTapePosition',\
+    GetTapeStatus,'GetTapeStatus',\
+    GetTempFileNameA,'GetTempFileNameA',\
+    GetTempFileNameW,'GetTempFileNameW',\
+    GetTempPathA,'GetTempPathA',\
+    GetTempPathW,'GetTempPathW',\
+    GetThreadContext,'GetThreadContext',\
+    GetThreadErrorMode,'GetThreadErrorMode',\
+    GetThreadGroupAffinity,'GetThreadGroupAffinity',\
+    GetThreadId,'GetThreadId',\
+    GetThreadIdealProcessorEx,'GetThreadIdealProcessorEx',\
+    GetThreadInformation,'GetThreadInformation',\
+    GetThreadIOPendingFlag,'GetThreadIOPendingFlag',\
+    GetThreadLocale,'GetThreadLocale',\
+    GetThreadPreferredUILanguages,'GetThreadPreferredUILanguages',\
+    GetThreadPriority,'GetThreadPriority',\
+    GetThreadPriorityBoost,'GetThreadPriorityBoost',\
+    GetThreadSelectedCpuSets,'GetThreadSelectedCpuSets',\
+    GetThreadSelectorEntry,'GetThreadSelectorEntry',\
+    GetThreadTimes,'GetThreadTimes',\
+    GetThreadUILanguage,'GetThreadUILanguage',\
+    GetTickCount,'GetTickCount',\
+    GetTickCount64,'GetTickCount64',\
+    GetTimeFormatA,'GetTimeFormatA',\
+    GetTimeFormatEx,'GetTimeFormatEx',\
+    GetTimeFormatW,'GetTimeFormatW',\
+    GetTimeZoneInformation,'GetTimeZoneInformation',\
+    GetTimeZoneInformationForYear,'GetTimeZoneInformationForYear',\
+    GetUILanguageInfo,'GetUILanguageInfo',\
+    GetUserDefaultLangID,'GetUserDefaultLangID',\
+    GetUserDefaultLCID,'GetUserDefaultLCID',\
+    GetUserDefaultLocaleName,'GetUserDefaultLocaleName',\
+    GetUserDefaultUILanguage,'GetUserDefaultUILanguage',\
+    GetUserGeoID,'GetUserGeoID',\
+    GetUserPreferredUILanguages,'GetUserPreferredUILanguages',\
+    GetVDMCurrentDirectories,'GetVDMCurrentDirectories',\
+    GetUserNameA,'GetUserNameA',\
+    GetUserNameW,'GetUserNameW',\
+    GetVersion,'GetVersion',\
+    GetVersionExA,'GetVersionExA',\
+    GetVersionExW,'GetVersionExW',\
+    GetVolumeInformationA,'GetVolumeInformationA',\
+    GetVolumeInformationByHandleW,'GetVolumeInformationByHandleW',\
+    GetVolumeInformationW,'GetVolumeInformationW',\
+    GetVolumeNameForVolumeMountPointA,'GetVolumeNameForVolumeMountPointA',\
+    GetVolumeNameForVolumeMountPointW,'GetVolumeNameForVolumeMountPointW',\
+    GetVolumePathNameA,'GetVolumePathNameA',\
+    GetVolumePathNamesForVolumeNameA,'GetVolumePathNamesForVolumeNameA',\
+    GetVolumePathNamesForVolumeNameW,'GetVolumePathNamesForVolumeNameW',\
+    GetVolumePathNameW,'GetVolumePathNameW',\
+    GetWindowsDirectoryA,'GetWindowsDirectoryA',\
+    GetWindowsDirectoryW,'GetWindowsDirectoryW',\
+    GetWriteWatch,'GetWriteWatch',\
+    GetXStateFeaturesMask,'GetXStateFeaturesMask',\
+    GlobalAddAtomA,'GlobalAddAtomA',\
+    GlobalAddAtomExA,'GlobalAddAtomExA',\
+    GlobalAddAtomExW,'GlobalAddAtomExW',\
+    GlobalAddAtomW,'GlobalAddAtomW',\
+    GlobalAlloc,'GlobalAlloc',\
+    GlobalCompact,'GlobalCompact',\
+    GlobalDeleteAtom,'GlobalDeleteAtom',\
+    GlobalFindAtomA,'GlobalFindAtomA',\
+    GlobalFindAtomW,'GlobalFindAtomW',\
+    GlobalFix,'GlobalFix',\
+    GlobalFlags,'GlobalFlags',\
+    GlobalFree,'GlobalFree',\
+    GlobalGetAtomNameA,'GlobalGetAtomNameA',\
+    GlobalGetAtomNameW,'GlobalGetAtomNameW',\
+    GlobalHandle,'GlobalHandle',\
+    GlobalLock,'GlobalLock',\
+    GlobalMemoryStatus,'GlobalMemoryStatus',\
+    GlobalMemoryStatusEx,'GlobalMemoryStatusEx',\
+    GlobalReAlloc,'GlobalReAlloc',\
+    GlobalSize,'GlobalSize',\
+    GlobalUnfix,'GlobalUnfix',\
+    GlobalUnlock,'GlobalUnlock',\
+    GlobalUnWire,'GlobalUnWire',\
+    GlobalWire,'GlobalWire',\
+    Heap32First,'Heap32First',\
+    Heap32ListFirst,'Heap32ListFirst',\
+    Heap32ListNext,'Heap32ListNext',\
+    Heap32Next,'Heap32Next',\
+    HeapAlloc,'HeapAlloc',\
+    HeapCompact,'HeapCompact',\
+    HeapCreate,'HeapCreate',\
+    HeapDestroy,'HeapDestroy',\
+    HeapFree,'HeapFree',\
+    HeapLock,'HeapLock',\
+    HeapQueryInformation,'HeapQueryInformation',\
+    HeapReAlloc,'HeapReAlloc',\
+    HeapSetInformation,'HeapSetInformation',\
+    HeapSize,'HeapSize',\
+    HeapUnlock,'HeapUnlock',\
+    HeapValidate,'HeapValidate',\
+    HeapWalk,'HeapWalk',\
+    IdnToAscii,'IdnToAscii',\
+    IdnToNameprepUnicode,'IdnToNameprepUnicode',\
+    IdnToUnicode,'IdnToUnicode',\
+    InitAtomTable,'InitAtomTable',\
+    InitializeConditionVariable,'InitializeConditionVariable',\
+    InitializeContext,'InitializeContext',\
+    InitializeCriticalSection,'InitializeCriticalSection',\
+    InitializeCriticalSectionAndSpinCount,'InitializeCriticalSectionAndSpinCount',\
+    InitializeCriticalSectionEx,'InitializeCriticalSectionEx',\
+    InitializeEnclave,'InitializeEnclave',\
+    InitializeProcThreadAttributeList,'InitializeProcThreadAttributeList',\
+    InitializeSListHead,'InitializeSListHead',\
+    InitializeSRWLock,'InitializeSRWLock',\
+    InitializeSynchronizationBarrier,'InitializeSynchronizationBarrier',\
+    InitOnceBeginInitialize,'InitOnceBeginInitialize',\
+    InitOnceComplete,'InitOnceComplete',\
+    InitOnceExecuteOnce,'InitOnceExecuteOnce',\
+    InitOnceInitialize,'InitOnceInitialize',\
+    InstallELAMCertificateInfo,'InstallELAMCertificateInfo',\
+    InterlockedCompareExchange,'InterlockedCompareExchange',\
+    InterlockedDecrement,'InterlockedDecrement',\
+    InterlockedExchange,'InterlockedExchange',\
+    InterlockedExchangeAdd,'InterlockedExchangeAdd',\
+    InterlockedFlushSList,'InterlockedFlushSList',\
+    InterlockedIncrement,'InterlockedIncrement',\
+    InterlockedPopEntrySList,'InterlockedPopEntrySList',\
+    InterlockedPushEntrySList,'InterlockedPushEntrySList',\
+    InterlockedPushListSList,'InterlockedPushListSList',\
+    InterlockedPushListSListEx,'InterlockedPushListSListEx',\
+    InvalidateConsoleDIBits,'InvalidateConsoleDIBits',\
+    IsBadCodePtr,'IsBadCodePtr',\
+    IsBadHugeReadPtr,'IsBadHugeReadPtr',\
+    IsBadHugeWritePtr,'IsBadHugeWritePtr',\
+    IsBadReadPtr,'IsBadReadPtr',\
+    IsBadStringPtrA,'IsBadStringPtrA',\
+    IsBadStringPtrW,'IsBadStringPtrW',\
+    IsBadWritePtr,'IsBadWritePtr',\
+    IsCalendarLeapDay,'IsCalendarLeapDay',\
+    IsCalendarLeapMonth,'IsCalendarLeapMonth',\
+    IsCalendarLeapYear,'IsCalendarLeapYear',\
+    IsDBCSLeadByte,'IsDBCSLeadByte',\
+    IsDBCSLeadByteEx,'IsDBCSLeadByteEx',\
+    IsDebuggerPresent,'IsDebuggerPresent',\
+    IsEnclaveTypeSupported,'IsEnclaveTypeSupported',\
+    IsNativeVhdBoot,'IsNativeVhdBoot',\
+    IsNLSDefinedString,'IsNLSDefinedString',\
+    IsNormalizedString,'IsNormalizedString',\
+    IsProcessCritical,'IsProcessCritical',\
+    IsProcessInJob,'IsProcessInJob',\
+    IsProcessorFeaturePresent,'IsProcessorFeaturePresent',\
+    IsSystemResumeAutomatic,'IsSystemResumeAutomatic',\
+    IsThreadAFiber,'IsThreadAFiber',\
+    IsThreadpoolTimerSet,'IsThreadpoolTimerSet',\
+    IsTimeZoneRedirectionEnabled,'IsTimeZoneRedirectionEnabled',\
+    IsValidCalDateTime,'IsValidCalDateTime',\
+    IsValidCodePage,'IsValidCodePage',\
+    IsValidLanguageGroup,'IsValidLanguageGroup',\
+    IsValidLocale,'IsValidLocale',\
+    IsValidLocaleName,'IsValidLocaleName',\
+    IsValidNLSVersion,'IsValidNLSVersion',\
+    IsWow64Process,'IsWow64Process',\
+    K32EmptyWorkingSet,'K32EmptyWorkingSet',\
+    K32EnumDeviceDrivers,'K32EnumDeviceDrivers',\
+    K32EnumPageFilesA,'K32EnumPageFilesA',\
+    K32EnumPageFilesW,'K32EnumPageFilesW',\
+    K32EnumProcesses,'K32EnumProcesses',\
+    K32EnumProcessModules,'K32EnumProcessModules',\
+    K32EnumProcessModulesEx,'K32EnumProcessModulesEx',\
+    K32GetDeviceDriverBaseNameA,'K32GetDeviceDriverBaseNameA',\
+    K32GetDeviceDriverBaseNameW,'K32GetDeviceDriverBaseNameW',\
+    K32GetDeviceDriverFileNameA,'K32GetDeviceDriverFileNameA',\
+    K32GetDeviceDriverFileNameW,'K32GetDeviceDriverFileNameW',\
+    K32GetMappedFileNameA,'K32GetMappedFileNameA',\
+    K32GetMappedFileNameW,'K32GetMappedFileNameW',\
+    K32GetModuleBaseNameA,'K32GetModuleBaseNameA',\
+    K32GetModuleBaseNameW,'K32GetModuleBaseNameW',\
+    K32GetModuleFileNameExA,'K32GetModuleFileNameExA',\
+    K32GetModuleFileNameExW,'K32GetModuleFileNameExW',\
+    K32GetModuleInformation,'K32GetModuleInformation',\
+    K32GetPerformanceInfo,'K32GetPerformanceInfo',\
+    K32GetProcessImageFileNameA,'K32GetProcessImageFileNameA',\
+    K32GetProcessImageFileNameW,'K32GetProcessImageFileNameW',\
+    K32GetProcessMemoryInfo,'K32GetProcessMemoryInfo',\
+    K32GetWsChanges,'K32GetWsChanges',\
+    K32GetWsChangesEx,'K32GetWsChangesEx',\
+    K32InitializeProcessForWsWatch,'K32InitializeProcessForWsWatch',\
+    K32QueryWorkingSet,'K32QueryWorkingSet',\
+    K32QueryWorkingSetEx,'K32QueryWorkingSetEx',\
+    LCIDToLocaleName,'LCIDToLocaleName',\
+    LCMapStringA,'LCMapStringA',\
+    LCMapStringEx,'LCMapStringEx',\
+    LCMapStringW,'LCMapStringW',\
+    LeaveCriticalSection,'LeaveCriticalSection',\
+    LeaveCriticalSectionWhenCallbackReturns,'LeaveCriticalSectionWhenCallbackReturns',\
+    LoadAppInitDlls,'LoadAppInitDlls',\
+    LoadEnclaveData,'LoadEnclaveData',\
+    LoadLibraryA,'LoadLibraryA',\
+    LoadLibraryExA,'LoadLibraryExA',\
+    LoadLibraryExW,'LoadLibraryExW',\
+    LoadLibraryW,'LoadLibraryW',\
+    LoadModule,'LoadModule',\
+    LoadPackagedLibrary,'LoadPackagedLibrary',\
+    LoadResource,'LoadResource',\
+    LoadStringBaseExW,'LoadStringBaseExW',\
+    LoadStringBaseW,'LoadStringBaseW',\
+    LocalAlloc,'LocalAlloc',\
+    LocalCompact,'LocalCompact',\
+    LocaleNameToLCID,'LocaleNameToLCID',\
+    LocalFileTimeToFileTime,'LocalFileTimeToFileTime',\
+    LocalFlags,'LocalFlags',\
+    LocalFree,'LocalFree',\
+    LocalHandle,'LocalHandle',\
+    LocalLock,'LocalLock',\
+    LocalReAlloc,'LocalReAlloc',\
+    LocalShrink,'LocalShrink',\
+    LocalSize,'LocalSize',\
+    LocalUnlock,'LocalUnlock',\
+    LocateXStateFeature,'LocateXStateFeature',\
+    LockFile,'LockFile',\
+    LockFileEx,'LockFileEx',\
+    LockResource,'LockResource',\
+    lstrcatA,'lstrcatA',\
+    lstrcatW,'lstrcatW',\
+    lstrcmpA,'lstrcmpA',\
+    lstrcmpiA,'lstrcmpiA',\
+    lstrcmpiW,'lstrcmpiW',\
+    lstrcmpW,'lstrcmpW',\
+    lstrcpyA,'lstrcpyA',\
+    lstrcpynA,'lstrcpynA',\
+    lstrcpynW,'lstrcpynW',\
+    lstrcpyW,'lstrcpyW',\
+    lstrlenA,'lstrlenA',\
+    lstrlenW,'lstrlenW',\
+    MapUserPhysicalPages,'MapUserPhysicalPages',\
+    MapUserPhysicalPagesScatter,'MapUserPhysicalPagesScatter',\
+    MapViewOfFile,'MapViewOfFile',\
+    MapViewOfFileEx,'MapViewOfFileEx',\
+    MapViewOfFileExNuma,'MapViewOfFileExNuma',\
+    MapViewOfFileFromApp,'MapViewOfFileFromApp',\
+    Module32First,'Module32First',\
+    Module32FirstW,'Module32FirstW',\
+    Module32Next,'Module32Next',\
+    Module32NextW,'Module32NextW',\
+    MoveFileA,'MoveFileA',\
+    MoveFileExA,'MoveFileExA',\
+    MoveFileExW,'MoveFileExW',\
+    MoveFileTransactedA,'MoveFileTransactedA',\
+    MoveFileTransactedW,'MoveFileTransactedW',\
+    MoveFileW,'MoveFileW',\
+    MoveFileWithProgressA,'MoveFileWithProgressA',\
+    MoveFileWithProgressW,'MoveFileWithProgressW',\
+    MulDiv,'MulDiv',\
+    MultiByteToWideChar,'MultiByteToWideChar',\
+    NeedCurrentDirectoryForExePathA,'NeedCurrentDirectoryForExePathA',\
+    NeedCurrentDirectoryForExePathW,'NeedCurrentDirectoryForExePathW',\
+    NormalizeString,'NormalizeString',\
+    NotifyUILanguageChange,'NotifyUILanguageChange',\
+    OfferVirtualMemory,'OfferVirtualMemory',\
+    OOBEComplete,'OOBEComplete',\
+    OpenConsoleW,'OpenConsoleW',\
+    OpenDataFile,'OpenDataFile',\
+    OpenEncryptedFileRawA,'OpenEncryptedFileRawA',\
+    OpenEncryptedFileRawW,'OpenEncryptedFileRawW',\
+    OpenEventA,'OpenEventA',\
+    OpenEventW,'OpenEventW',\
+    OpenFile,'OpenFile',\
+    OpenFileById,'OpenFileById',\
+    OpenFileMappingA,'OpenFileMappingA',\
+    OpenFileMappingW,'OpenFileMappingW',\
+    OpenJobObjectA,'OpenJobObjectA',\
+    OpenJobObjectW,'OpenJobObjectW',\
+    OpenMutexA,'OpenMutexA',\
+    OpenMutexW,'OpenMutexW',\
+    OpenPackageInfoByFullName,'OpenPackageInfoByFullName',\
+    OpenPrivateNamespaceA,'OpenPrivateNamespaceA',\
+    OpenPrivateNamespaceW,'OpenPrivateNamespaceW',\
+    OpenProcess,'OpenProcess',\
+    OpenProcessToken,'OpenProcessToken',\
+    OpenSemaphoreA,'OpenSemaphoreA',\
+    OpenSemaphoreW,'OpenSemaphoreW',\
+    OpenThread,'OpenThread',\
+    OpenThreadToken,'OpenThreadToken',\
+    OpenWaitableTimerA,'OpenWaitableTimerA',\
+    OpenWaitableTimerW,'OpenWaitableTimerW',\
+    OutputDebugStringA,'OutputDebugStringA',\
+    OutputDebugStringW,'OutputDebugStringW',\
+    PackageFamilyNameFromFullName,'PackageFamilyNameFromFullName',\
+    PackageFamilyNameFromId,'PackageFamilyNameFromId',\
+    PackageFullNameFromId,'PackageFullNameFromId',\
+    PackageIdFromFullName,'PackageIdFromFullName',\
+    PackageNameAndPublisherIdFromFamilyName,'PackageNameAndPublisherIdFromFamilyName',\
+    ParseApplicationUserModelId,'ParseApplicationUserModelId',\
+    PeekConsoleInputA,'PeekConsoleInputA',\
+    PeekConsoleInputW,'PeekConsoleInputW',\
+    PeekNamedPipe,'PeekNamedPipe',\
+    PostQueuedCompletionStatus,'PostQueuedCompletionStatus',\
+    PowerClearRequest,'PowerClearRequest',\
+    PowerCreateRequest,'PowerCreateRequest',\
+    PowerSetRequest,'PowerSetRequest',\
+    PrefetchVirtualMemory,'PrefetchVirtualMemory',\
+    PrepareTape,'PrepareTape',\
+    PrivCopyFileExW,'PrivCopyFileExW',\
+    Process32First,'Process32First',\
+    Process32FirstW,'Process32FirstW',\
+    Process32Next,'Process32Next',\
+    Process32NextW,'Process32NextW',\
+    ProcessIdToSessionId,'ProcessIdToSessionId',\
+    PssCaptureSnapshot,'PssCaptureSnapshot',\
+    PssDuplicateSnapshot,'PssDuplicateSnapshot',\
+    PssFreeSnapshot,'PssFreeSnapshot',\
+    PssQuerySnapshot,'PssQuerySnapshot',\
+    PssWalkMarkerCreate,'PssWalkMarkerCreate',\
+    PssWalkMarkerFree,'PssWalkMarkerFree',\
+    PssWalkMarkerGetPosition,'PssWalkMarkerGetPosition',\
+    PssWalkMarkerSeekToBeginning,'PssWalkMarkerSeekToBeginning',\
+    PssWalkMarkerSetPosition,'PssWalkMarkerSetPosition',\
+    PssWalkSnapshot,'PssWalkSnapshot',\
+    PulseEvent,'PulseEvent',\
+    PurgeComm,'PurgeComm',\
+    QueryActCtxSettingsW,'QueryActCtxSettingsW',\
+    QueryActCtxW,'QueryActCtxW',\
+    QueryDepthSList,'QueryDepthSList',\
+    QueryDosDeviceA,'QueryDosDeviceA',\
+    QueryDosDeviceW,'QueryDosDeviceW',\
+    QueryFullProcessImageNameA,'QueryFullProcessImageNameA',\
+    QueryFullProcessImageNameW,'QueryFullProcessImageNameW',\
+    QueryIdleProcessorCycleTime,'QueryIdleProcessorCycleTime',\
+    QueryIdleProcessorCycleTimeEx,'QueryIdleProcessorCycleTimeEx',\
+    QueryInformationJobObject,'QueryInformationJobObject',\
+    QueryIoRateControlInformationJobObject,'QueryIoRateControlInformationJobObject',\
+    QueryMemoryResourceNotification,'QueryMemoryResourceNotification',\
+    QueryPerformanceCounter,'QueryPerformanceCounter',\
+    QueryPerformanceFrequency,'QueryPerformanceFrequency',\
+    QueryProcessAffinityUpdateMode,'QueryProcessAffinityUpdateMode',\
+    QueryProcessCycleTime,'QueryProcessCycleTime',\
+    QueryProtectedPolicy,'QueryProtectedPolicy',\
+    QueryThreadCycleTime,'QueryThreadCycleTime',\
+    QueryThreadpoolStackInformation,'QueryThreadpoolStackInformation',\
+    QueryThreadProfiling,'QueryThreadProfiling',\
+    QueryUnbiasedInterruptTime,'QueryUnbiasedInterruptTime',\
+    QueueUserAPC,'QueueUserAPC',\
+    QueueUserWorkItem,'QueueUserWorkItem',\
+    RaiseException,'RaiseException',\
+    RaiseFailFastException,'RaiseFailFastException',\
+    ReadConsoleA,'ReadConsoleA',\
+    ReadConsoleInputA,'ReadConsoleInputA',\
+    ReadConsoleInputExA,'ReadConsoleInputExA',\
+    ReadConsoleInputExW,'ReadConsoleInputExW',\
+    ReadConsoleInputW,'ReadConsoleInputW',\
+    ReadConsoleOutputA,'ReadConsoleOutputA',\
+    ReadConsoleOutputAttribute,'ReadConsoleOutputAttribute',\
+    ReadConsoleOutputCharacterA,'ReadConsoleOutputCharacterA',\
+    ReadConsoleOutputCharacterW,'ReadConsoleOutputCharacterW',\
+    ReadConsoleOutputW,'ReadConsoleOutputW',\
+    ReadConsoleW,'ReadConsoleW',\
+    ReadDirectoryChangesW,'ReadDirectoryChangesW',\
+    ReadFile,'ReadFile',\
+    ReadFileEx,'ReadFileEx',\
+    ReadFileScatter,'ReadFileScatter',\
+    ReadProcessMemory,'ReadProcessMemory',\
+    ReadThreadProfilingData,'ReadThreadProfilingData',\
+    ReclaimVirtualMemory,'ReclaimVirtualMemory',\
+    RegCloseKey,'RegCloseKey',\
+    RegCopyTreeW,'RegCopyTreeW',\
+    RegCreateKeyExA,'RegCreateKeyExA',\
+    RegCreateKeyExW,'RegCreateKeyExW',\
+    RegDeleteTreeA,'RegDeleteTreeA',\
+    RegDeleteTreeW,'RegDeleteTreeW',\
+    RegDeleteValueA,'RegDeleteValueA',\
+    RegDeleteValueW,'RegDeleteValueW',\
+    RegDisablePredefinedCacheEx,'RegDisablePredefinedCacheEx',\
+    RegEnumKeyExA,'RegEnumKeyExA',\
+    RegEnumKeyExW,'RegEnumKeyExW',\
+    RegEnumValueA,'RegEnumValueA',\
+    RegEnumValueW,'RegEnumValueW',\
+    RegFlushKey,'RegFlushKey',\
+    RegGetKeySecurity,'RegGetKeySecurity',\
+    RegGetValueA,'RegGetValueA',\
+    RegGetValueW,'RegGetValueW',\
+    RegisterApplicationRecoveryCallback,'RegisterApplicationRecoveryCallback',\
+    RegisterApplicationRestart,'RegisterApplicationRestart',\
+    RegisterBadMemoryNotification,'RegisterBadMemoryNotification',\
+    RegisterWaitForSingleObject,'RegisterWaitForSingleObject',\
+    RegisterWaitUntilOOBECompleted,'RegisterWaitUntilOOBECompleted',\
+    RegLoadKeyA,'RegLoadKeyA',\
+    RegLoadKeyW,'RegLoadKeyW',\
+    RegLoadMUIStringA,'RegLoadMUIStringA',\
+    RegLoadMUIStringW,'RegLoadMUIStringW',\
+    RegNotifyChangeKeyValue,'RegNotifyChangeKeyValue',\
+    RegOpenCurrentUser,'RegOpenCurrentUser',\
+    RegOpenKeyExA,'RegOpenKeyExA',\
+    RegOpenKeyExW,'RegOpenKeyExW',\
+    RegOpenUserClassesRoot,'RegOpenUserClassesRoot',\
+    RegQueryInfoKeyA8,'RegQueryInfoKeyA',\
+    RegQueryInfoKeyW8,'RegQueryInfoKeyW',\
+    RegQueryValueExA,'RegQueryValueExA',\
+    RegQueryValueExW,'RegQueryValueExW',\
+    RegRestoreKeyA,'RegRestoreKeyA',\
+    RegRestoreKeyW,'RegRestoreKeyW',\
+    RegSaveKeyExA,'RegSaveKeyExA',\
+    RegSaveKeyExW,'RegSaveKeyExW',\
+    RegSetKeySecurity,'RegSetKeySecurity',\
+    RegSetValueExA,'RegSetValueExA',\
+    RegSetValueExW,'RegSetValueExW',\
+    RegUnLoadKeyA,'RegUnLoadKeyA',\
+    RegUnLoadKeyW,'RegUnLoadKeyW',\
+    ReleaseActCtx,'ReleaseActCtx',\
+    ReleaseMutex,'ReleaseMutex',\
+    ReleaseMutexWhenCallbackReturns,'ReleaseMutexWhenCallbackReturns',\
+    ReleaseSemaphore,'ReleaseSemaphore',\
+    ReleaseSemaphoreWhenCallbackReturns,'ReleaseSemaphoreWhenCallbackReturns',\
+    ReleaseSRWLockExclusive,'ReleaseSRWLockExclusive',\
+    ReleaseSRWLockShared,'ReleaseSRWLockShared',\
+    RemoveDirectoryA,'RemoveDirectoryA',\
+    RemoveDirectoryTransactedA,'RemoveDirectoryTransactedA',\
+    RemoveDirectoryTransactedW,'RemoveDirectoryTransactedW',\
+    RemoveDirectoryW,'RemoveDirectoryW',\
+    RemoveDllDirectory,'RemoveDllDirectory',\
+    RemoveSecureMemoryCacheCallback,'RemoveSecureMemoryCacheCallback',\
+    RemoveVectoredContinueHandler,'RemoveVectoredContinueHandler',\
+    RemoveVectoredExceptionHandler,'RemoveVectoredExceptionHandler',\
+    ReOpenFile,'ReOpenFile',\
+    ReplaceFileA,'ReplaceFileA',\
+    ReplaceFileW,'ReplaceFileW',\
+    ReplacePartitionUnit,'ReplacePartitionUnit',\
+    RequestDeviceWakeup,'RequestDeviceWakeup',\
+    RequestWakeupLatency,'RequestWakeupLatency',\
+    ResetEvent,'ResetEvent',\
+    ResetWriteWatch,'ResetWriteWatch',\
+    ResolveDelayLoadedAPI,'ResolveDelayLoadedAPI',\
+    ResolveDelayLoadsFromDll,'ResolveDelayLoadsFromDll',\
+    ResolveLocaleName,'ResolveLocaleName',\
+    RestoreLastError,'RestoreLastError',\
+    ResumeThread,'ResumeThread',\
+    RtlCaptureContext,'RtlCaptureContext',\
+    RtlCaptureStackBackTrace,'RtlCaptureStackBackTrace',\
+    RtlCompareMemory,'RtlCompareMemory',\
+    RtlCopyMemory,'RtlCopyMemory',\
+    RtlFillMemory,'RtlFillMemory',\
+    RtlMoveMemory,'RtlMoveMemory',\
+    RtlRaiseException,'RtlRaiseException',\
+    RtlUnwind,'RtlUnwind',\
+    RtlVirtualUnwind,'RtlVirtualUnwind',\
+    RtlZeroMemory,'RtlZeroMemory',\
+    ScrollConsoleScreenBufferA,'ScrollConsoleScreenBufferA',\
+    ScrollConsoleScreenBufferW,'ScrollConsoleScreenBufferW',\
+    SearchPathA,'SearchPathA',\
+    SearchPathW,'SearchPathW',\
+    SetCachedSigningLevel,'SetCachedSigningLevel',\
+    SetCalendarInfoA,'SetCalendarInfoA',\
+    SetCalendarInfoW,'SetCalendarInfoW',\
+    SetCommBreak,'SetCommBreak',\
+    SetCommConfig,'SetCommConfig',\
+    SetCommMask,'SetCommMask',\
+    SetCommState,'SetCommState',\
+    SetCommTimeouts,'SetCommTimeouts',\
+    SetComputerNameA,'SetComputerNameA',\
+    SetComputerNameExA,'SetComputerNameExA',\
+    SetComputerNameExW,'SetComputerNameExW',\
+    SetComputerNameW,'SetComputerNameW',\
+    SetConsoleActiveScreenBuffer,'SetConsoleActiveScreenBuffer',\
+    SetConsoleCP,'SetConsoleCP',\
+    SetConsoleCtrlHandler,'SetConsoleCtrlHandler',\
+    SetConsoleCursor,'SetConsoleCursor',\
+    SetConsoleCursorInfo,'SetConsoleCursorInfo',\
+    SetConsoleCursorPosition,'SetConsoleCursorPosition',\
+    SetConsoleDisplayMode,'SetConsoleDisplayMode',\
+    SetConsoleFont,'SetConsoleFont',\
+    SetConsoleHardwareState,'SetConsoleHardwareState',\
+    SetConsoleHistoryInfo,'SetConsoleHistoryInfo',\
+    SetConsoleIcon,'SetConsoleIcon',\
+    SetConsoleMaximumWindowSize,'SetConsoleMaximumWindowSize',\
+    SetConsoleMode,'SetConsoleMode',\
+    SetConsoleNlsMode,'SetConsoleNlsMode',\
+    SetConsoleNumberOfCommandsA,'SetConsoleNumberOfCommandsA',\
+    SetConsoleNumberOfCommandsW,'SetConsoleNumberOfCommandsW',\
+    SetConsoleOS2OemFormat,'SetConsoleOS2OemFormat',\
+    SetConsoleOutputCP,'SetConsoleOutputCP',\
+    SetConsolePalette,'SetConsolePalette',\
+    SetConsoleScreenBufferInfoEx,'SetConsoleScreenBufferInfoEx',\
+    SetConsoleScreenBufferSize,'SetConsoleScreenBufferSize',\
+    SetConsoleTextAttribute,'SetConsoleTextAttribute',\
+    SetConsoleTitleA,'SetConsoleTitleA',\
+    SetConsoleTitleW,'SetConsoleTitleW',\
+    SetConsoleWindowInfo,'SetConsoleWindowInfo',\
+    SetCriticalSectionSpinCount,'SetCriticalSectionSpinCount',\
+    SetCurrentConsoleFontEx,'SetCurrentConsoleFontEx',\
+    SetCurrentDirectoryA,'SetCurrentDirectoryA',\
+    SetCurrentDirectoryW,'SetCurrentDirectoryW',\
+    SetDefaultCommConfigA,'SetDefaultCommConfigA',\
+    SetDefaultCommConfigW,'SetDefaultCommConfigW',\
+    SetDefaultDllDirectories,'SetDefaultDllDirectories',\
+    SetDllDirectoryA,'SetDllDirectoryA',\
+    SetDllDirectoryW,'SetDllDirectoryW',\
+    SetDynamicTimeZoneInformation,'SetDynamicTimeZoneInformation',\
+    SetEndOfFile,'SetEndOfFile',\
+    SetEnvironmentStringsA,'SetEnvironmentStringsA',\
+    SetEnvironmentStringsW,'SetEnvironmentStringsW',\
+    SetEnvironmentVariableA,'SetEnvironmentVariableA',\
+    SetEnvironmentVariableW,'SetEnvironmentVariableW',\
+    SetErrorMode,'SetErrorMode',\
+    SetEvent,'SetEvent',\
+    SetEventWhenCallbackReturns,'SetEventWhenCallbackReturns',\
+    SetFileApisToANSI,'SetFileApisToANSI',\
+    SetFileApisToOEM,'SetFileApisToOEM',\
+    SetFileAttributesA,'SetFileAttributesA',\
+    SetFileAttributesTransactedA,'SetFileAttributesTransactedA',\
+    SetFileAttributesTransactedW,'SetFileAttributesTransactedW',\
+    SetFileAttributesW,'SetFileAttributesW',\
+    SetFileBandwidthReservation,'SetFileBandwidthReservation',\
+    SetFileCompletionNotificationModes,'SetFileCompletionNotificationModes',\
+    SetFileInformationByHandle,'SetFileInformationByHandle',\
+    SetFileIoOverlappedRange,'SetFileIoOverlappedRange',\
+    SetFilePointer,'SetFilePointer',\
+    SetFilePointerEx,'SetFilePointerEx',\
+    SetFileShortNameA,'SetFileShortNameA',\
+    SetFileShortNameW,'SetFileShortNameW',\
+    SetFileTime,'SetFileTime',\
+    SetFileValidData,'SetFileValidData',\
+    SetFirmwareEnvironmentVariableA,'SetFirmwareEnvironmentVariableA',\
+    SetFirmwareEnvironmentVariableExA,'SetFirmwareEnvironmentVariableExA',\
+    SetFirmwareEnvironmentVariableExW,'SetFirmwareEnvironmentVariableExW',\
+    SetFirmwareEnvironmentVariableW,'SetFirmwareEnvironmentVariableW',\
+    SetHandleCount,'SetHandleCount',\
+    SetHandleInformation,'SetHandleInformation',\
+    SetInformationJobObject,'SetInformationJobObject',\
+    SetIoRateControlInformationJobObject,'SetIoRateControlInformationJobObject',\
+    SetLastConsoleEventActive,'SetLastConsoleEventActive',\
+    SetLastError,'SetLastError',\
+    SetLocaleInfoA,'SetLocaleInfoA',\
+    SetLocaleInfoW,'SetLocaleInfoW',\
+    SetLocalPrimaryComputerNameA,'SetLocalPrimaryComputerNameA',\
+    SetLocalPrimaryComputerNameW,'SetLocalPrimaryComputerNameW',\
+    SetLocalTime,'SetLocalTime',\
+    SetMailslotInfo,'SetMailslotInfo',\
+    SetMessageWaitingIndicator,'SetMessageWaitingIndicator',\
+    SetNamedPipeAttribute,'SetNamedPipeAttribute',\
+    SetNamedPipeHandleState,'SetNamedPipeHandleState',\
+    SetPriorityClass,'SetPriorityClass',\
+    SetProcessAffinityMask,'SetProcessAffinityMask',\
+    SetProcessAffinityUpdateMode,'SetProcessAffinityUpdateMode',\
+    SetProcessDefaultCpuSets,'SetProcessDefaultCpuSets',\
+    SetProcessDEPPolicy,'SetProcessDEPPolicy',\
+    SetProcessInformation,'SetProcessInformation',\
+    SetProcessMitigationPolicy,'SetProcessMitigationPolicy',\
+    SetProcessPreferredUILanguages,'SetProcessPreferredUILanguages',\
+    SetProcessPriorityBoost,'SetProcessPriorityBoost',\
+    SetProcessShutdownParameters,'SetProcessShutdownParameters',\
+    SetProcessUserModeExceptionPolicy,'SetProcessUserModeExceptionPolicy',\
+    SetProcessWorkingSetSize,'SetProcessWorkingSetSize',\
+    SetProcessWorkingSetSizeEx,'SetProcessWorkingSetSizeEx',\
+    SetProtectedPolicy,'SetProtectedPolicy',\
+    SetSearchPathMode,'SetSearchPathMode',\
+    SetStdHandle,'SetStdHandle',\
+    SetStdHandleEx,'SetStdHandleEx',\
+    SetSystemFileCacheSize,'SetSystemFileCacheSize',\
+    SetSystemPowerState,'SetSystemPowerState',\
+    SetSystemTime,'SetSystemTime',\
+    SetSystemTimeAdjustment,'SetSystemTimeAdjustment',\
+    SetTapeParameters,'SetTapeParameters',\
+    SetTapePosition,'SetTapePosition',\
+    SetTermsrvAppInstallMode,'SetTermsrvAppInstallMode',\
+    SetThreadAffinityMask,'SetThreadAffinityMask',\
+    SetThreadContext,'SetThreadContext',\
+    SetThreadErrorMode,'SetThreadErrorMode',\
+    SetThreadExecutionState,'SetThreadExecutionState',\
+    SetThreadGroupAffinity,'SetThreadGroupAffinity',\
+    SetThreadIdealProcessor,'SetThreadIdealProcessor',\
+    SetThreadIdealProcessorEx,'SetThreadIdealProcessorEx',\
+    SetThreadInformation,'SetThreadInformation',\
+    SetThreadLocale,'SetThreadLocale',\
+    SetThreadpoolStackInformation,'SetThreadpoolStackInformation',\
+    SetThreadpoolThreadMaximum,'SetThreadpoolThreadMaximum',\
+    SetThreadpoolThreadMinimum,'SetThreadpoolThreadMinimum',\
+    SetThreadpoolTimer,'SetThreadpoolTimer',\
+    SetThreadpoolWait,'SetThreadpoolWait',\
+    SetThreadpoolWaitEx,'SetThreadpoolWaitEx',\
+    SetThreadPreferredUILanguages,'SetThreadPreferredUILanguages',\
+    SetThreadPriority,'SetThreadPriority',\
+    SetThreadPriorityBoost,'SetThreadPriorityBoost',\
+    SetThreadSelectedCpuSets,'SetThreadSelectedCpuSets',\
+    SetThreadStackGuarantee,'SetThreadStackGuarantee',\
+    SetThreadToken,'SetThreadToken',\
+    SetThreadUILanguage,'SetThreadUILanguage',\
+    SetTimerQueueTimer,'SetTimerQueueTimer',\
+    SetTimeZoneInformation,'SetTimeZoneInformation',\
+    SetUnhandledExceptionFilter,'SetUnhandledExceptionFilter',\
+    SetupComm,'SetupComm',\
+    SetUserGeoID,'SetUserGeoID',\
+    SetVDMCurrentDirectories,'SetVDMCurrentDirectories',\
+    SetVolumeLabelA,'SetVolumeLabelA',\
+    SetVolumeLabelW,'SetVolumeLabelW',\
+    SetVolumeMountPointA,'SetVolumeMountPointA',\
+    SetVolumeMountPointW,'SetVolumeMountPointW',\
+    SetWaitableTimer,'SetWaitableTimer',\
+    SetXStateFeaturesMask,'SetXStateFeaturesMask',\
+    ShowConsoleCursor,'ShowConsoleCursor',\
+    SignalObjectAndWait,'SignalObjectAndWait',\
+    SizeofResource,'SizeofResource',\
+    Sleep,'Sleep',\
+    SleepConditionVariableCS,'SleepConditionVariableCS',\
+    SleepConditionVariableSRW,'SleepConditionVariableSRW',\
+    SleepEx,'SleepEx',\
+    StartThreadpoolIo,'StartThreadpoolIo',\
+    SubmitThreadpoolWork,'SubmitThreadpoolWork',\
+    SuspendThread,'SuspendThread',\
+    SwitchToFiber,'SwitchToFiber',\
+    SwitchToThread,'SwitchToThread',\
+    SystemTimeToFileTime,'SystemTimeToFileTime',\
+    SystemTimeToTzSpecificLocalTime,'SystemTimeToTzSpecificLocalTime',\
+    SystemTimeToTzSpecificLocalTimeEx,'SystemTimeToTzSpecificLocalTimeEx',\
+    TerminateJobObject,'TerminateJobObject',\
+    TerminateProcess,'TerminateProcess',\
+    TerminateThread,'TerminateThread',\
+    Thread32First,'Thread32First',\
+    Thread32Next,'Thread32Next',\
+    TlsAlloc,'TlsAlloc',\
+    TlsFree,'TlsFree',\
+    TlsGetValue,'TlsGetValue',\
+    TlsSetValue,'TlsSetValue',\
+    Toolhelp32ReadProcessMemory,'Toolhelp32ReadProcessMemory',\
+    TransactNamedPipe,'TransactNamedPipe',\
+    TransmitCommChar,'TransmitCommChar',\
+    TryAcquireSRWLockExclusive,'TryAcquireSRWLockExclusive',\
+    TryAcquireSRWLockShared,'TryAcquireSRWLockShared',\
+    TryEnterCriticalSection,'TryEnterCriticalSection',\
+    TrySubmitThreadpoolCallback,'TrySubmitThreadpoolCallback',\
+    TzSpecificLocalTimeToSystemTime,'TzSpecificLocalTimeToSystemTime',\
+    TzSpecificLocalTimeToSystemTimeEx,'TzSpecificLocalTimeToSystemTimeEx',\
+    uaw_lstrcmpiW,'uaw_lstrcmpiW',\
+    uaw_lstrcmpW,'uaw_lstrcmpW',\
+    uaw_lstrlenW,'uaw_lstrlenW',\
+    uaw_wcschr,'uaw_wcschr',\
+    uaw_wcscpy,'uaw_wcscpy',\
+    uaw_wcsicmp,'uaw_wcsicmp',\
+    uaw_wcslen,'uaw_wcslen',\
+    uaw_wcsrchr,'uaw_wcsrchr',\
+    UnhandledExceptionFilter,'UnhandledExceptionFilter',\
+    UnlockFile,'UnlockFile',\
+    UnlockFileEx,'UnlockFileEx',\
+    UnmapViewOfFile,'UnmapViewOfFile',\
+    UnregisterApplicationRecoveryCallback,'UnregisterApplicationRecoveryCallback',\
+    UnregisterApplicationRestart,'UnregisterApplicationRestart',\
+    UnregisterBadMemoryNotification,'UnregisterBadMemoryNotification',\
+    UnregisterWait,'UnregisterWait',\
+    UnregisterWaitEx,'UnregisterWaitEx',\
+    UnregisterWaitUntilOOBECompleted,'UnregisterWaitUntilOOBECompleted',\
+    UpdateCalendarDayOfWeek,'UpdateCalendarDayOfWeek',\
+    UpdateProcThreadAttribute,'UpdateProcThreadAttribute',\
+    UpdateResourceA,'UpdateResourceA',\
+    UpdateResourceW,'UpdateResourceW',\
+    VerifyScripts,'VerifyScripts',\
+    VerifyVersionInfoA,'VerifyVersionInfoA',\
+    VerifyVersionInfoW,'VerifyVersionInfoW',\
+    VerSetConditionMask,'VerSetConditionMask',\
+    VirtualAlloc,'VirtualAlloc',\
+    VirtualAllocEx,'VirtualAllocEx',\
+    VirtualAllocExNuma,'VirtualAllocExNuma',\
+    VirtualFree,'VirtualFree',\
+    VirtualFreeEx,'VirtualFreeEx',\
+    VirtualLock,'VirtualLock',\
+    VirtualProtect,'VirtualProtect',\
+    VirtualProtectEx,'VirtualProtectEx',\
+    VirtualQuery,'VirtualQuery',\
+    VirtualQueryEx,'VirtualQueryEx',\
+    VirtualUnlock,'VirtualUnlock',\
+    WaitCommEvent,'WaitCommEvent',\
+    WaitForDebugEvent,'WaitForDebugEvent',\
+    WaitForDebugEventEx,'WaitForDebugEventEx',\
+    WaitForMultipleObjects,'WaitForMultipleObjects',\
+    WaitForMultipleObjectsEx,'WaitForMultipleObjectsEx',\
+    WaitForSingleObject,'WaitForSingleObject',\
+    WaitForSingleObjectEx,'WaitForSingleObjectEx',\
+    WaitForThreadpoolIoCallbacks,'WaitForThreadpoolIoCallbacks',\
+    WaitForThreadpoolTimerCallbacks,'WaitForThreadpoolTimerCallbacks',\
+    WaitForThreadpoolWaitCallbacks,'WaitForThreadpoolWaitCallbacks',\
+    WaitForThreadpoolWorkCallbacks,'WaitForThreadpoolWorkCallbacks',\
+    WaitNamedPipeA,'WaitNamedPipeA',\
+    WaitNamedPipeW,'WaitNamedPipeW',\
+    WakeAllConditionVariable,'WakeAllConditionVariable',\
+    WakeConditionVariable,'WakeConditionVariable',\
+    WerGetFlags,'WerGetFlags',\
+    WerRegisterFile,'WerRegisterFile',\
+    WerRegisterMemoryBlock,'WerRegisterMemoryBlock',\
+    WerRegisterRuntimeExceptionModule,'WerRegisterRuntimeExceptionModule',\
+    WerSetFlags,'WerSetFlags',\
+    WerUnregisterFile,'WerUnregisterFile',\
+    WerUnregisterMemoryBlock,'WerUnregisterMemoryBlock',\
+    WerUnregisterRuntimeExceptionModule,'WerUnregisterRuntimeExceptionModule',\
+    WideCharToMultiByte,'WideCharToMultiByte',\
+    WinExec,'WinExec',\
+    Wow64DisableWow64FsRedirection,'Wow64DisableWow64FsRedirection',\
+    Wow64EnableWow64FsRedirection,'Wow64EnableWow64FsRedirection',\
+    Wow64GetThreadContext,'Wow64GetThreadContext',\
+    Wow64GetThreadSelectorEntry,'Wow64GetThreadSelectorEntry',\
+    Wow64RevertWow64FsRedirection,'Wow64RevertWow64FsRedirection',\
+    Wow64SetThreadContext,'Wow64SetThreadContext',\
+    Wow64SuspendThread,'Wow64SuspendThread',\
+    WriteConsoleA,'WriteConsoleA',\
+    WriteConsoleInputA,'WriteConsoleInputA',\
+    WriteConsoleInputW,'WriteConsoleInputW',\
+    WriteConsoleOutputA,'WriteConsoleOutputA',\
+    WriteConsoleOutputAttribute,'WriteConsoleOutputAttribute',\
+    WriteConsoleOutputCharacterA,'WriteConsoleOutputCharacterA',\
+    WriteConsoleOutputCharacterW,'WriteConsoleOutputCharacterW',\
+    WriteConsoleOutputW,'WriteConsoleOutputW',\
+    WriteConsoleW,'WriteConsoleW',\
+    WriteFile,'WriteFile',\
+    WriteFileEx,'WriteFileEx',\
+    WriteFileGather,'WriteFileGather',\
+    WritePrivateProfileSectionA,'WritePrivateProfileSectionA',\
+    WritePrivateProfileSectionW,'WritePrivateProfileSectionW',\
+    WritePrivateProfileStringA,'WritePrivateProfileStringA',\
+    WritePrivateProfileStringW,'WritePrivateProfileStringW',\
+    WritePrivateProfileStructA,'WritePrivateProfileStructA',\
+    WritePrivateProfileStructW,'WritePrivateProfileStructW',\
+    WriteProcessMemory,'WriteProcessMemory',\
+    WriteProfileSectionA,'WriteProfileSectionA',\
+    WriteProfileSectionW,'WriteProfileSectionW',\
+    WriteProfileStringA,'WriteProfileStringA',\
+    WriteProfileStringW,'WriteProfileStringW',\
+    WriteTapemark,'WriteTapemark',\
+    WTSGetActiveConsoleSessionId,'WTSGetActiveConsoleSessionId',\
+    ZombifyActCtx,'ZombifyActCtx'
+end if
+
+GetFreeSpace equ GlobalMemoryStatus
+LockSegment equ GlobalFix
+UnlockSegment equ GlobalUnfix
+GetCurrentTime equ GetTickCount
+MoveMemory equ RtlMoveMemory
+FillMemory equ RtlFillMemory
+ZeroMemory equ RtlZeroMemory
+CaptureStackBackTrace equ RtlCaptureStackBackTrace
+CopyMemory equ RtlCopyMemory
+
+;Not present in MASM32 kernel32.lib
+;extrn '__imp__CloseProfileUserMapping@0' as CloseProfileUserMapping:dword
+;extrn '__imp__GetHandleContext@4' as GetHandleContext:dword
+;extrn '__imp__SetHandleContext@8' as SetHandleContext:dword
+;extrn '__imp__OpenProfileUserMapping@0' as OpenProfileUserMapping:dword
+;extrn '__imp__InterlockedCompareExchange64@12' as InterlockedCompareExchange64:dword
+
+api AddAtom,\
+    AddConsoleAlias,\
+    AddLocalAlternateComputerName,\
+    BeginUpdateResource,\
+    BuildCommDCB,\
+    BuildCommDCBAndTimeouts,\
+    CallNamedPipe,\
+    CheckNameLegalDOS8Dot3,\
+    CommConfigDialog,\
+    CompareString,\
+    CopyFile,\
+    CopyFileEx,\
+    CopyFileTransacted,\
+    CreateActCtx,\
+    CreateBoundaryDescriptor,\
+    CreateDirectory,\
+    CreateDirectoryEx,\
+    CreateDirectoryTransacted,\
+    CreateEvent,\
+    CreateEventEx,\
+    CreateFile,\
+    CreateFileMapping,\
+    CreateFileMappingNuma,\
+    CreateFileTransacted,\
+    CreateHardLink,\
+    CreateHardLinkTransacted,\
+    CreateJobObject,\
+    CreateMailslot,\
+    CreateMutex,\
+    CreateMutexEx,\
+    CreateNamedPipe,\
+    CreatePrivateNamespace,\
+    CreateProcess,\
+    CreateProcessInternal,\
+    CreateSemaphore,\
+    CreateSemaphoreEx,\
+    CreateSymbolicLink,\
+    CreateSymbolicLinkTransacted,\
+    CreateWaitableTimer,\
+    CreateWaitableTimerEx,\
+    DefineDosDevice,\
+    DeleteFile,\
+    DeleteFileTransacted,\
+    DeleteVolumeMountPoint,\
+    DnsHostnameToComputerName,\
+    DosPathToSessionPath,\
+    EndUpdateResource,\
+    EnumCalendarInfo,\
+    EnumCalendarInfoEx,\
+    EnumDateFormats,\
+    EnumDateFormatsEx,\
+    EnumerateLocalComputerNames,\
+    EnumLanguageGroupLocales,\
+    EnumResourceLanguages,\
+    EnumResourceLanguagesEx,\
+    EnumResourceNames,\
+    EnumResourceNamesEx,\
+    EnumResourceTypes,\
+    EnumResourceTypesEx,\
+    EnumSystemCodePages,\
+    EnumSystemLanguageGroups,\
+    EnumSystemLocales,\
+    EnumTimeFormats,\
+    EnumUILanguages,\
+    ExpandEnvironmentStrings,\
+    ExpungeConsoleCommandHistory,\
+    FatalAppExit,\
+    FillConsoleOutputCharacter,\
+    FindActCtxSectionString,\
+    FindAtom,\
+    FindFirstChangeNotification,\
+    FindFirstFile,\
+    FindFirstFileEx,\
+    FindFirstFileTransacted,\
+    FindFirstVolume,\
+    FindFirstVolumeMountPoint,\
+    FindNextFile,\
+    FindNextVolume,\
+    FindNextVolumeMountPoint,\
+    FindResource,\
+    FindResourceEx,\
+    FoldString,\
+    FormatMessage,\
+    FreeEnvironmentStrings,\
+    GetAtomName,\
+    GetBinaryType,\
+    GetCalendarInfo,\
+    GetCommandLine,\
+    GetCompressedFileSize,\
+    GetCompressedFileSizeTransacted,\
+    GetComputerName,\
+    GetComputerNameEx,\
+    GetConsoleAlias,\
+    GetConsoleAliases,\
+    GetConsoleAliasesLength,\
+    GetConsoleAliasExes,\
+    GetConsoleAliasExesLength,\
+    GetConsoleOriginalTitle,\
+    GetConsoleTitle,\
+    GetCPInfoEx,\
+    GetCurrencyFormat,\
+    GetCurrentDirectory,\
+    GetDateFormat,\
+    GetDefaultCommConfig,\
+    GetDiskFreeSpace,\
+    GetDiskFreeSpaceEx,\
+    GetDllDirectory,\
+    GetDriveType,\
+    GetEnvironmentStrings,\
+    GetEnvironmentVariable,\
+    GetFileAttributes,\
+    GetFileAttributesEx,\
+    GetFileAttributesTransacted,\
+    GetFinalPathNameByHandle,\
+    GetFirmwareEnvironmentVariable,\
+    GetFirmwareEnvironmentVariableEx,\
+    GetFullPathName,\
+    GetFullPathNameTransacted,\
+    GetGeoInfo,\
+    GetLocaleInfo,\
+    GetLogicalDriveStrings,\
+    GetLongPathName,\
+    GetLongPathNameTransacted,\
+    GetModuleFileName,\
+    GetModuleHandle,\
+    GetModuleHandleEx,\
+    GetNamedPipeClientComputerName,\
+    GetNamedPipeHandleState,\
+    GetNumberFormat,\
+    GetPrivateProfileInt,\
+    GetPrivateProfileSection,\
+    GetPrivateProfileSectionNames,\
+    GetPrivateProfileString,\
+    GetPrivateProfileStruct,\
+    GetProfileInt,\
+    GetProfileSection,\
+    GetProfileString,\
+    GetShortPathName,\
+    GetStartupInfo,\
+    GetStringType,\
+    GetStringTypeEx,\
+    GetSystemDirectory,\
+    GetSystemWindowsDirectory,\
+    GetSystemWow64Directory,\
+    GetTempFileName,\
+    GetTempPath,\
+    GetTimeFormat,\
+    GetUserName,\
+    GetVersionEx,\
+    GetVolumeInformation,\
+    GetVolumeNameForVolumeMountPoint,\
+    GetVolumePathName,\
+    GetVolumePathNamesForVolumeName,\
+    GetWindowsDirectory,\
+    GlobalAddAtom,\
+    GlobalAddAtomEx,\
+    GlobalFindAtom,\
+    GlobalGetAtomName,\
+    IsBadStringPtr,\
+    K32EnumPageFiles,\
+    K32GetDeviceDriverBaseName,\
+    K32GetDeviceDriverFileName,\
+    K32GetMappedFileName,\
+    K32GetModuleBaseName,\
+    K32GetModuleFileNameEx,\
+    K32GetProcessImageFileName,\
+    LCMapString,\
+    LoadLibrary,\
+    LoadLibraryEx,\
+    lstrcat,\
+    lstrcmp,\
+    lstrcmpi,\
+    lstrcpy,\
+    lstrcpyn,\
+    lstrlen,\
+    MoveFile,\
+    MoveFileEx,\
+    MoveFileTransacted,\
+    MoveFileWithProgress,\
+    NeedCurrentDirectoryForExePath,\
+    OpenEncryptedFileRaw,\
+    OpenEvent,\
+    OpenFileMapping,\
+    OpenJobObject,\
+    OpenMutex,\
+    OpenPrivateNamespace,\
+    OpenSemaphore,\
+    OpenWaitableTimer,\
+    OutputDebugString,\
+    PeekConsoleInput,\
+    QueryDosDevice,\
+    QueryFullProcessImageName,\
+    ReadConsole,\
+    ReadConsoleInput,\
+    ReadConsoleInputEx,\
+    ReadConsoleOutput,\
+    ReadConsoleOutputCharacter,\
+    RegCreateKeyEx,\
+    RegDeleteTree,\
+    RegDeleteValue,\
+    RegEnumKeyEx,\
+    RegEnumValue,\
+    RegGetValue,\
+    RegLoadKey,\
+    RegLoadMUIString,\
+    RegOpenKeyEx,\
+    RegQueryInfoKey,\
+    RegQueryValueEx,\
+    RegRestoreKey,\
+    RegSaveKeyEx,\
+    RegSetValueEx,\
+    RegUnLoadKey,\
+    RemoveDirectory,\
+    RemoveDirectoryTransacted,\
+    ReplaceFile,\
+    ScrollConsoleScreenBuffer,\
+    SearchPath,\
+    SetCalendarInfo,\
+    SetComputerName,\
+    SetComputerNameEx,\
+    SetConsoleNumberOfCommands,\
+    SetConsoleTitle,\
+    SetCurrentDirectory,\
+    SetDefaultCommConfig,\
+    SetDllDirectory,\
+    SetEnvironmentStrings,\
+    SetEnvironmentVariable,\
+    SetFileAttributes,\
+    SetFileAttributesTransacted,\
+    SetFileShortName,\
+    SetFirmwareEnvironmentVariable,\
+    SetFirmwareEnvironmentVariableEx,\
+    SetLocaleInfo,\
+    SetLocalPrimaryComputerName,\
+    SetVolumeLabel,\
+    SetVolumeMountPoint,\
+    UpdateResource,\
+    VerifyVersionInfo,\
+    WaitNamedPipe,\
+    WriteConsole,\
+    WriteConsoleInput,\
+    WriteConsoleOutput,\
+    WriteConsoleOutputCharacter,\
+    WritePrivateProfileSection,\
+    WritePrivateProfileString,\
+    WritePrivateProfileStruct,\
+    WriteProfileSection,\
+    WriteProfileString
+
+;======================= Undocumented functions (unknown arguments) =======================;
+;__misaligned_access,'__misaligned_access',\
+;ActivateActCtxWorker,'ActivateActCtxWorker',\
+;AddRefActCtxWorker,'AddRefActCtxWorker',\
+;AppContainerDeriveSidFromMoniker,'AppContainerDeriveSidFromMoniker',\
+;AppContainerFreeMemory,'AppContainerFreeMemory',\
+;AppContainerLookupDisplayNameMrtReference,'AppContainerLookupDisplayNameMrtReference',\
+;AppContainerLookupMoniker,'AppContainerLookupMoniker',\
+;AppContainerRegisterSid,'AppContainerRegisterSid',\
+;AppContainerUnregisterSid,'AppContainerUnregisterSid',\
+;AppXFreeMemory,'AppXFreeMemory',\
+;AppXGetApplicationData,'AppXGetApplicationData',\
+;AppXGetDevelopmentMode,'AppXGetDevelopmentMode',\
+;AppXGetOSMaxVersionTested,'AppXGetOSMaxVersionTested',\
+;AppXGetOSMinVersion,'AppXGetOSMinVersion',\
+;AppXGetPackageCapabilities,'AppXGetPackageCapabilities',\
+;AppXGetPackageSid,'AppXGetPackageSid',\
+;AppXGetPackageState,'AppXGetPackageState',\
+;AppXLookupDisplayName,'AppXLookupDisplayName',\
+;AppXLookupMoniker,'AppXLookupMoniker',\
+;AppXSetPackageState,'AppXSetPackageState',\
+;BaseCheckAppcompatCache,'BaseCheckAppcompatCache',\
+;BaseCheckAppcompatCacheEx,'BaseCheckAppcompatCacheEx',\
+;BaseCheckAppcompatCacheExWorker,'BaseCheckAppcompatCacheExWorker',\
+;BaseCheckAppcompatCacheWorker,'BaseCheckAppcompatCacheWorker',\
+;BaseCheckElevation,'BaseCheckElevation',\
+;BaseCheckRunApp,'BaseCheckRunApp',\
+;BaseCleanupAppcompatCacheSupport,'BaseCleanupAppcompatCacheSupport',\
+;BaseCleanupAppcompatCacheSupportWorker,'BaseCleanupAppcompatCacheSupportWorker',\
+;BaseDestroyVDMEnvironment,'BaseDestroyVDMEnvironment',\
+;BaseDllReadWriteIniFile,'BaseDllReadWriteIniFile',\
+;BaseDumpAppcompatCache,'BaseDumpAppcompatCache',\
+;BaseDumpAppcompatCacheWorker,'BaseDumpAppcompatCacheWorker',\
+;BaseElevationPostProcessing,'BaseElevationPostProcessing',\
+;BaseFlushAppcompatCache,'BaseFlushAppcompatCache',\
+;BaseFlushAppcompatCacheWorker,'BaseFlushAppcompatCacheWorker',\
+;BaseFormatObjectAttributes,'BaseFormatObjectAttributes',\
+;BaseFreeAppCompatDataForProcessWorker,'BaseFreeAppCompatDataForProcessWorker',\
+;BaseGenerateAppCompatData,'BaseGenerateAppCompatData',\
+;BaseInitAppcompatCacheSupport,'BaseInitAppcompatCacheSupport',\
+;BaseInitAppcompatCacheSupportWorker,'BaseInitAppcompatCacheSupportWorker',\
+;BaseIsAppcompatInfrastructureDisabled,'BaseIsAppcompatInfrastructureDisabled',\
+;BaseIsAppcompatInfrastructureDisabledWorker,'BaseIsAppcompatInfrastructureDisabledWorker',\
+;BaseIsDosApplication,'BaseIsDosApplication',\
+;BaseProcessInitPostImport,'BaseProcessInitPostImport',\
+;BaseProcessStart,'BaseProcessStart',\
+;BaseQueryModuleData,'BaseQueryModuleData',\
+;BaseReadAppCompatDataForProcessWorker,'BaseReadAppCompatDataForProcessWorker',\
+;BaseSetLastNTError,'BaseSetLastNTError',\
+;BaseThreadInitThunk,'BaseThreadInitThunk',\
+;BaseThreadStart,'BaseThreadStart',\
+;BaseUpdateAppcompatCache,'BaseUpdateAppcompatCache',\
+;BaseUpdateAppcompatCacheWorker,'BaseUpdateAppcompatCacheWorker',\
+;BaseUpdateVDMEntry,'BaseUpdateVDMEntry',\
+;BaseVerifyUnicodeString,'BaseVerifyUnicodeString',\
+;BaseWriteErrorElevationRequiredEvent,'BaseWriteErrorElevationRequiredEvent',\
+;BasepAllocateActivationContextActivationBlock,'BasepAllocateActivationContextActivationBlock',\
+;BasepAnsiStringToDynamicUnicodeString,'BasepAnsiStringToDynamicUnicodeString',\
+;BasepAppCompatHookDLL,'BasepAppCompatHookDLL',\
+;BasepAppContainerEnvironmentExtension,'BasepAppContainerEnvironmentExtension',\
+;BasepAppXExtension,'BasepAppXExtension',\
+;BasepCheckAppCompat,'BasepCheckAppCompat',\
+;BasepCheckBadapp,'BasepCheckBadapp',\
+;BasepCheckWebBladeHashes,'BasepCheckWebBladeHashes',\
+;BasepCheckWinSaferRestrictions,'BasepCheckWinSaferRestrictions',\
+;BasepConstructSxsCreateProcessMessage,'BasepConstructSxsCreateProcessMessage',\
+;BasepCopyEncryption,'BasepCopyEncryption',\
+;BasepFreeActivationContextActivationBlock,'BasepFreeActivationContextActivationBlock',\
+;BasepFreeAppCompatData,'BasepFreeAppCompatData',\
+;BasepGetAppCompatData,'BasepGetAppCompatData',\
+;BasepGetComputerNameFromNtPath,'BasepGetComputerNameFromNtPath',\
+;BasepGetExeArchType,'BasepGetExeArchType',\
+;BasepIsProcessAllowed,'BasepIsProcessAllowed',\
+;BasepMapModuleHandle,'BasepMapModuleHandle',\
+;BasepNotifyLoadStringResource,'BasepNotifyLoadStringResource',\
+;BasepPostSuccessAppXExtension,'BasepPostSuccessAppXExtension',\
+;BasepProcessInvalidImage,'BasepProcessInvalidImage',\
+;BasepQueryAppCompat,'BasepQueryAppCompat',\
+;BasepReleaseAppXContext,'BasepReleaseAppXContext',\
+;BasepReleaseSxsCreateProcessUtilityStruct,'BasepReleaseSxsCreateProcessUtilityStruct',\
+;BasepReportFault,'BasepReportFault',\
+;BasepSetFileEncryptionCompression,'BasepSetFileEncryptionCompression',\
+;CancelTimerQueueTimer,'CancelTimerQueueTimer',\
+;CheckAllowDecryptedRemoteDestinationPolicy,'CheckAllowDecryptedRemoteDestinationPolicy',\
+;CheckElevation,'CheckElevation',\
+;CheckForReadOnlyResource,'CheckForReadOnlyResource',\
+;CheckForReadOnlyResourceFilter,'CheckForReadOnlyResourceFilter',\
+;CloseConsoleHandle,'CloseConsoleHandle',\
+;CloseState,'CloseState',\
+;CloseStateAtom,'CloseStateAtom',\
+;CloseStateChangeNotification,'CloseStateChangeNotification',\
+;CloseStateContainer,'CloseStateContainer',\
+;CloseStateLock,'CloseStateLock',\
+;CmdBatNotification,'CmdBatNotification',\
+;CommitStateAtom,'CommitStateAtom',\
+;CompareCalendarDates,'CompareCalendarDates',\
+;ConsoleIMERoutine,'ConsoleIMERoutine',\
+;ConvertNLSDayOfWeekToWin32DayOfWeek,'ConvertNLSDayOfWeekToWin32DayOfWeek',\
+;CreateActCtxWWorker,'CreateActCtxWWorkerqword
+;CreateNlsSecurityDescriptor,'CreateNlsSecurityDescriptor',\
+;CreateSocketHandle,'CreateSocketHandle',\
+;CreateStateAtom,'CreateStateAtom',\
+;CreateStateChangeNotification,'CreateStateChangeNotification',\
+;CreateStateContainer,'CreateStateContainer',\
+;CreateStateLock,'CreateStateLock',\
+;CreateStateSubcontainer,'CreateStateSubcontainer',\
+;CtrlRoutine,'CtrlRoutine',\
+;DeactivateActCtxWorker,'DeactivateActCtxWorker',\
+;DeleteStateAtomValue,'DeleteStateAtomValue',\
+;DeleteStateContainer,'DeleteStateContainer',\
+;DeleteStateContainerValue,'DeleteStateContainerValue',\
+;DnsHostnameToComputerNameExW,'DnsHostnameToComputerNameExW',\
+;DuplicateEncryptionInfoFileExt,'DuplicateEncryptionInfoFileExt',\
+;DuplicateStateContainerHandle,'DuplicateStateContainerHandle',\
+;EnumerateStateAtomValues,'EnumerateStateAtomValues',\
+;EnumerateStateContainerItems,'EnumerateStateContainerItems',\
+;FindActCtxSectionGuidWorker,'FindActCtxSectionGuidWorker',\
+;FindActCtxSectionStringWWorker,'FindActCtxSectionStringWWorker',\
+;GetAppContainerAce,'GetAppContainerAceqword
+;GetApplicationRecoveryCallbackWorker,'GetApplicationRecoveryCallbackWorker',\
+;GetApplicationRestartSettingsWorker,'GetApplicationRestartSettingsWorker',\
+;GetCalendarDateFormat,'GetCalendarDateFormat',\
+;GetCalendarDaysInMonth,'GetCalendarDaysInMonth',\
+;GetCalendarDifferenceInDays,'GetCalendarDifferenceInDays',\
+;GetCalendarMonthsInYear,'GetCalendarMonthsInYear',\
+;GetCalendarWeekNumber,'GetCalendarWeekNumber',\
+;GetConsoleCharType,'GetConsoleCharType',\
+;GetConsoleCommandHistoryA,'GetConsoleCommandHistoryA',\
+;GetConsoleCommandHistoryW,'GetConsoleCommandHistoryW',\
+;GetConsoleCommandHistoryLengthA,'GetConsoleCommandHistoryLengthA',\
+;GetConsoleCommandHistoryLengthW,'GetConsoleCommandHistoryLengthW',\
+;GetConsoleCursorMode,'GetConsoleCursorMode',\
+;GetConsoleHardwareState,'GetConsoleHardwareState',\
+;GetConsoleInputExeNameA,'GetConsoleInputExeNameA',\
+;GetConsoleInputExeNameW,'GetConsoleInputExeNameW',\
+;GetConsoleInputWaitHandle,'GetConsoleInputWaitHandle',\
+;GetConsoleKeyboardLayoutNameA,'GetConsoleKeyboardLayoutNameA',\
+;GetConsoleKeyboardLayoutNameW,'GetConsoleKeyboardLayoutNameW',\
+;GetCPFileNameFromRegistry,'GetCPFileNameFromRegistry',\
+;GetCurrentActCtxWorker,'GetCurrentActCtxWorker',\
+;GetDateFormatAWorker,'GetDateFormatAWorker',\
+;GetDateFormatWWorker,'GetDateFormatWWorkerqword
+;GetDefaultSortkeySize,'GetDefaultSortkeySize',\
+;GetEncryptedFileVersionExt,'GetEncryptedFileVersionExt',\
+;GetEraNameCountedString,'GetEraNameCountedString',\
+;GetHivePath,'GetHivePath',\
+;GetLinguistLangSize,'GetLinguistLangSize',\
+;GetNlsSectionName,'GetNlsSectionName',\
+;GetRoamingLastObservedChangeTime,'GetRoamingLastObservedChangeTime',\
+;GetSerializedAtomBytes,'GetSerializedAtomBytes',\
+;GetStateContainerDepth,'GetStateContainerDepth',\
+;GetStateFolder,'GetStateFolder',\
+;GetStateRootFolder,'GetStateRootFolder',\
+;GetStateSettingsFolder,'GetStateSettingsFolder',\
+;GetStateVersion,'GetStateVersion',\
+;GetSystemAppDataFolder,'GetSystemAppDataFolder',\
+;GetSystemAppDataKey,'GetSystemAppDataKey',\
+;GetTimeFormatAWorker,'GetTimeFormatAWorker',\
+;GetTimeFormatWWorker,'GetTimeFormatWWorker',\
+;HeapSummary,'HeapSummary',\
+;HeapCreateTagsW,'HeapCreateTagsW',\
+;HeapExtend,'HeapExtend',\
+;HeapQueryTagW,'HeapQueryTagW',\
+;HeapUsage,'HeapUsage',\
+;IsValidUILanguage,'IsValidUILanguage',\
+;NlsCheckPolicy,'NlsCheckPolicy',\
+;NlsConvertIntegerToString,'NlsConvertIntegerToString',\
+;NlsEventDataDescCreate,'NlsEventDataDescCreate',\
+;NlsGetCacheUpdateCount,'NlsGetCacheUpdateCount',\
+;NlsResetProcessLocale,'NlsResetProcessLocale',\
+;NlsUpdateLocale,'NlsUpdateLocale',\
+;NlsUpdateSystemLocale,'NlsUpdateSystemLocale',\
+;NlsWriteEtwEvent,'NlsWriteEtwEvent',\
+;NotifyMountMgr,'NotifyMountMgr',\
+;NtVdm64CreateProcessInternalW,'NtVdm64CreateProcessInternalW',\
+;OpenConsoleWStub,'OpenConsoleWStub',\
+;OpenState,'OpenState',\
+;OpenStateAtom,'OpenStateAtom',\
+;OpenStateExplicit,'OpenStateExplicit',\
+;OverrideRoamingDataModificationTimesInRange,'OverrideRoamingDataModificationTimesInRange',\
+;PssWalkMarkerRewind,'PssWalkMarkerRewind',\
+;PssWalkMarkerSeek,'PssWalkMarkerSeek',\
+;PssWalkMarkerTell,'PssWalkMarkerTell',\
+;PrivMoveFileIdentityW,'PrivMoveFileIdentityW',\
+;PublishStateChangeNotification,'PublishStateChangeNotification',\
+;QueryActCtxSettingsWWorker,'QueryActCtxSettingsWWorker',\
+;QueryActCtxWWorker,'QueryActCtxWWorker',\
+;QueryStateAtomValueInfo,'QueryStateAtomValueInfo',\
+;QueryStateContainerItemInfo,'QueryStateContainerItemInfo',\
+;QuirkGetData2Worker,'QuirkGetData2Worker',\
+;QuirkGetDataWorker,'QuirkGetDataWorker',\
+;QuirkIsEnabled2Worker,'QuirkIsEnabled2Worker',\
+;QuirkIsEnabled3Worker,'QuirkIsEnabled3Worker',\
+;QuirkIsEnabledForPackage2Worker,'QuirkIsEnabledForPackage2Worker',\
+;QuirkIsEnabledForPackage3Worker,'QuirkIsEnabledForPackage3Worker',\
+;QuirkIsEnabledForPackage4Worker,'QuirkIsEnabledForPackage4Worker',\
+;QuirkIsEnabledForPackageWorker,'QuirkIsEnabledForPackageWorker',\
+;QuirkIsEnabledForProcessWorker,'QuirkIsEnabledForProcessWorker',\
+;QuirkIsEnabledWorker,'QuirkIsEnabledWorker',\
+;RaiseInvalid16BitExeError,'RaiseInvalid16BitExeError',\
+;ReadStateAtomValue,'ReadStateAtomValue',\
+;ReadStateContainerValue,'ReadStateContainerValue',\
+;RegisterConsoleIME,'RegisterConsoleIME',\
+;RegisterConsoleOS2,'RegisterConsoleOS2',\
+;RegisterConsoleVDM,'RegisterConsoleOS2',\
+;RegisterStateChangeNotification,'RegisterStateChangeNotification',\
+;RegisterStateLock,'RegisterStateLock',\
+;RegisterWaitForInputIdle,'RegisterWaitForInputIdle',\
+;RegisterWaitForSingleObjectEx,'RegisterWaitForSingleObjectEx',\
+;RegisterWowBaseHandlers,'RegisterWowBaseHandlers',\
+;RegisterWowExec,'RegisterWowExec',\
+;RegKrnGetGlobalState,'RegKrnGetGlobalState',\
+;RegKrnInitialize,'RegKrnInitialize',\
+;ReleaseActCtxWorker,'ReleaseActCtxWorker',\
+;ReleaseStateLock,'ReleaseStateLock',\
+;RemoveLocalAlternateComputerNameA,'RemoveLocalAlternateComputerNameA',\
+;RemoveLocalAlternateComputerNameW,'RemoveLocalAlternateComputerNameW',\
+;ResetState,'ResetState',\
+;SetClientDynamicTimeZoneInformation,'SetClientDynamicTimeZoneInformation',\
+;SetClientTimeZoneInformation,'SetClientTimeZoneInformation',\
+;SetComPlusPackageInstallStatus,'SetComPlusPackageInstallStatus',\
+;SetComputerNameEx2W,'SetComputerNameEx2W',\
+;SetConsoleCommandHistoryMode,'SetComputerNameEx2W',\
+;SetConsoleCursorMode,'SetConsoleCursorMode',\
+;SetConsoleInputExeNameA,'SetConsoleInputExeNameA',\
+;SetConsoleInputExeNameW,'SetConsoleInputExeNameW',\
+;SetConsoleKeyShortcuts,'SetConsoleKeyShortcuts',\
+;SetConsoleLocalEUDC,'SetConsoleLocalEUDC',\
+;SetConsoleMenuClose,'SetConsoleMenuClose',\
+;SetCPGlobal,'SetCPGlobal',\
+;SetRoamingLastObservedChangeTime,'SetRoamingLastObservedChangeTime',\
+;SetStateVersion,'SetStateVersion',\
+;SetThreadpoolTimerEx,'SetThreadpoolTimerEx',\
+;SetVolumeMountPointWStub,'SetVolumeMountPointWStub',\
+;SetWaitableTimerEx,'SetWaitableTimerEx',\
+;SortCloseHandle,'SortCloseHandle',\
+;SortGetHandle,'SortGetHandle',\
+;SubscribeStateChangeNotification,'SubscribeStateChangeNotification',\
+;TermsrvConvertSysRootToUserDir,'TermsrvConvertSysRootToUserDir',\
+;TermsrvAppInstallMode,'TermsrvAppInstallMode',\
+;TermsrvCreateRegEntry,'TermsrvCreateRegEntry',\
+;TermsrvDeleteKey,'TermsrvDeleteKey',\
+;TermsrvDeleteValue,'TermsrvDeleteValue',\
+;TermsrvGetPreSetValue,'TermsrvGetPreSetValue',\
+;TermsrvGetWindowsDirectoryA,'TermsrvGetWindowsDirectoryA',\
+;TermsrvGetWindowsDirectoryW,'TermsrvGetWindowsDirectoryW',\
+;TermsrvOpenRegEntry,'TermsrvOpenRegEntry',\
+;TermsrvOpenUserClasses,'TermsrvOpenUserClasses',\
+;TermsrvRestoreKey,'TermsrvRestoreKey',\
+;TermsrvSetKeySecurity,'TermsrvSetKeySecurity',\
+;TermsrvSetValueKey,'TermsrvSetValueKey',\
+;TermsrvSyncUserIniFileExt,'TermsrvSyncUserIniFileExt',\
+;UnmapViewOfFileEx,'UnmapViewOfFileEx',\
+;UnregisterConsoleIME,'UnregisterConsoleIME',\
+;UTRegister,'UTRegister',\
+;UTUnRegister,'UTUnRegister',\
+;UnregisterStateChangeNotification,'UnregisterStateChangeNotification',\
+;UnregisterStateLock,'UnregisterStateLock',\
+;UnsubscribeStateChangeNotification,'UnsubscribeStateChangeNotification',\
+;ValidateLCType,'ValidateLCType',\
+;ValidateLocale,'ValidateLocale',\
+;VDMConsoleOperation,'VDMConsoleOperation',\
+;VDMOperationStarted,'VDMOperationStarted',\
+;VerifyConsoleIoHandle,'VerifyConsoleIoHandle',\
+;WerGetFlagsWorker,'WerGetFlagsWorker',\
+;WerRegisterFileWorker,'WerGetFlagsWorker',\
+;WerRegisterMemoryBlockWorker,'WerRegisterMemoryBlockWorker',\
+;WerRegisterRuntimeExceptionModuleWorker,'WerRegisterRuntimeExceptionModuleWorker',\
+;WerSetFlagsWorker,'WerSetFlagsWorker',\
+;WerUnregisterFileWorker,'WerUnregisterFileWorker',\
+;WerUnregisterMemoryBlockWorker,'WerUnregisterMemoryBlockWorker',\
+;WerUnregisterRuntimeExceptionModuleWorker,'WerUnregisterRuntimeExceptionModuleWorker',\
+;WerpCleanupMessageMapping,'WerpCleanupMessageMapping',\
+;WerpGetDebugger,'WerpGetDebugger',\
+;WerpInitiateRemoteRecovery,'WerpInitiateRemoteRecovery',\
+;WerpLaunchAeDebug,'WerpLaunchAeDebug',\
+;WerpNotifyLoadStringResource,'WerpNotifyLoadStringResource',\
+;WerpNotifyLoadStringResourceEx,'WerpNotifyLoadStringResourceEx',\
+;WerpNotifyLoadStringResourceWorker,'WerpNotifyLoadStringResourceWorker',\
+;WerpNotifyUseStringResource,'WerpNotifyUseStringResource',\
+;WerpNotifyUseStringResourceWorker,'WerpNotifyUseStringResourceWorker',\
+;WerpStringLookup,'WerpStringLookup',\
+;WriteConsoleInputVDMA,'WriteConsoleInputVDMA',\
+;WriteConsoleInputVDMW,'WriteConsoleInputVDMW',\
+;WriteStateAtomValue,'WriteStateAtomValue',\
+;WriteStateContainerValue,'WriteStateContainerValue',\
+;ZombifyActCtxWorker,'ZombifyActCtxWorker'
+
+;api GetConsoleCommandHistory,\
+;    GetConsoleCommandHistoryLength,\
+;    GetConsoleInputExeName,\
+;    GetConsoleKeyboardLayoutName,\
+;    RemoveLocalAlternateComputerName,\
+;    SetConsoleInputExeName,\
+;    TermsrvGetWindowsDirectory,\
+;    WriteConsoleInputVDM
+
+end if ;KERNEL32_INC

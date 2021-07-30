@@ -1,0 +1,1440 @@
+;===========================================================;
+;                                                           ;
+;    windows.inc for Easy Code 2.0 Fasm 64-bit projects     ;
+;                     (version 1.0.10)                      ;
+;                                                           ;
+; In this file there will be those 64-bit constants, macros ;
+; or structures not defined in the Fasm include files, but  ;
+;      it never has to be included for driver projects      ;
+;                                                           ;
+;             Copyright © Ramon Sala - 2015-2021            ;
+;                                                           ;
+;===========================================================;
+
+if ~defined WINDOWS_INC
+define WINDOWS_INC 1
+
+if ~defined TYPEDEF
+    macro TYPEDEF type, base {
+        restruc type
+        purge type
+
+        struc type [v] \{ \common . base v \}
+        macro type [v] \{ \common base v \}
+
+        virtual at 0
+            local label, sizeof
+            label type ?
+            sizeof = $ - label
+            sizeof.#type = sizeof
+            SIZEOF.#type = sizeof
+            SizeOf.#type = sizeof
+        end virtual
+    }
+end if
+
+;================================================================
+;== The following macro has been programmed by Tomasz Grysztar ==
+;================================================================
+macro extrn def
+{
+    define state 0
+    match ename =as name:size, def
+    \{
+        if used name
+            extrn ename as name:size
+        end if
+        define state 1
+    \}
+    match =0 ename =as name, state def
+    \{
+        if used name
+            extrn ename as name
+        end if
+        define state 1
+    \}
+    match =0 name:size, state def
+    \{
+        if used name
+            extrn name:size
+        end if
+        define state 1
+    \}
+    match =0, state
+    \{
+    if used def
+        extrn def
+    end if
+    \}
+}
+
+TYPEDEF                                         xptr,   dq
+TYPEDEF                                         VARTYPE, dw
+
+VIEW_E_FIRST                                    equ     80040140H
+VIEW_E_LAST                                     equ     8004014FH
+VIEW_S_FIRST                                    equ     00040140H
+VIEW_S_LAST                                     equ     0004014FH
+VIEW_E_DRAW                                     equ     80040140H
+
+NTDDI_WIN95                                     equ     003000000H
+NTDDI_WIN98_ME                                  equ     003001000H
+NTDDI_WIN9XALL                                  equ     00300FFFFH
+
+NTDDI_WINNT4                                    equ     004000000H
+NTDDI_WINNT4ALL                                 equ     00400FFFFH
+
+NTDDI_WIN2K                                     equ     005000000H
+NTDDI_WIN2KSP1                                  equ     005000100H
+NTDDI_WIN2KSP2                                  equ     005000200H
+NTDDI_WIN2KSP3                                  equ     005000300H
+NTDDI_WIN2KSP4                                  equ     005000400H
+NTDDI_WIN2KALL                                  equ     00500FFFFH
+
+NTDDI_WINXP                                     equ     005010000H
+NTDDI_WINXPSP1                                  equ     005010100H
+NTDDI_WINXPSP2                                  equ     005010200H
+NTDDI_WINXPSP3                                  equ     005010300H
+NTDDI_WINXPSP4                                  equ     005010400H
+NTDDI_WINXPALL                                  equ     00501FFFFH
+
+NTDDI_WS03                                      equ     005020000H
+NTDDI_WS03SP1                                   equ     005020100H
+NTDDI_WS03SP2                                   equ     005020200H
+NTDDI_WS03SP3                                   equ     005020300H
+NTDDI_WS03SP4                                   equ     005020400H
+NTDDI_WS03ALL                                   equ     00502FFFFH
+
+NTDDI_WIN6                                      equ     006000000H
+NTDDI_WIN6SP1                                   equ     006000100H
+NTDDI_WIN6SP2                                   equ     006000200H
+NTDDI_WIN6SP3                                   equ     006000300H
+NTDDI_WIN6SP4                                   equ     006000400H
+NTDDI_WIN6ALL                                   equ     00600FFFFH
+
+NTDDI_VISTA                                     equ     NTDDI_WIN6
+NTDDI_VISTASP1                                  equ     NTDDI_WIN6SP1
+NTDDI_VISTASP2                                  equ     NTDDI_WIN6SP2
+NTDDI_VISTASP3                                  equ     NTDDI_WIN6SP3
+NTDDI_VISTASP4                                  equ     NTDDI_WIN6SP4
+NTDDI_VISTALL                                   equ     NTDDI_WIN6ALL
+
+NTDDI_LONGHORN                                  equ     NTDDI_VISTA
+
+NTDDI_WS08                                      equ     NTDDI_WIN6SP1
+NTDDI_WS08SP2                                   equ     NTDDI_WIN6SP2
+NTDDI_WS08SP3                                   equ     NTDDI_WIN6SP3
+NTDDI_WS08SP4                                   equ     NTDDI_WIN6SP4
+
+NTDDI_WIN7                                      equ     006010000H
+NTDDI_WIN7SP1                                   equ     006010100H
+NTDDI_WIN7ALL                                   equ     00601FFFFH
+
+NTDDI_WIN8                                      equ     006020000H
+NTDDI_WIN81                                     equ     006030000H
+NTDDI_WIN81                                     equ     006030000H
+NTDDI_WINBLUE                                   equ     006030000H
+NTDDI_WIN8ALL                                   equ     00603FFFFH
+
+NTDDI_WIN10                                     equ     010000000H
+
+WIN32_IE_IE20                                   equ     00200H
+WIN32_IE_IE30                                   equ     00300H
+WIN32_IE_IE40                                   equ     00400H
+WIN32_IE_IE50                                   equ     00500H
+WIN32_IE_IE55                                   equ     00550H
+WIN32_IE_IE60                                   equ     00600H
+WIN32_IE_IE60SP1                                equ     00601H
+WIN32_IE_IE60SP2                                equ     00603H
+WIN32_IE_IE70                                   equ     00700H
+WIN32_IE_IE80                                   equ     00800H
+WIN32_IE_IE90                                   equ     00900H
+WIN32_IE_ALL                                    equ     0FFFFH
+
+WIN32_IE_IE200                                  equ     0200H
+WIN32_IE_IE300                                  equ     0300H
+WIN32_IE_IE302                                  equ     0302H
+WIN32_IE_IE400                                  equ     0400H
+WIN32_IE_IE401                                  equ     0401H
+WIN32_IE_IE500                                  equ     0500H
+WIN32_IE_IE501                                  equ     0501H
+WIN32_IE_IE550                                  equ     0550H
+WIN32_IE_IE600                                  equ     0600H
+WIN32_IE_IE601                                  equ     0601H
+WIN32_IE_IE603                                  equ     0603H
+WIN32_IE_IE700                                  equ     0700H
+WIN32_IE_IE800                                  equ     0800H
+WIN32_IE_IE900                                  equ     0900H
+
+WIN32_WINNT_NT4                                 equ     0400H
+WIN32_WINNT_WIN2K                               equ     0500H
+WIN32_WINNT_WINXP                               equ     0501H
+WIN32_WINNT_WS03                                equ     0502H
+WIN32_WINNT_WIN6                                equ     0600H
+WIN32_WINNT_VISTA                               equ     0600H
+WIN32_WINNT_WS08                                equ     0600H
+WIN32_WINNT_LONGHORN                            equ     0600H
+WIN32_WINNT_WIN7                                equ     0601H
+WIN32_WINNT_WIN8                                equ     0602H
+WIN32_WINNT_WIN81                               equ     0603H
+WIN32_WINNT_WIN10                               equ     0604H   ;?
+
+OSVERSION_MASK                                  equ     0FFFF0000H
+SPVERSION_MASK                                  equ     00000FF00H
+SUBVERSION_MASK                                 equ     0000000FFH
+
+;====================================== winerror ==========================================;
+
+NO_ERROR                                        equ     0
+SEC_E_OK                                        equ     00000000H
+ERROR_SUCCESS                                   equ     NO_ERROR
+ERROR_INVALID_FUNCTION                          equ     1
+ERROR_FILE_NOT_FOUND                            equ     2
+ERROR_PATH_NOT_FOUND                            equ     3
+ERROR_TOO_MANY_OPEN_FILES                       equ     4
+ERROR_ACCESS_DENIED                             equ     5
+ERROR_INVALID_HANDLE                            equ     6
+ERROR_ARENA_TRASHED                             equ     7
+ERROR_NOT_ENOUGH_MEMORY                         equ     8
+ERROR_INVALID_BLOCK                             equ     9
+ERROR_BAD_ENVIRONMENT                           equ     10
+ERROR_BAD_FORMAT                                equ     11
+ERROR_INVALID_ACCESS                            equ     12
+ERROR_INVALID_DATA                              equ     13
+ERROR_OUTOFMEMORY                               equ     14
+ERROR_INVALID_DRIVE                             equ     15
+ERROR_CURRENT_DIRECTORY                         equ     16
+ERROR_NOT_SAME_DEVICE                           equ     17
+ERROR_NO_MORE_FILES                             equ     18
+ERROR_WRITE_PROTECT                             equ     19
+ERROR_BAD_UNIT                                  equ     20
+ERROR_NOT_READY                                 equ     21
+ERROR_BAD_COMMAND                               equ     22
+ERROR_CRC                                       equ     23
+ERROR_BAD_LENGTH                                equ     24
+ERROR_SEEK                                      equ     25
+ERROR_NOT_DOS_DISK                              equ     26
+ERROR_SECTOR_NOT_FOUND                          equ     27
+ERROR_OUT_OF_PAPER                              equ     28
+ERROR_WRITE_FAULT                               equ     29
+ERROR_READ_FAULT                                equ     30
+ERROR_GEN_FAILURE                               equ     31
+ERROR_SHARING_VIOLATION                         equ     32
+ERROR_LOCK_VIOLATION                            equ     33
+ERROR_WRONG_DISK                                equ     34
+ERROR_SHARING_BUFFER_EXCEEDED                   equ     36
+ERROR_HANDLE_EOF                                equ     38
+ERROR_HANDLE_DISK_FULL                          equ     39
+ERROR_NOT_SUPPORTED                             equ     50
+ERROR_REM_NOT_LIST                              equ     51
+ERROR_DUP_NAME                                  equ     52
+ERROR_BAD_NETPATH                               equ     53
+ERROR_NETWORK_BUSY                              equ     54
+ERROR_DEV_NOT_EXIST                             equ     55
+ERROR_TOO_MANY_CMDS                             equ     56
+ERROR_ADAP_HDW_ERR                              equ     57
+ERROR_BAD_NET_RESP                              equ     58
+ERROR_UNEXP_NET_ERR                             equ     59
+ERROR_BAD_REM_ADAP                              equ     60
+ERROR_PRINTQ_FULL                               equ     61
+ERROR_NO_SPOOL_SPACE                            equ     62
+ERROR_PRINT_CANCELLED                           equ     63
+ERROR_NETNAME_DELETED                           equ     64
+ERROR_NETWORK_ACCESS_DENIED                     equ     65
+ERROR_BAD_DEV_TYPE                              equ     66
+ERROR_BAD_NET_NAME                              equ     67
+ERROR_TOO_MANY_NAMES                            equ     68
+ERROR_TOO_MANY_SESS                             equ     69
+ERROR_SHARING_PAUSED                            equ     70
+ERROR_REQ_NOT_ACCEP                             equ     71
+ERROR_REDIR_PAUSED                              equ     72
+ERROR_FILE_EXISTS                               equ     80
+ERROR_CANNOT_MAKE                               equ     82
+ERROR_FAIL_I24                                  equ     83
+ERROR_OUT_OF_STRUCTURES                         equ     84
+ERROR_ALREADY_ASSIGNED                          equ     85
+ERROR_INVALID_PASSWORD                          equ     86
+ERROR_INVALID_PARAMETER                         equ     87
+ERROR_NET_WRITE_FAULT                           equ     88
+ERROR_NO_PROC_SLOTS                             equ     89
+ERROR_TOO_MANY_SEMAPHORES                       equ     100
+ERROR_EXCL_SEM_ALREADY_OWNED                    equ     101
+ERROR_SEM_IS_SET                                equ     102
+ERROR_TOO_MANY_SEM_REQUESTS                     equ     103
+ERROR_INVALID_AT_INTERRUPT_TIME                 equ     104
+ERROR_SEM_OWNER_DIED                            equ     105
+ERROR_SEM_USER_LIMIT                            equ     106
+ERROR_DISK_CHANGE                               equ     107
+ERROR_DRIVE_LOCKED                              equ     108
+ERROR_BROKEN_PIPE                               equ     109
+ERROR_OPEN_FAILED                               equ     110
+ERROR_BUFFER_OVERFLOW                           equ     111
+ERROR_DISK_FULL                                 equ     112
+ERROR_NO_MORE_SEARCH_HANDLES                    equ     113
+ERROR_INVALID_TARGET_HANDLE                     equ     114
+ERROR_INVALID_CATEGORY                          equ     117
+ERROR_INVALID_VERIFY_SWITCH                     equ     118
+ERROR_BAD_DRIVER_LEVEL                          equ     119
+ERROR_CALL_NOT_IMPLEMENTED                      equ     120
+ERROR_SEM_TIMEOUT                               equ     121
+ERROR_INSUFFICIENT_BUFFER                       equ     122
+ERROR_INVALID_NAME                              equ     123
+ERROR_INVALID_LEVEL                             equ     124
+ERROR_NO_VOLUME_LABEL                           equ     125
+ERROR_MOD_NOT_FOUND                             equ     126
+ERROR_PROC_NOT_FOUND                            equ     127
+ERROR_WAIT_NO_CHILDREN                          equ     128
+ERROR_CHILD_NOT_COMPLETE                        equ     129
+ERROR_DIRECT_ACCESS_HANDLE                      equ     130
+ERROR_NEGATIVE_SEEK                             equ     131
+ERROR_SEEK_ON_DEVICE                            equ     132
+ERROR_IS_JOIN_TARGET                            equ     133
+ERROR_IS_JOINED                                 equ     134
+ERROR_IS_SUBSTED                                equ     135
+ERROR_NOT_JOINED                                equ     136
+ERROR_NOT_SUBSTED                               equ     137
+ERROR_JOIN_TO_JOIN                              equ     138
+ERROR_SUBST_TO_SUBST                            equ     139
+ERROR_JOIN_TO_SUBST                             equ     140
+ERROR_SUBST_TO_JOIN                             equ     141
+ERROR_BUSY_DRIVE                                equ     142
+ERROR_SAME_DRIVE                                equ     143
+ERROR_DIR_NOT_ROOT                              equ     144
+ERROR_DIR_NOT_EMPTY                             equ     145
+ERROR_IS_SUBST_PATH                             equ     146
+ERROR_IS_JOIN_PATH                              equ     147
+ERROR_PATH_BUSY                                 equ     148
+ERROR_IS_SUBST_TARGET                           equ     149
+ERROR_SYSTEM_TRACE                              equ     150
+ERROR_INVALID_EVENT_COUNT                       equ     151
+ERROR_TOO_MANY_MUXWAITERS                       equ     152
+ERROR_INVALID_LIST_FORMAT                       equ     153
+ERROR_LABEL_TOO_LONG                            equ     154
+ERROR_TOO_MANY_TCBS                             equ     155
+ERROR_SIGNAL_REFUSED                            equ     156
+ERROR_DISCARDED                                 equ     157
+ERROR_NOT_LOCKED                                equ     158
+ERROR_BAD_THREADID_ADDR                         equ     159
+ERROR_BAD_ARGUMENTS                             equ     160
+ERROR_BAD_PATHNAME                              equ     161
+ERROR_SIGNAL_PENDING                            equ     162
+ERROR_MAX_THRDS_REACHED                         equ     164
+ERROR_LOCK_FAILED                               equ     167
+ERROR_BUSY                                      equ     170
+ERROR_CANCEL_VIOLATION                          equ     173
+ERROR_ATOMIC_LOCKS_NOT_SUPPORTED                equ     174
+ERROR_INVALID_SEGMENT_NUMBER                    equ     180
+ERROR_INVALID_ORDINAL                           equ     182
+ERROR_ALREADY_EXISTS                            equ     183
+ERROR_INVALID_FLAG_NUMBER                       equ     186
+ERROR_SEM_NOT_FOUND                             equ     187
+ERROR_INVALID_STARTING_CODESEG                  equ     188
+ERROR_INVALID_STACKSEG                          equ     189
+ERROR_INVALID_MODULETYPE                        equ     190
+ERROR_INVALID_EXE_SIGNATURE                     equ     191
+ERROR_EXE_MARKED_INVALID                        equ     192
+ERROR_BAD_EXE_FORMAT                            equ     193
+ERROR_ITERATED_DATA_EXCEEDS_64k                 equ     194
+ERROR_INVALID_MINALLOCSIZE                      equ     195
+ERROR_DYNLINK_FROM_INVALID_RING                 equ     196
+ERROR_IOPL_NOT_ENABLED                          equ     197
+ERROR_INVALID_SEGDPL                            equ     198
+ERROR_AUTODATASEG_EXCEEDS_64k                   equ     199
+ERROR_RING2SEG_MUST_BE_MOVABLE                  equ     200
+ERROR_RELOC_CHAIN_XEEDS_SEGLIM                  equ     201
+ERROR_INFLOOP_IN_RELOC_CHAIN                    equ     202
+ERROR_ENVVAR_NOT_FOUND                          equ     203
+ERROR_NO_SIGNAL_SENT                            equ     205
+ERROR_FILENAME_EXCED_RANGE                      equ     206
+ERROR_RING2_STACK_IN_USE                        equ     207
+ERROR_META_EXPANSION_TOO_LONG                   equ     208
+ERROR_INVALID_SIGNAL_NUMBER                     equ     209
+ERROR_THREAD_1_INACTIVE                         equ     210
+ERROR_LOCKED                                    equ     212
+ERROR_TOO_MANY_MODULES                          equ     214
+ERROR_NESTING_NOT_ALLOWED                       equ     215
+ERROR_EXE_MACHINE_TYPE_MISMATCH                 equ     216
+ERROR_EXE_CANNOT_MODIFY_SIGNED_BINARY           equ     217
+ERROR_EXE_CANNOT_MODIFY_STRONG_SIGNED_BINARY    equ     218
+ERROR_FILE_CHECKED_OUT                          equ     220
+ERROR_CHECKOUT_REQUIRED                         equ     221
+ERROR_BAD_FILE_TYPE                             equ     222
+ERROR_FILE_TOO_LARGE                            equ     223
+ERROR_FORMS_AUTH_REQUIRED                       equ     224
+ERROR_VIRUS_INFECTED                            equ     225
+ERROR_VIRUS_DELETED                             equ     226
+ERROR_PIPE_LOCAL                                equ     229
+ERROR_BAD_PIPE                                  equ     230
+ERROR_PIPE_BUSY                                 equ     231
+ERROR_NO_DATA                                   equ     232
+ERROR_PIPE_NOT_CONNECTED                        equ     233
+ERROR_MORE_DATA                                 equ     234
+ERROR_VC_DISCONNECTED                           equ     240
+ERROR_INVALID_EA_NAME                           equ     254
+ERROR_EA_LIST_INCONSISTENT                      equ     255
+WAIT_TIMEOUT                                    equ     258
+ERROR_NO_MORE_ITEMS                             equ     259
+ERROR_CANNOT_COPY                               equ     266
+ERROR_DIRECTORY                                 equ     267
+ERROR_EAS_DIDNT_FIT                             equ     275
+ERROR_EA_FILE_CORRUPT                           equ     276
+ERROR_EA_TABLE_FULL                             equ     277
+ERROR_INVALID_EA_HANDLE                         equ     278
+ERROR_EAS_NOT_SUPPORTED                         equ     282
+ERROR_NOT_OWNER                                 equ     288
+ERROR_TOO_MANY_POSTS                            equ     298
+ERROR_PARTIAL_COPY                              equ     299
+ERROR_OPLOCK_NOT_GRANTED                        equ     300
+ERROR_INVALID_OPLOCK_PROTOCOL                   equ     301
+ERROR_DISK_TOO_FRAGMENTED                       equ     302
+ERROR_DELETE_PENDING                            equ     303
+ERROR_INCOMPATIBLE_WITH_GLOBAL_SHORT_NAME_REGISTRY_SETTING equ 304
+ERROR_SHORT_NAMES_NOT_ENABLED_ON_VOLUME         equ     305
+ERROR_SECURITY_STREAM_IS_INCONSISTENT           equ     306
+ERROR_INVALID_LOCK_RANGE                        equ     307
+ERROR_IMAGE_SUBSYSTEM_NOT_PRESENT               equ     308
+ERROR_NOTIFICATION_GUID_ALREADY_DEFINED         equ     309
+ERROR_MR_MID_NOT_FOUND                          equ     317
+ERROR_SCOPE_NOT_FOUND                           equ     318
+ERROR_FAIL_NOACTION_REBOOT                      equ     350
+ERROR_FAIL_SHUTDOWN                             equ     351
+ERROR_FAIL_RESTART                              equ     352
+ERROR_MAX_SESSIONS_REACHED                      equ     353
+ERROR_THREAD_MODE_ALREADY_BACKGROUND            equ     400
+ERROR_THREAD_MODE_NOT_BACKGROUND                equ     401
+ERROR_PROCESS_MODE_ALREADY_BACKGROUND           equ     402
+ERROR_PROCESS_MODE_NOT_BACKGROUND               equ     403
+ERROR_INVALID_ADDRESS                           equ     487
+ERROR_USER_PROFILE_LOAD                         equ     500
+ERROR_ARITHMETIC_OVERFLOW                       equ     534
+ERROR_PIPE_CONNECTED                            equ     535
+ERROR_PIPE_LISTENING                            equ     536
+ERROR_VERIFIER_STOP                             equ     537
+ERROR_ABIOS_ERROR                               equ     538
+ERROR_WX86_WARNING                              equ     539
+ERROR_WX86_ERROR                                equ     540
+ERROR_TIMER_NOT_CANCELED                        equ     541
+ERROR_UNWIND                                    equ     542
+ERROR_BAD_STACK                                 equ     543
+ERROR_INVALID_UNWIND_TARGET                     equ     544
+ERROR_INVALID_PORT_ATTRIBUTES                   equ     545
+ERROR_PORT_MESSAGE_TOO_LONG                     equ     546
+ERROR_INVALID_QUOTA_LOWER                       equ     547
+ERROR_DEVICE_ALREADY_ATTACHED                   equ     548
+ERROR_INSTRUCTION_MISALIGNMENT                  equ     549
+ERROR_PROFILING_NOT_STARTED                     equ     550
+ERROR_PROFILING_NOT_STOPPED                     equ     551
+ERROR_COULD_NOT_INTERPRET                       equ     552
+ERROR_PROFILING_AT_LIMIT                        equ     553
+ERROR_CANT_WAIT                                 equ     554
+ERROR_CANT_TERMINATE_SELF                       equ     555
+ERROR_UNEXPECTED_MM_CREATE_ERR                  equ     556
+ERROR_UNEXPECTED_MM_MAP_ERROR                   equ     557
+ERROR_UNEXPECTED_MM_EXTEND_ERR                  equ     558
+ERROR_BAD_FUNCTION_TABLE                        equ     559
+ERROR_NO_GUID_TRANSLATION                       equ     560
+ERROR_INVALID_LDT_SIZE                          equ     561
+ERROR_INVALID_LDT_OFFSET                        equ     563
+ERROR_INVALID_LDT_DESCRIPTOR                    equ     564
+ERROR_TOO_MANY_THREADS                          equ     565
+ERROR_THREAD_NOT_IN_PROCESS                     equ     566
+ERROR_PAGEFILE_QUOTA_EXCEEDED                   equ     567
+ERROR_LOGON_SERVER_CONFLICT                     equ     568
+ERROR_SYNCHRONIZATION_REQUIRED                  equ     569
+ERROR_NET_OPEN_FAILED                           equ     570
+ERROR_IO_PRIVILEGE_FAILED                       equ     571
+ERROR_CONTROL_C_EXIT                            equ     572
+ERROR_MISSING_SYSTEMFILE                        equ     573
+ERROR_UNHANDLED_EXCEPTION                       equ     574
+ERROR_APP_INIT_FAILURE                          equ     575
+ERROR_PAGEFILE_CREATE_FAILED                    equ     576
+ERROR_INVALID_IMAGE_HASH                        equ     577
+ERROR_NO_PAGEFILE                               equ     578
+ERROR_ILLEGAL_FLOAT_CONTEXT                     equ     579
+ERROR_NO_EVENT_PAIR                             equ     580
+ERROR_DOMAIN_CTRLR_CONFIG_ERROR                 equ     581
+ERROR_ILLEGAL_CHARACTER                         equ     582
+ERROR_UNDEFINED_CHARACTER                       equ     583
+ERROR_FLOPPY_VOLUME                             equ     584
+ERROR_BIOS_FAILED_TO_CONNECT_INTERRUPT          equ     585
+ERROR_BACKUP_CONTROLLER                         equ     586
+ERROR_MUTANT_LIMIT_EXCEEDED                     equ     587
+ERROR_FS_DRIVER_REQUIRED                        equ     588
+ERROR_CANNOT_LOAD_REGISTRY_FILE                 equ     589
+ERROR_DEBUG_ATTACH_FAILED                       equ     590
+ERROR_SYSTEM_PROCESS_TERMINATED                 equ     591
+ERROR_DATA_NOT_ACCEPTED                         equ     592
+ERROR_VDM_HARD_ERROR                            equ     593
+ERROR_DRIVER_CANCEL_TIMEOUT                     equ     594
+ERROR_REPLY_MESSAGE_MISMATCH                    equ     595
+ERROR_LOST_WRITEBEHIND_DATA                     equ     596
+ERROR_CLIENT_SERVER_PARAMETERS_INVALID          equ     597
+ERROR_NOT_TINY_STREAM                           equ     598
+ERROR_STACK_OVERFLOW_READ                       equ     599
+ERROR_CONVERT_TO_LARGE                          equ     600
+ERROR_FOUND_OUT_OF_SCOPE                        equ     601
+ERROR_ALLOCATE_BUCKET                           equ     602
+ERROR_MARSHALL_OVERFLOW                         equ     603
+ERROR_INVALID_VARIANT                           equ     604
+ERROR_BAD_COMPRESSION_BUFFER                    equ     605
+ERROR_AUDIT_FAILED                              equ     606
+ERROR_TIMER_RESOLUTION_NOT_SET                  equ     607
+ERROR_INSUFFICIENT_LOGON_INFO                   equ     608
+ERROR_BAD_DLL_ENTRYPOINT                        equ     609
+ERROR_BAD_SERVICE_ENTRYPOINT                    equ     610
+ERROR_IP_ADDRESS_CONFLICT1                      equ     611
+ERROR_IP_ADDRESS_CONFLICT2                      equ     612
+ERROR_REGISTRY_QUOTA_LIMIT                      equ     613
+ERROR_NO_CALLBACK_ACTIVE                        equ     614
+ERROR_PWD_TOO_SHORT                             equ     615
+ERROR_PWD_TOO_RECENT                            equ     616
+ERROR_PWD_HISTORY_CONFLICT                      equ     617
+ERROR_UNSUPPORTED_COMPRESSION                   equ     618
+ERROR_INVALID_HW_PROFILE                        equ     619
+ERROR_INVALID_PLUGPLAY_DEVICE_PATH              equ     620
+ERROR_QUOTA_LIST_INCONSISTENT                   equ     621
+ERROR_EVALUATION_EXPIRATION                     equ     622
+ERROR_ILLEGAL_DLL_RELOCATION                    equ     623
+ERROR_DLL_INIT_FAILED_LOGOFF                    equ     624
+ERROR_VALIDATE_CONTINUE                         equ     625
+ERROR_NO_MORE_MATCHES                           equ     626
+ERROR_RANGE_LIST_CONFLICT                       equ     627
+ERROR_SERVER_SID_MISMATCH                       equ     628
+ERROR_CANT_ENABLE_DENY_ONLY                     equ     629
+ERROR_FLOAT_MULTIPLE_FAULTS                     equ     630
+ERROR_FLOAT_MULTIPLE_TRAPS                      equ     631
+ERROR_NOINTERFACE                               equ     632
+ERROR_DRIVER_FAILED_SLEEP                       equ     633
+ERROR_CORRUPT_SYSTEM_FILE                       equ     634
+ERROR_COMMITMENT_MINIMUM                        equ     635
+ERROR_PNP_RESTART_ENUMERATION                   equ     636
+ERROR_SYSTEM_IMAGE_BAD_SIGNATURE                equ     637
+ERROR_PNP_REBOOT_REQUIRED                       equ     638
+ERROR_INSUFFICIENT_POWER                        equ     639
+ERROR_MULTIPLE_FAULT_VIOLATION                  equ     640
+ERROR_SYSTEM_SHUTDOWN                           equ     641
+ERROR_PORT_NOT_SET                              equ     642
+ERROR_DS_VERSION_CHECK_FAILURE                  equ     643
+ERROR_RANGE_NOT_FOUND                           equ     644
+ERROR_NOT_SAFE_MODE_DRIVER                      equ     646
+ERROR_FAILED_DRIVER_ENTRY                       equ     647
+ERROR_DEVICE_ENUMERATION_ERROR                  equ     648
+ERROR_MOUNT_POINT_NOT_RESOLVED                  equ     649
+ERROR_INVALID_DEVICE_OBJECT_PARAMETER           equ     650
+ERROR_MCA_OCCURED                               equ     651
+ERROR_DRIVER_DATABASE_ERROR                     equ     652
+ERROR_SYSTEM_HIVE_TOO_LARGE                     equ     653
+ERROR_DRIVER_FAILED_PRIOR_UNLOAD                equ     654
+ERROR_VOLSNAP_PREPARE_HIBERNATE                 equ     655
+ERROR_HIBERNATION_FAILURE                       equ     656
+ERROR_FILE_SYSTEM_LIMITATION                    equ     665
+ERROR_ASSERTION_FAILURE                         equ     668
+ERROR_ACPI_ERROR                                equ     669
+ERROR_WOW_ASSERTION                             equ     670
+ERROR_PNP_BAD_MPS_TABLE                         equ     671
+ERROR_PNP_TRANSLATION_FAILED                    equ     672
+ERROR_PNP_IRQ_TRANSLATION_FAILED                equ     673
+ERROR_PNP_INVALID_ID                            equ     674
+ERROR_WAKE_SYSTEM_DEBUGGER                      equ     675
+ERROR_HANDLES_CLOSED                            equ     676
+ERROR_EXTRANEOUS_INFORMATION                    equ     677
+ERROR_RXACT_COMMIT_NECESSARY                    equ     678
+ERROR_MEDIA_CHECK                               equ     679
+ERROR_GUID_SUBSTITUTION_MADE                    equ     680
+ERROR_STOPPED_ON_SYMLINK                        equ     681
+ERROR_LONGJUMP                                  equ     682
+ERROR_PLUGPLAY_QUERY_VETOED                     equ     683
+ERROR_UNWIND_CONSOLIDATE                        equ     684
+ERROR_REGISTRY_HIVE_RECOVERED                   equ     685
+ERROR_DLL_MIGHT_BE_INSECURE                     equ     686
+ERROR_DLL_MIGHT_BE_INCOMPATIBLE                 equ     687
+ERROR_DBG_EXCEPTION_NOT_HANDLED                 equ     688
+ERROR_DBG_REPLY_LATER                           equ     689
+ERROR_DBG_UNABLE_TO_PROVIDE_HANDLE              equ     690
+ERROR_DBG_TERMINATE_THREAD                      equ     691
+ERROR_DBG_TERMINATE_PROCESS                     equ     692
+ERROR_DBG_CONTROL_C                             equ     693
+ERROR_DBG_PRINTEXCEPTION_C                      equ     694
+ERROR_DBG_RIPEXCEPTION                          equ     695
+ERROR_DBG_CONTROL_BREAK                         equ     696
+ERROR_DBG_COMMAND_EXCEPTION                     equ     697
+ERROR_OBJECT_NAME_EXISTS                        equ     698
+ERROR_THREAD_WAS_SUSPENDED                      equ     699
+ERROR_IMAGE_NOT_AT_BASE                         equ     700
+ERROR_RXACT_STATE_CREATED                       equ     701
+ERROR_SEGMENT_NOTIFICATION                      equ     702
+ERROR_BAD_CURRENT_DIRECTORY                     equ     703
+ERROR_FT_READ_RECOVERY_FROM_BACKUP              equ     704
+ERROR_FT_WRITE_RECOVERY                         equ     705
+ERROR_IMAGE_MACHINE_TYPE_MISMATCH               equ     706
+ERROR_RECEIVE_PARTIAL                           equ     707
+ERROR_RECEIVE_EXPEDITED                         equ     708
+ERROR_RECEIVE_PARTIAL_EXPEDITED                 equ     709
+ERROR_EVENT_DONE                                equ     710
+ERROR_EVENT_PENDING                             equ     711
+ERROR_CHECKING_FILE_SYSTEM                      equ     712
+ERROR_FATAL_APP_EXIT                            equ     713
+ERROR_PREDEFINED_HANDLE                         equ     714
+ERROR_WAS_UNLOCKED                              equ     715
+ERROR_SERVICE_NOTIFICATION                      equ     716
+ERROR_WAS_LOCKED                                equ     717
+ERROR_LOG_HARD_ERROR                            equ     718
+ERROR_ALREADY_WIN32                             equ     719
+ERROR_IMAGE_MACHINE_TYPE_MISMATCH_EXE           equ     720
+ERROR_NO_YIELD_PERFORMED                        equ     721
+ERROR_TIMER_RESUME_IGNORED                      equ     722
+ERROR_ARBITRATION_UNHANDLED                     equ     723
+ERROR_CARDBUS_NOT_SUPPORTED                     equ     724
+ERROR_MP_PROCESSOR_MISMATCH                     equ     725
+ERROR_HIBERNATED                                equ     726
+ERROR_RESUME_HIBERNATION                        equ     727
+ERROR_FIRMWARE_UPDATED                          equ     728
+ERROR_DRIVERS_LEAKING_LOCKED_PAGES              equ     729
+ERROR_WAKE_SYSTEM                               equ     730
+ERROR_WAIT_1                                    equ     731
+ERROR_WAIT_2                                    equ     732
+ERROR_WAIT_3                                    equ     733
+ERROR_WAIT_63                                   equ     734
+ERROR_ABANDONED_WAIT_0                          equ     735
+ERROR_ABANDONED_WAIT_63                         equ     736
+ERROR_USER_APC                                  equ     737
+ERROR_KERNEL_APC                                equ     738
+ERROR_ALERTED                                   equ     739
+ERROR_ELEVATION_REQUIRED                        equ     740
+ERROR_REPARSE                                   equ     741
+ERROR_OPLOCK_BREAK_IN_PROGRESS                  equ     742
+ERROR_VOLUME_MOUNTED                            equ     743
+ERROR_RXACT_COMMITTED                           equ     744
+ERROR_NOTIFY_CLEANUP                            equ     745
+ERROR_PRIMARY_TRANSPORT_CONNECT_FAILED          equ     746
+ERROR_PAGE_FAULT_TRANSITION                     equ     747
+ERROR_PAGE_FAULT_DEMAND_ZERO                    equ     748
+ERROR_PAGE_FAULT_COPY_ON_WRITE                  equ     749
+ERROR_PAGE_FAULT_GUARD_PAGE                     equ     750
+ERROR_PAGE_FAULT_PAGING_FILE                    equ     751
+ERROR_CACHE_PAGE_LOCKED                         equ     752
+ERROR_CRASH_DUMP                                equ     753
+ERROR_BUFFER_ALL_ZEROS                          equ     754
+ERROR_REPARSE_OBJECT                            equ     755
+ERROR_RESOURCE_REQUIREMENTS_CHANGED             equ     756
+ERROR_TRANSLATION_COMPLETE                      equ     757
+ERROR_NOTHING_TO_TERMINATE                      equ     758
+ERROR_PROCESS_NOT_IN_JOB                        equ     759
+ERROR_PROCESS_IN_JOB                            equ     760
+ERROR_VOLSNAP_HIBERNATE_READY                   equ     761
+ERROR_FSFILTER_OP_COMPLETED_SUCCESSFULLY        equ     762
+ERROR_INTERRUPT_VECTOR_ALREADY_CONNECTED        equ     763
+ERROR_INTERRUPT_STILL_CONNECTED                 equ     764
+ERROR_WAIT_FOR_OPLOCK                           equ     765
+ERROR_DBG_EXCEPTION_HANDLED                     equ     766
+ERROR_DBG_CONTINUE                              equ     767
+ERROR_CALLBACK_POP_STACK                        equ     768
+ERROR_COMPRESSION_DISABLED                      equ     769
+ERROR_CANTFETCHBACKWARDS                        equ     770
+ERROR_CANTSCROLLBACKWARDS                       equ     771
+ERROR_ROWSNOTRELEASED                           equ     772
+ERROR_BAD_ACCESSOR_FLAGS                        equ     773
+ERROR_ERRORS_ENCOUNTERED                        equ     774
+ERROR_NOT_CAPABLE                               equ     775
+ERROR_REQUEST_OUT_OF_SEQUENCE                   equ     776
+ERROR_VERSION_PARSE_ERROR                       equ     777
+ERROR_BADSTARTPOSITION                          equ     778
+ERROR_MEMORY_HARDWARE                           equ     779
+ERROR_DISK_REPAIR_DISABLED                      equ     780
+ERROR_INSUFFICIENT_RESOURCE_FOR_SPECIFIED_SHARED_SECTION_SIZE equ 781
+ERROR_SYSTEM_POWERSTATE_TRANSITION              equ     782
+ERROR_SYSTEM_POWERSTATE_COMPLEX_TRANSITION      equ     783
+ERROR_MCA_EXCEPTION                             equ     784
+ERROR_ACCESS_AUDIT_BY_POLICY                    equ     785
+ERROR_ACCESS_DISABLED_NO_SAFER_UI_BY_POLICY     equ     786
+ERROR_ABANDON_HIBERFILE                         equ     787
+ERROR_LOST_WRITEBEHIND_DATA_NETWORK_DISCONNECTED equ    788
+ERROR_LOST_WRITEBEHIND_DATA_NETWORK_SERVER_ERROR equ    789
+ERROR_LOST_WRITEBEHIND_DATA_LOCAL_DISK_ERROR    equ     790
+ERROR_BAD_MCFG_TABLE                            equ     791
+ERROR_OPLOCK_SWITCHED_TO_NEW_HANDLE             equ     800
+ERROR_CANNOT_GRANT_REQUESTED_OPLOCK             equ     801
+ERROR_CANNOT_BREAK_OPLOCK                       equ     802
+ERROR_OPLOCK_HANDLE_CLOSED                      equ     803
+ERROR_NO_ACE_CONDITION                          equ     804
+ERROR_INVALID_ACE_CONDITION                     equ     805
+ERROR_EA_ACCESS_DENIED                          equ     994
+ERROR_OPERATION_ABORTED                         equ     995
+ERROR_IO_INCOMPLETE                             equ     996
+ERROR_IO_PENDING                                equ     997
+ERROR_NOACCESS                                  equ     998
+ERROR_SWAPERROR                                 equ     999
+ERROR_STACK_OVERFLOW                            equ     1001
+ERROR_INVALID_MESSAGE                           equ     1002
+ERROR_CAN_NOT_COMPLETE                          equ     1003
+ERROR_INVALID_FLAGS                             equ     1004
+ERROR_UNRECOGNIZED_VOLUME                       equ     1005
+ERROR_FILE_INVALID                              equ     1006
+ERROR_FULLSCREEN_MODE                           equ     1007
+ERROR_NO_TOKEN                                  equ     1008
+ERROR_BADDB                                     equ     1009
+ERROR_BADKEY                                    equ     1010
+ERROR_CANTOPEN                                  equ     1011
+ERROR_CANTREAD                                  equ     1012
+ERROR_CANTWRITE                                 equ     1013
+ERROR_REGISTRY_RECOVERED                        equ     1014
+ERROR_REGISTRY_CORRUPT                          equ     1015
+ERROR_REGISTRY_IO_FAILED                        equ     1016
+ERROR_NOT_REGISTRY_FILE                         equ     1017
+ERROR_KEY_DELETED                               equ     1018
+ERROR_NO_LOG_SPACE                              equ     1019
+ERROR_KEY_HAS_CHILDREN                          equ     1020
+ERROR_CHILD_MUST_BE_VOLATILE                    equ     1021
+ERROR_NOTIFY_ENUM_DIR                           equ     1022
+ERROR_DEPENDENT_SERVICES_RUNNING                equ     1051
+ERROR_INVALID_SERVICE_CONTROL                   equ     1052
+ERROR_SERVICE_REQUEST_TIMEOUT                   equ     1053
+ERROR_SERVICE_NO_THREAD                         equ     1054
+ERROR_SERVICE_DATABASE_LOCKED                   equ     1055
+ERROR_SERVICE_ALREADY_RUNNING                   equ     1056
+ERROR_INVALID_SERVICE_ACCOUNT                   equ     1057
+ERROR_SERVICE_DISABLED                          equ     1058
+ERROR_CIRCULAR_DEPENDENCY                       equ     1059
+ERROR_SERVICE_DOES_NOT_EXIST                    equ     1060
+ERROR_SERVICE_CANNOT_ACCEPT_CTRL                equ     1061
+ERROR_SERVICE_NOT_ACTIVE                        equ     1062
+ERROR_FAILED_SERVICE_CONTROLLER_CONNECT         equ     1063
+ERROR_EXCEPTION_IN_SERVICE                      equ     1064
+ERROR_DATABASE_DOES_NOT_EXIST                   equ     1065
+ERROR_SERVICE_SPECIFIC_ERROR                    equ     1066
+ERROR_PROCESS_ABORTED                           equ     1067
+ERROR_SERVICE_DEPENDENCY_FAIL                   equ     1068
+ERROR_SERVICE_LOGON_FAILED                      equ     1069
+ERROR_SERVICE_START_HANG                        equ     1070
+ERROR_INVALID_SERVICE_LOCK                      equ     1071
+ERROR_SERVICE_MARKED_FOR_DELETE                 equ     1072
+ERROR_SERVICE_EXISTS                            equ     1073
+ERROR_ALREADY_RUNNING_LKG                       equ     1074
+ERROR_SERVICE_DEPENDENCY_DELETED                equ     1075
+ERROR_BOOT_ALREADY_ACCEPTED                     equ     1076
+ERROR_SERVICE_NEVER_STARTED                     equ     1077
+ERROR_DUPLICATE_SERVICE_NAME                    equ     1078
+ERROR_DIFFERENT_SERVICE_ACCOUNT                 equ     1079
+ERROR_CANNOT_DETECT_DRIVER_FAILURE              equ     1080
+ERROR_CANNOT_DETECT_PROCESS_ABORT               equ     1081
+ERROR_NO_RECOVERY_PROGRAM                       equ     1082
+ERROR_SERVICE_NOT_IN_EXE                        equ     1083
+ERROR_NOT_SAFEBOOT_SERVICE                      equ     1084
+ERROR_END_OF_MEDIA                              equ     1100
+ERROR_FILEMARK_DETECTED                         equ     1101
+ERROR_BEGINNING_OF_MEDIA                        equ     1102
+ERROR_SETMARK_DETECTED                          equ     1103
+ERROR_NO_DATA_DETECTED                          equ     1104
+ERROR_PARTITION_FAILURE                         equ     1105
+ERROR_INVALID_BLOCK_LENGTH                      equ     1106
+ERROR_DEVICE_NOT_PARTITIONED                    equ     1107
+ERROR_UNABLE_TO_LOCK_MEDIA                      equ     1108
+ERROR_UNABLE_TO_UNLOAD_MEDIA                    equ     1109
+ERROR_MEDIA_CHANGED                             equ     1110
+ERROR_BUS_RESET                                 equ     1111
+ERROR_NO_MEDIA_IN_DRIVE                         equ     1112
+ERROR_NO_UNICODE_TRANSLATION                    equ     1113
+ERROR_DLL_INIT_FAILED                           equ     1114
+ERROR_SHUTDOWN_IN_PROGRESS                      equ     1115
+ERROR_NO_SHUTDOWN_IN_PROGRESS                   equ     1116
+ERROR_IO_DEVICE                                 equ     1117
+ERROR_SERIAL_NO_DEVICE                          equ     1118
+ERROR_IRQ_BUSY                                  equ     1119
+ERROR_MORE_WRITES                               equ     1120
+ERROR_COUNTER_TIMEOUT                           equ     1121
+ERROR_FLOPPY_ID_MARK_NOT_FOUND                  equ     1122
+ERROR_FLOPPY_WRONG_CYLINDER                     equ     1123
+ERROR_FLOPPY_UNKNOWN_ERROR                      equ     1124
+ERROR_FLOPPY_BAD_REGISTERS                      equ     1125
+ERROR_DISK_RECALIBRATE_FAILED                   equ     1126
+ERROR_DISK_OPERATION_FAILED                     equ     1127
+ERROR_DISK_RESET_FAILED                         equ     1128
+ERROR_EOM_OVERFLOW                              equ     1129
+ERROR_NOT_ENOUGH_SERVER_MEMORY                  equ     1130
+ERROR_POSSIBLE_DEADLOCK                         equ     1131
+ERROR_MAPPED_ALIGNMENT                          equ     1132
+ERROR_SET_POWER_STATE_VETOED                    equ     1140
+ERROR_SET_POWER_STATE_FAILED                    equ     1141
+ERROR_TOO_MANY_LINKS                            equ     1142
+ERROR_OLD_WIN_VERSION                           equ     1150
+ERROR_APP_WRONG_OS                              equ     1151
+ERROR_SINGLE_INSTANCE_APP                       equ     1152
+ERROR_RMODE_APP                                 equ     1153
+ERROR_INVALID_DLL                               equ     1154
+ERROR_NO_ASSOCIATION                            equ     1155
+ERROR_DDE_FAIL                                  equ     1156
+ERROR_DLL_NOT_FOUND                             equ     1157
+ERROR_NO_MORE_USER_HANDLES                      equ     1158
+ERROR_MESSAGE_SYNC_ONLY                         equ     1159
+ERROR_SOURCE_ELEMENT_EMPTY                      equ     1160
+ERROR_DESTINATION_ELEMENT_FULL                  equ     1161
+ERROR_ILLEGAL_ELEMENT_ADDRESS                   equ     1162
+ERROR_MAGAZINE_NOT_PRESENT                      equ     1163
+ERROR_DEVICE_REINITIALIZATION_NEEDED            equ     1164
+ERROR_DEVICE_REQUIRES_CLEANING                  equ     1165
+ERROR_DEVICE_DOOR_OPEN                          equ     1166
+ERROR_DEVICE_NOT_CONNECTED                      equ     1167
+ERROR_NOT_FOUND                                 equ     1168
+ERROR_NO_MATCH                                  equ     1169
+ERROR_SET_NOT_FOUND                             equ     1170
+ERROR_POINT_NOT_FOUND                           equ     1171
+ERROR_NO_TRACKING_SERVICE                       equ     1172
+ERROR_NO_VOLUME_ID                              equ     1173
+ERROR_UNABLE_TO_REMOVE_REPLACED                 equ     1175
+ERROR_UNABLE_TO_MOVE_REPLACEMENT                equ     1176
+ERROR_UNABLE_TO_MOVE_REPLACEMENT_2              equ     1177
+ERROR_JOURNAL_DELETE_IN_PROGRESS                equ     1178
+ERROR_JOURNAL_NOT_ACTIVE                        equ     1179
+ERROR_POTENTIAL_FILE_FOUND                      equ     1180
+ERROR_JOURNAL_ENTRY_DELETED                     equ     1181
+ERROR_SHUTDOWN_IS_SCHEDULED                     equ     1190
+ERROR_SHUTDOWN_USERS_LOGGED_ON                  equ     1191
+ERROR_BAD_DEVICE                                equ     1200
+ERROR_CONNECTION_UNAVAIL                        equ     1201
+ERROR_DEVICE_ALREADY_REMEMBERED                 equ     1202
+ERROR_NO_NET_OR_BAD_PATH                        equ     1203
+ERROR_BAD_PROVIDER                              equ     1204
+ERROR_CANNOT_OPEN_PROFILE                       equ     1205
+ERROR_BAD_PROFILE                               equ     1206
+ERROR_NOT_CONTAINER                             equ     1207
+ERROR_EXTENDED_ERROR                            equ     1208
+ERROR_INVALID_GROUPNAME                         equ     1209
+ERROR_INVALID_COMPUTERNAME                      equ     1210
+ERROR_INVALID_EVENTNAME                         equ     1211
+ERROR_INVALID_DOMAINNAME                        equ     1212
+ERROR_INVALID_SERVICENAME                       equ     1213
+ERROR_INVALID_NETNAME                           equ     1214
+ERROR_INVALID_SHARENAME                         equ     1215
+ERROR_INVALID_PASSWORDNAME                      equ     1216
+ERROR_INVALID_MESSAGENAME                       equ     1217
+ERROR_INVALID_MESSAGEDEST                       equ     1218
+ERROR_SESSION_CREDENTIAL_CONFLICT               equ     1219
+ERROR_REMOTE_SESSION_LIMIT_EXCEEDED             equ     1220
+ERROR_DUP_DOMAINNAME                            equ     1221
+ERROR_NO_NETWORK                                equ     1222
+ERROR_CANCELLED                                 equ     1223
+ERROR_USER_MAPPED_FILE                          equ     1224
+ERROR_CONNECTION_REFUSED                        equ     1225
+ERROR_GRACEFUL_DISCONNECT                       equ     1226
+ERROR_ADDRESS_ALREADY_ASSOCIATED                equ     1227
+ERROR_ADDRESS_NOT_ASSOCIATED                    equ     1228
+ERROR_CONNECTION_INVALID                        equ     1229
+ERROR_CONNECTION_ACTIVE                         equ     1230
+ERROR_NETWORK_UNREACHABLE                       equ     1231
+ERROR_HOST_UNREACHABLE                          equ     1232
+ERROR_PROTOCOL_UNREACHABLE                      equ     1233
+ERROR_PORT_UNREACHABLE                          equ     1234
+ERROR_REQUEST_ABORTED                           equ     1235
+ERROR_CONNECTION_ABORTED                        equ     1236
+ERROR_RETRY                                     equ     1237
+ERROR_CONNECTION_COUNT_LIMIT                    equ     1238
+ERROR_LOGIN_TIME_RESTRICTION                    equ     1239
+ERROR_LOGIN_WKSTA_RESTRICTION                   equ     1240
+ERROR_INCORRECT_ADDRESS                         equ     1241
+ERROR_ALREADY_REGISTERED                        equ     1242
+ERROR_SERVICE_NOT_FOUND                         equ     1243
+ERROR_NOT_AUTHENTICATED                         equ     1244
+ERROR_NOT_LOGGED_ON                             equ     1245
+ERROR_CONTINUE                                  equ     1246
+ERROR_ALREADY_INITIALIZED                       equ     1247
+ERROR_NO_MORE_DEVICES                           equ     1248
+ERROR_NO_SUCH_SITE                              equ     1249
+ERROR_DOMAIN_CONTROLLER_EXISTS                  equ     1250
+ERROR_ONLY_IF_CONNECTED                         equ     1251
+ERROR_OVERRIDE_NOCHANGES                        equ     1252
+ERROR_BAD_USER_PROFILE                          equ     1253
+ERROR_NOT_SUPPORTED_ON_SBS                      equ     1254
+ERROR_SERVER_SHUTDOWN_IN_PROGRESS               equ     1255
+ERROR_HOST_DOWN                                 equ     1256
+ERROR_NON_ACCOUNT_SID                           equ     1257
+ERROR_NON_DOMAIN_SID                            equ     1258
+ERROR_APPHELP_BLOCK                             equ     1259
+ERROR_ACCESS_DISABLED_BY_POLICY                 equ     1260
+ERROR_REG_NAT_CONSUMPTION                       equ     1261
+ERROR_CSCSHARE_OFFLINE                          equ     1262
+ERROR_PKINIT_FAILURE                            equ     1263
+ERROR_SMARTCARD_SUBSYSTEM_FAILURE               equ     1264
+ERROR_DOWNGRADE_DETECTED                        equ     1265
+ERROR_MACHINE_LOCKED                            equ     1271
+ERROR_CALLBACK_SUPPLIED_INVALID_DATA            equ     1273
+ERROR_SYNC_FOREGROUND_REFRESH_REQUIRED          equ     1274
+ERROR_DRIVER_BLOCKED                            equ     1275
+ERROR_INVALID_IMPORT_OF_NON_DLL                 equ     1276
+ERROR_ACCESS_DISABLED_WEBBLADE                  equ     1277
+ERROR_ACCESS_DISABLED_WEBBLADE_TAMPER           equ     1278
+ERROR_RECOVERY_FAILURE                          equ     1279
+ERROR_ALREADY_FIBER                             equ     1280
+ERROR_ALREADY_THREAD                            equ     1281
+ERROR_STACK_BUFFER_OVERRUN                      equ     1282
+ERROR_PARAMETER_QUOTA_EXCEEDED                  equ     1283
+ERROR_DEBUGGER_INACTIVE                         equ     1284
+ERROR_DELAY_LOAD_FAILED                         equ     1285
+ERROR_VDM_DISALLOWED                            equ     1286
+ERROR_UNIDENTIFIED_ERROR                        equ     1287
+ERROR_INVALID_CRUNTIME_PARAMETER                equ     1288
+ERROR_BEYOND_VDL                                equ     1289
+ERROR_INCOMPATIBLE_SERVICE_SID_TYPE             equ     1290
+ERROR_DRIVER_PROCESS_TERMINATED                 equ     1291
+ERROR_IMPLEMENTATION_LIMIT                      equ     1292
+ERROR_PROCESS_IS_PROTECTED                      equ     1293
+ERROR_SERVICE_NOTIFY_CLIENT_LAGGING             equ     1294
+ERROR_DISK_QUOTA_EXCEEDED                       equ     1295
+ERROR_CONTENT_BLOCKED                           equ     1296
+ERROR_INCOMPATIBLE_SERVICE_PRIVILEGE            equ     1297
+ERROR_APP_HANG                                  equ     1298
+ERROR_INVALID_LABEL                             equ     1299
+ERROR_NOT_ALL_ASSIGNED                          equ     1300
+ERROR_SOME_NOT_MAPPED                           equ     1301
+ERROR_NO_QUOTAS_FOR_ACCOUNT                     equ     1302
+ERROR_LOCAL_USER_SESSION_KEY                    equ     1303
+ERROR_NULL_LM_PASSWORD                          equ     1304
+ERROR_UNKNOWN_REVISION                          equ     1305
+ERROR_REVISION_MISMATCH                         equ     1306
+ERROR_INVALID_OWNER                             equ     1307
+ERROR_INVALID_PRIMARY_GROUP                     equ     1308
+ERROR_NO_IMPERSONATION_TOKEN                    equ     1309
+ERROR_CANT_DISABLE_MANDATORY                    equ     1310
+ERROR_NO_LOGON_SERVERS                          equ     1311
+ERROR_NO_SUCH_LOGON_SESSION                     equ     1312
+ERROR_NO_SUCH_PRIVILEGE                         equ     1313
+ERROR_PRIVILEGE_NOT_HELD                        equ     1314
+ERROR_INVALID_ACCOUNT_NAME                      equ     1315
+ERROR_USER_EXISTS                               equ     1316
+ERROR_NO_SUCH_USER                              equ     1317
+ERROR_GROUP_EXISTS                              equ     1318
+ERROR_NO_SUCH_GROUP                             equ     1319
+ERROR_MEMBER_IN_GROUP                           equ     1320
+ERROR_MEMBER_NOT_IN_GROUP                       equ     1321
+ERROR_LAST_ADMIN                                equ     1322
+ERROR_WRONG_PASSWORD                            equ     1323
+ERROR_ILL_FORMED_PASSWORD                       equ     1324
+ERROR_PASSWORD_RESTRICTION                      equ     1325
+ERROR_LOGON_FAILURE                             equ     1326
+ERROR_ACCOUNT_RESTRICTION                       equ     1327
+ERROR_INVALID_LOGON_HOURS                       equ     1328
+ERROR_INVALID_WORKSTATION                       equ     1329
+ERROR_PASSWORD_EXPIRED                          equ     1330
+ERROR_ACCOUNT_DISABLED                          equ     1331
+ERROR_NONE_MAPPED                               equ     1332
+ERROR_TOO_MANY_LUIDS_REQUESTED                  equ     1333
+ERROR_LUIDS_EXHAUSTED                           equ     1334
+ERROR_INVALID_SUB_AUTHORITY                     equ     1335
+ERROR_INVALID_ACL                               equ     1336
+ERROR_INVALID_SID                               equ     1337
+ERROR_INVALID_SECURITY_DESCR                    equ     1338
+ERROR_BAD_INHERITANCE_ACL                       equ     1340
+ERROR_SERVER_DISABLED                           equ     1341
+ERROR_SERVER_NOT_DISABLED                       equ     1342
+ERROR_INVALID_ID_AUTHORITY                      equ     1343
+ERROR_ALLOTTED_SPACE_EXCEEDED                   equ     1344
+ERROR_INVALID_GROUP_ATTRIBUTES                  equ     1345
+ERROR_BAD_IMPERSONATION_LEVEL                   equ     1346
+ERROR_CANT_OPEN_ANONYMOUS                       equ     1347
+ERROR_BAD_VALIDATION_CLASS                      equ     1348
+ERROR_BAD_TOKEN_TYPE                            equ     1349
+ERROR_NO_SECURITY_ON_OBJECT                     equ     1350
+ERROR_CANT_ACCESS_DOMAIN_INFO                   equ     1351
+ERROR_INVALID_SERVER_STATE                      equ     1352
+ERROR_INVALID_DOMAIN_STATE                      equ     1353
+ERROR_INVALID_DOMAIN_ROLE                       equ     1354
+ERROR_NO_SUCH_DOMAIN                            equ     1355
+ERROR_DOMAIN_EXISTS                             equ     1356
+ERROR_DOMAIN_LIMIT_EXCEEDED                     equ     1357
+ERROR_INTERNAL_DB_CORRUPTION                    equ     1358
+ERROR_INTERNAL_ERROR                            equ     1359
+ERROR_GENERIC_NOT_MAPPED                        equ     1360
+ERROR_BAD_DESCRIPTOR_FORMAT                     equ     1361
+ERROR_NOT_LOGON_PROCESS                         equ     1362
+ERROR_LOGON_SESSION_EXISTS                      equ     1363
+ERROR_NO_SUCH_PACKAGE                           equ     1364
+ERROR_BAD_LOGON_SESSION_STATE                   equ     1365
+ERROR_LOGON_SESSION_COLLISION                   equ     1366
+ERROR_INVALID_LOGON_TYPE                        equ     1367
+ERROR_CANNOT_IMPERSONATE                        equ     1368
+ERROR_RXACT_INVALID_STATE                       equ     1369
+ERROR_RXACT_COMMIT_FAILURE                      equ     1370
+ERROR_SPECIAL_ACCOUNT                           equ     1371
+ERROR_SPECIAL_GROUP                             equ     1372
+ERROR_SPECIAL_USER                              equ     1373
+ERROR_MEMBERS_PRIMARY_GROUP                     equ     1374
+ERROR_TOKEN_ALREADY_IN_USE                      equ     1375
+ERROR_NO_SUCH_ALIAS                             equ     1376
+ERROR_MEMBER_NOT_IN_ALIAS                       equ     1377
+ERROR_MEMBER_IN_ALIAS                           equ     1378
+ERROR_ALIAS_EXISTS                              equ     1379
+ERROR_LOGON_NOT_GRANTED                         equ     1380
+ERROR_TOO_MANY_SECRETS                          equ     1381
+ERROR_SECRET_TOO_LONG                           equ     1382
+ERROR_INTERNAL_DB_ERROR                         equ     1383
+ERROR_TOO_MANY_CONTEXT_IDS                      equ     1384
+ERROR_LOGON_TYPE_NOT_GRANTED                    equ     1385
+ERROR_NT_CROSS_ENCRYPTION_REQUIRED              equ     1386
+ERROR_NO_SUCH_MEMBER                            equ     1387
+ERROR_INVALID_MEMBER                            equ     1388
+ERROR_TOO_MANY_SIDS                             equ     1389
+ERROR_LM_CROSS_ENCRYPTION_REQUIRED              equ     1390
+ERROR_NO_INHERITANCE                            equ     1391
+ERROR_FILE_CORRUPT                              equ     1392
+ERROR_DISK_CORRUPT                              equ     1393
+ERROR_NO_USER_SESSION_KEY                       equ     1394
+ERROR_LICENSE_QUOTA_EXCEEDED                    equ     1395
+ERROR_WRONG_TARGET_NAME                         equ     1396
+ERROR_MUTUAL_AUTH_FAILED                        equ     1397
+ERROR_TIME_SKEW                                 equ     1398
+ERROR_CURRENT_DOMAIN_NOT_ALLOWED                equ     1399
+ERROR_INVALID_WINDOW_HANDLE                     equ     1400
+ERROR_INVALID_MENU_HANDLE                       equ     1401
+ERROR_INVALID_CURSOR_HANDLE                     equ     1402
+ERROR_INVALID_ACCEL_HANDLE                      equ     1403
+ERROR_INVALID_HOOK_HANDLE                       equ     1404
+ERROR_INVALID_DWP_HANDLE                        equ     1405
+ERROR_TLW_WITH_WSCHILD                          equ     1406
+ERROR_CANNOT_FIND_WND_CLASS                     equ     1407
+ERROR_WINDOW_OF_OTHER_THREAD                    equ     1408
+ERROR_HOTKEY_ALREADY_REGISTERED                 equ     1409
+ERROR_CLASS_ALREADY_EXISTS                      equ     1410
+ERROR_CLASS_DOES_NOT_EXIST                      equ     1411
+ERROR_CLASS_HAS_WINDOWS                         equ     1412
+ERROR_INVALID_INDEX                             equ     1413
+ERROR_INVALID_ICON_HANDLE                       equ     1414
+ERROR_PRIVATE_DIALOG_INDEX                      equ     1415
+ERROR_LISTBOX_ID_NOT_FOUND                      equ     1416
+ERROR_NO_WILDCARD_CHARACTERS                    equ     1417
+ERROR_CLIPBOARD_NOT_OPEN                        equ     1418
+ERROR_HOTKEY_NOT_REGISTERED                     equ     1419
+ERROR_WINDOW_NOT_DIALOG                         equ     1420
+ERROR_CONTROL_ID_NOT_FOUND                      equ     1421
+ERROR_INVALID_COMBOBOX_MESSAGE                  equ     1422
+ERROR_WINDOW_NOT_COMBOBOX                       equ     1423
+ERROR_INVALID_EDIT_HEIGHT                       equ     1424
+ERROR_DC_NOT_FOUND                              equ     1425
+ERROR_INVALID_HOOK_FILTER                       equ     1426
+ERROR_INVALID_FILTER_PROC                       equ     1427
+ERROR_HOOK_NEEDS_HMOD                           equ     1428
+ERROR_GLOBAL_ONLY_HOOK                          equ     1429
+ERROR_JOURNAL_HOOK_SET                          equ     1430
+ERROR_HOOK_NOT_INSTALLED                        equ     1431
+ERROR_INVALID_LB_MESSAGE                        equ     1432
+ERROR_SETCOUNT_ON_BAD_LB                        equ     1433
+ERROR_LB_WITHOUT_TABSTOPS                       equ     1434
+ERROR_DESTROY_OBJECT_OF_OTHER_THREAD            equ     1435
+ERROR_CHILD_WINDOW_MENU                         equ     1436
+ERROR_NO_SYSTEM_MENU                            equ     1437
+ERROR_INVALID_MSGBOX_STYLE                      equ     1438
+ERROR_INVALID_SPI_VALUE                         equ     1439
+ERROR_SCREEN_ALREADY_LOCKED                     equ     1440
+ERROR_HWNDS_HAVE_DIFF_PARENT                    equ     1441
+ERROR_NOT_CHILD_WINDOW                          equ     1442
+ERROR_INVALID_GW_COMMAND                        equ     1443
+ERROR_INVALID_THREAD_ID                         equ     1444
+ERROR_NON_MDICHILD_WINDOW                       equ     1445
+ERROR_POPUP_ALREADY_ACTIVE                      equ     1446
+ERROR_NO_SCROLLBARS                             equ     1447
+ERROR_INVALID_SCROLLBAR_RANGE                   equ     1448
+ERROR_INVALID_SHOWWIN_COMMAND                   equ     1449
+ERROR_NO_SYSTEM_RESOURCES                       equ     1450
+ERROR_NONPAGED_SYSTEM_RESOURCES                 equ     1451
+ERROR_PAGED_SYSTEM_RESOURCES                    equ     1452
+ERROR_WORKING_SET_QUOTA                         equ     1453
+ERROR_PAGEFILE_QUOTA                            equ     1454
+ERROR_COMMITMENT_LIMIT                          equ     1455
+ERROR_MENU_ITEM_NOT_FOUND                       equ     1456
+ERROR_INVALID_KEYBOARD_HANDLE                   equ     1457
+ERROR_HOOK_TYPE_NOT_ALLOWED                     equ     1458
+ERROR_REQUIRES_INTERACTIVE_WINDOWSTATION        equ     1459
+ERROR_TIMEOUT                                   equ     1460
+ERROR_INVALID_MONITOR_HANDLE                    equ     1461
+ERROR_INCORRECT_SIZE                            equ     1462
+ERROR_SYMLINK_CLASS_DISABLED                    equ     1463
+ERROR_SYMLINK_NOT_SUPPORTED                     equ     1464
+ERROR_XML_PARSE_ERROR                           equ     1465
+ERROR_XMLDSIG_ERROR                             equ     1466
+ERROR_RESTART_APPLICATION                       equ     1467
+ERROR_WRONG_COMPARTMENT                         equ     1468
+ERROR_AUTHIP_FAILURE                            equ     1469
+ERROR_NO_NVRAM_RESOURCES                        equ     1470
+ERROR_EVENTLOG_FILE_CORRUPT                     equ     1500
+ERROR_EVENTLOG_CANT_START                       equ     1501
+ERROR_LOG_FILE_FULL                             equ     1502
+ERROR_EVENTLOG_FILE_CHANGED                     equ     1503
+ERROR_INVALID_TASK_NAME                         equ     1550
+ERROR_INVALID_TASK_INDEX                        equ     1551
+ERROR_THREAD_ALREADY_IN_TASK                    equ     1552
+ERROR_INSTALL_SERVICE_FAILURE                   equ     1601
+ERROR_INSTALL_USEREXIT                          equ     1602
+ERROR_INSTALL_FAILURE                           equ     1603
+ERROR_INSTALL_SUSPEND                           equ     1604
+ERROR_UNKNOWN_PRODUCT                           equ     1605
+ERROR_UNKNOWN_FEATURE                           equ     1606
+ERROR_UNKNOWN_COMPONENT                         equ     1607
+ERROR_UNKNOWN_PROPERTY                          equ     1608
+ERROR_INVALID_HANDLE_STATE                      equ     1609
+ERROR_BAD_CONFIGURATION                         equ     1610
+ERROR_INDEX_ABSENT                              equ     1611
+ERROR_INSTALL_SOURCE_ABSENT                     equ     1612
+ERROR_INSTALL_PACKAGE_VERSION                   equ     1613
+ERROR_PRODUCT_UNINSTALLED                       equ     1614
+ERROR_BAD_QUERY_SYNTAX                          equ     1615
+ERROR_INVALID_FIELD                             equ     1616
+ERROR_DEVICE_REMOVED                            equ     1617
+ERROR_INSTALL_ALREADY_RUNNING                   equ     1618
+ERROR_INSTALL_PACKAGE_OPEN_FAILED               equ     1619
+ERROR_INSTALL_PACKAGE_INVALID                   equ     1620
+ERROR_INSTALL_UI_FAILURE                        equ     1621
+ERROR_INSTALL_LOG_FAILURE                       equ     1622
+ERROR_INSTALL_LANGUAGE_UNSUPPORTED              equ     1623
+ERROR_INSTALL_TRANSFORM_FAILURE                 equ     1624
+ERROR_INSTALL_PACKAGE_REJECTED                  equ     1625
+ERROR_FUNCTION_NOT_CALLED                       equ     1626
+ERROR_FUNCTION_FAILED                           equ     1627
+ERROR_INVALID_TABLE                             equ     1628
+ERROR_DATATYPE_MISMATCH                         equ     1629
+ERROR_UNSUPPORTED_TYPE                          equ     1630
+ERROR_CREATE_FAILED                             equ     1631
+ERROR_INSTALL_TEMP_UNWRITABLE                   equ     1632
+ERROR_INSTALL_PLATFORM_UNSUPPORTED              equ     1633
+ERROR_INSTALL_NOTUSED                           equ     1634
+ERROR_PATCH_PACKAGE_OPEN_FAILED                 equ     1635
+ERROR_PATCH_PACKAGE_INVALID                     equ     1636
+ERROR_PATCH_PACKAGE_UNSUPPORTED                 equ     1637
+ERROR_PRODUCT_VERSION                           equ     1638
+ERROR_INVALID_COMMAND_LINE                      equ     1639
+ERROR_INSTALL_REMOTE_DISALLOWED                 equ     1640
+ERROR_SUCCESS_REBOOT_INITIATED                  equ     1641
+ERROR_PATCH_TARGET_NOT_FOUND                    equ     1642
+ERROR_PATCH_PACKAGE_REJECTED                    equ     1643
+ERROR_INSTALL_TRANSFORM_REJECTED                equ     1644
+ERROR_INSTALL_REMOTE_PROHIBITED                 equ     1645
+ERROR_PATCH_REMOVAL_UNSUPPORTED                 equ     1646
+ERROR_UNKNOWN_PATCH                             equ     1647
+ERROR_PATCH_NO_SEQUENCE                         equ     1648
+ERROR_PATCH_REMOVAL_DISALLOWED                  equ     1649
+ERROR_INVALID_PATCH_XML                         equ     1650
+ERROR_PATCH_MANAGED_ADVERTISED_PRODUCT          equ     1651
+ERROR_INSTALL_SERVICE_SAFEBOOT                  equ     1652
+ERROR_FAIL_FAST_EXCEPTION                       equ     1653
+
+S_OK                                            equ     0
+S_FALSE                                         equ     1
+
+;======================================= winbase ==========================================;
+
+IGNORE                                          equ     0
+INFINITE                                        equ     0FFFFFFFFH
+
+if ~defined ANYSIZE_ARRAY
+    ANYSIZE_ARRAY                               equ     1
+end if
+
+;======================================= windef ===========================================;
+
+struct STRING
+    Length                                      dw      ?
+    MaximumLength                               dw      ?
+    Buffer                                      xptr    ?
+ends
+
+struct ANSI_STRING
+    Length                                      dw      ?
+    MaximumLength                               dw      ?
+    Buffer                                      xptr    ?
+ends
+TYPEDEF                                         PSTRING, xptr
+
+if ~defined UNICODE_STRING_DEFINED
+    define UNICODE_STRING_DEFINED 1
+    struct UNICODE_STRING
+        Length                                      dw      ?
+        MaximumLength                               dw      ?
+        if defined APP_WIN64
+                                                    dd      ?   ;For Align 8
+        end if
+        Buffer                                      xptr    ?
+    ends
+end if
+
+;======================================== winnt ===========================================;
+
+struct GUID
+    Data1                                       dd      ?
+    Data2                                       dw      ?
+    Data3                                       dw      ?
+    Data4                                       db      8 dup(?)
+ends
+
+struct LIST_ENTRY
+    Flink                                       xptr    ?
+    Blink                                       xptr    ?
+ends
+
+struct Unknown
+    QueryInterface                              xptr    ?
+    AddRef                                      xptr    ?
+    Release                                     xptr    ?
+ends
+
+struct Dispatch
+    QueryInterface                              xptr    ?
+    AddRef                                      xptr    ?
+    Release                                     xptr    ?
+ends
+
+;====================================== kernel32 ==========================================;
+if ~defined SERVICE_ACCEPT_STOP
+    SERVICE_WIN32_OWN_PROCESS                   equ     00000010H
+    SERVICE_WIN32_SHARE_PROCESS                 equ     00000020H
+    SERVICE_WIN32                               equ     (SERVICE_WIN32_OWN_PROCESS or SERVICE_WIN32_SHARE_PROCESS)
+end if
+
+if ~defined SEM_FAILCRITICALERRORS
+    SEM_FAILCRITICALERRORS                      equ     0001H
+    SEM_NOGPFAULTERRORBOX                       equ     0002H
+    SEM_NOALIGNMENTFAULTEXCEPT                  equ     0004H
+    SEM_NOOPENFILEERRORBOX                      equ     8000H
+end if
+
+if ~defined THREAD_TERMINATE
+    THREAD_TERMINATE                            equ     0001H
+    THREAD_SUSPEND_RESUME                       equ     0002H
+    THREAD_GET_CONTEXT                          equ     0008H
+    THREAD_SET_CONTEXT                          equ     0010H
+    THREAD_SET_INFORMATION                      equ     0020H
+    THREAD_QUERY_INFORMATION                    equ     0040H
+    THREAD_SET_THREAD_TOKEN                     equ     0080H
+    THREAD_IMPERSONATE                          equ     0100H
+    THREAD_DIRECT_IMPERSONATION                 equ     0200H
+end if
+
+;====================================== rasapi32 ==========================================;
+RASBASE                                         equ     600
+SUCCESS                                         equ     0
+
+PENDING                                         equ     (RASBASE+0)
+ERROR_INVALID_PORT_HANDLE                       equ     (RASBASE+1)
+ERROR_PORT_ALREADY_OPEN                         equ     (RASBASE+2)
+ERROR_BUFFER_TOO_SMALL                          equ     (RASBASE+3)
+ERROR_WRONG_INFO_SPECIFIED                      equ     (RASBASE+4)
+ERROR_CANNOT_SET_PORT_INFO                      equ     (RASBASE+5)
+ERROR_PORT_NOT_CONNECTED                        equ     (RASBASE+6)
+ERROR_EVENT_INVALID                             equ     (RASBASE+7)
+ERROR_DEVICE_DOES_NOT_EXIST                     equ     (RASBASE+8)
+ERROR_DEVICETYPE_DOES_NOT_EXIST                 equ     (RASBASE+9)
+ERROR_BUFFER_INVALID                            equ     (RASBASE+10)
+ERROR_ROUTE_NOT_AVAILABLE                       equ     (RASBASE+11)
+ERROR_ROUTE_NOT_ALLOCATED                       equ     (RASBASE+12)
+ERROR_INVALID_COMPRESSION_SPECIFIED             equ     (RASBASE+13)
+ERROR_OUT_OF_BUFFERS                            equ     (RASBASE+14)
+ERROR_PORT_NOT_FOUND                            equ     (RASBASE+15)
+ERROR_ASYNC_REQUEST_PENDING                     equ     (RASBASE+16)
+ERROR_ALREADY_DISCONNECTING                     equ     (RASBASE+17)
+ERROR_PORT_NOT_OPEN                             equ     (RASBASE+18)
+ERROR_PORT_DISCONNECTED                         equ     (RASBASE+19)
+ERROR_NO_ENDPOINTS                              equ     (RASBASE+20)
+ERROR_CANNOT_OPEN_PHONEBOOK                     equ     (RASBASE+21)
+ERROR_CANNOT_LOAD_PHONEBOOK                     equ     (RASBASE+22)
+ERROR_CANNOT_FIND_PHONEBOOK_ENTRY               equ     (RASBASE+23)
+ERROR_CANNOT_WRITE_PHONEBOOK                    equ     (RASBASE+24)
+ERROR_CORRUPT_PHONEBOOK                         equ     (RASBASE+25)
+ERROR_CANNOT_LOAD_STRING                        equ     (RASBASE+26)
+ERROR_KEY_NOT_FOUND                             equ     (RASBASE+27)
+ERROR_DISCONNECTION                             equ     (RASBASE+28)
+ERROR_REMOTE_DISCONNECTION                      equ     (RASBASE+29)
+ERROR_HARDWARE_FAILURE                          equ     (RASBASE+30)
+ERROR_USER_DISCONNECTION                        equ     (RASBASE+31)
+ERROR_INVALID_SIZE                              equ     (RASBASE+32)
+ERROR_PORT_NOT_AVAILABLE                        equ     (RASBASE+33)
+ERROR_CANNOT_PROJECT_CLIENT                     equ     (RASBASE+34)
+ERROR_UNKNOWN                                   equ     (RASBASE+35)
+ERROR_WRONG_DEVICE_ATTACHED                     equ     (RASBASE+36)
+ERROR_BAD_STRING                                equ     (RASBASE+37)
+ERROR_REQUEST_TIMEOUT                           equ     (RASBASE+38)
+ERROR_CANNOT_GET_LANA                           equ     (RASBASE+39)
+ERROR_NETBIOS_ERROR                             equ     (RASBASE+40)
+ERROR_SERVER_OUT_OF_RESOURCES                   equ     (RASBASE+41)
+ERROR_NAME_EXISTS_ON_NET                        equ     (RASBASE+42)
+ERROR_SERVER_GENERAL_NET_FAILURE                equ     (RASBASE+43)
+WARNING_MSG_ALIAS_NOT_ADDED                     equ     (RASBASE+44)
+ERROR_AUTH_INTERNAL                             equ     (RASBASE+45)
+ERROR_RESTRICTED_LOGON_HOURS                    equ     (RASBASE+46)
+ERROR_ACCT_DISABLED                             equ     (RASBASE+47)
+ERROR_PASSWD_EXPIRED                            equ     (RASBASE+48)
+ERROR_NO_DIALIN_PERMISSION                      equ     (RASBASE+49)
+ERROR_SERVER_NOT_RESPONDING                     equ     (RASBASE+50)
+ERROR_FROM_DEVICE                               equ     (RASBASE+51)
+ERROR_UNRECOGNIZED_RESPONSE                     equ     (RASBASE+52)
+ERROR_MACRO_NOT_FOUND                           equ     (RASBASE+53)
+ERROR_MACRO_NOT_DEFINED                         equ     (RASBASE+54)
+ERROR_MESSAGE_MACRO_NOT_FOUND                   equ     (RASBASE+55)
+ERROR_DEFAULTOFF_MACRO_NOT_FOUND                equ     (RASBASE+56)
+ERROR_FILE_COULD_NOT_BE_OPENED                  equ     (RASBASE+57)
+ERROR_DEVICENAME_TOO_LONG                       equ     (RASBASE+58)
+ERROR_DEVICENAME_NOT_FOUND                      equ     (RASBASE+59)
+ERROR_NO_RESPONSES                              equ     (RASBASE+60)
+ERROR_NO_COMMAND_FOUND                          equ     (RASBASE+61)
+ERROR_WRONG_KEY_SPECIFIED                       equ     (RASBASE+62)
+ERROR_UNKNOWN_DEVICE_TYPE                       equ     (RASBASE+63)
+ERROR_ALLOCATING_MEMORY                         equ     (RASBASE+64)
+ERROR_PORT_NOT_CONFIGURED                       equ     (RASBASE+65)
+ERROR_DEVICE_NOT_READY                          equ     (RASBASE+66)
+ERROR_READING_INI_FILE                          equ     (RASBASE+67)
+ERROR_NO_CONNECTION                             equ     (RASBASE+68)
+ERROR_BAD_USAGE_IN_INI_FILE                     equ     (RASBASE+69)
+ERROR_READING_SECTIONNAME                       equ     (RASBASE+70)
+ERROR_READING_DEVICETYPE                        equ     (RASBASE+71)
+ERROR_READING_DEVICENAME                        equ     (RASBASE+72)
+ERROR_READING_USAGE                             equ     (RASBASE+73)
+ERROR_READING_MAXCONNECTBPS                     equ     (RASBASE+74)
+ERROR_READING_MAXCARRIERBPS                     equ     (RASBASE+75)
+ERROR_LINE_BUSY                                 equ     (RASBASE+76)
+ERROR_VOICE_ANSWER                              equ     (RASBASE+77)
+ERROR_NO_ANSWER                                 equ     (RASBASE+78)
+ERROR_NO_CARRIER                                equ     (RASBASE+79)
+ERROR_NO_DIALTONE                               equ     (RASBASE+80)
+ERROR_IN_COMMAND                                equ     (RASBASE+81)
+ERROR_WRITING_SECTIONNAME                       equ     (RASBASE+82)
+ERROR_WRITING_DEVICETYPE                        equ     (RASBASE+83)
+ERROR_WRITING_DEVICENAME                        equ     (RASBASE+84)
+ERROR_WRITING_MAXCONNECTBPS                     equ     (RASBASE+85)
+ERROR_WRITING_MAXCARRIERBPS                     equ     (RASBASE+86)
+ERROR_WRITING_USAGE                             equ     (RASBASE+87)
+ERROR_WRITING_DEFAULTOFF                        equ     (RASBASE+88)
+ERROR_READING_DEFAULTOFF                        equ     (RASBASE+89)
+ERROR_EMPTY_INI_FILE                            equ     (RASBASE+90)
+ERROR_AUTHENTICATION_FAILURE                    equ     (RASBASE+91)
+ERROR_PORT_OR_DEVICE                            equ     (RASBASE+92)
+ERROR_NOT_BINARY_MACRO                          equ     (RASBASE+93)
+ERROR_DCB_NOT_FOUND                             equ     (RASBASE+94)
+ERROR_STATE_MACHINES_NOT_STARTED                equ     (RASBASE+95)
+ERROR_STATE_MACHINES_ALREADY_STARTED            equ     (RASBASE+96)
+ERROR_PARTIAL_RESPONSE_LOOPING                  equ     (RASBASE+97)
+ERROR_UNKNOWN_RESPONSE_KEY                      equ     (RASBASE+98)
+ERROR_RECV_BUF_FULL                             equ     (RASBASE+99)
+ERROR_CMD_TOO_LONG                              equ     (RASBASE+100)
+ERROR_UNSUPPORTED_BPS                           equ     (RASBASE+101)
+ERROR_UNEXPECTED_RESPONSE                       equ     (RASBASE+102)
+ERROR_INTERACTIVE_MODE                          equ     (RASBASE+103)
+ERROR_BAD_CALLBACK_NUMBER                       equ     (RASBASE+104)
+ERROR_INVALID_AUTH_STATE                        equ     (RASBASE+105)
+ERROR_WRITING_INITBPS                           equ     (RASBASE+106)
+ERROR_X25_DIAGNOSTIC                            equ     (RASBASE+107)
+ERROR_ACCT_EXPIRED                              equ     (RASBASE+108)
+ERROR_CHANGING_PASSWORD                         equ     (RASBASE+109)
+ERROR_OVERRUN                                   equ     (RASBASE+110)
+ERROR_RASMAN_CANNOT_INITIALIZE                  equ     (RASBASE+111)
+ERROR_BIPLEX_PORT_NOT_AVAILABLE                 equ     (RASBASE+112)
+ERROR_NO_ACTIVE_ISDN_LINES                      equ     (RASBASE+113)
+ERROR_NO_ISDN_CHANNELS_AVAILABLE                equ     (RASBASE+114)
+ERROR_TOO_MANY_LINE_ERRORS                      equ     (RASBASE+115)
+ERROR_IP_CONFIGURATION                          equ     (RASBASE+116)
+ERROR_NO_IP_ADDRESSES                           equ     (RASBASE+117)
+ERROR_PPP_TIMEOUT                               equ     (RASBASE+118)
+ERROR_PPP_REMOTE_TERMINATED                     equ     (RASBASE+119)
+ERROR_PPP_NO_PROTOCOLS_CONFIGURED               equ     (RASBASE+120)
+ERROR_PPP_NO_RESPONSE                           equ     (RASBASE+121)
+ERROR_PPP_INVALID_PACKET                        equ     (RASBASE+122)
+ERROR_PHONE_NUMBER_TOO_LONG                     equ     (RASBASE+123)
+ERROR_IPXCP_NO_DIALOUT_CONFIGURED               equ     (RASBASE+124)
+ERROR_IPXCP_NO_DIALIN_CONFIGURED                equ     (RASBASE+125)
+ERROR_IPXCP_DIALOUT_ALREADY_ACTIVE              equ     (RASBASE+126)
+ERROR_ACCESSING_TCPCFGDLL                       equ     (RASBASE+127)
+ERROR_NO_IP_RAS_ADAPTER                         equ     (RASBASE+128)
+ERROR_SLIP_REQUIRES_IP                          equ     (RASBASE+129)
+ERROR_PROJECTION_NOT_COMPLETE                   equ     (RASBASE+130)
+ERROR_PROTOCOL_NOT_CONFIGURED                   equ     (RASBASE+131)
+ERROR_PPP_NOT_CONVERGING                        equ     (RASBASE+132)
+ERROR_PPP_CP_REJECTED                           equ     (RASBASE+133)
+ERROR_PPP_LCP_TERMINATED                        equ     (RASBASE+134)
+ERROR_PPP_REQUIRED_ADDRESS_REJECTED             equ     (RASBASE+135)
+ERROR_PPP_NCP_TERMINATED                        equ     (RASBASE+136)
+ERROR_PPP_LOOPBACK_DETECTED                     equ     (RASBASE+137)
+ERROR_PPP_NO_ADDRESS_ASSIGNED                   equ     (RASBASE+138)
+ERROR_CANNOT_USE_LOGON_CREDENTIALS              equ     (RASBASE+139)
+ERROR_TAPI_CONFIGURATION                        equ     (RASBASE+140)
+ERROR_NO_LOCAL_ENCRYPTION                       equ     (RASBASE+141)
+ERROR_NO_REMOTE_ENCRYPTION                      equ     (RASBASE+142)
+ERROR_REMOTE_REQUIRES_ENCRYPTION                equ     (RASBASE+143)
+ERROR_IPXCP_NET_NUMBER_CONFLICT                 equ     (RASBASE+144)
+ERROR_INVALID_SMM                               equ     (RASBASE+145)
+ERROR_SMM_UNINITIALIZED                         equ     (RASBASE+146)
+ERROR_NO_MAC_FOR_PORT                           equ     (RASBASE+147)
+ERROR_SMM_TIMEOUT                               equ     (RASBASE+148)
+ERROR_BAD_PHONE_NUMBER                          equ     (RASBASE+149)
+ERROR_WRONG_MODULE                              equ     (RASBASE+150)
+ERROR_INVALID_CALLBACK_NUMBER                   equ     (RASBASE+151)
+ERROR_SCRIPT_SYNTAX                             equ     (RASBASE+152)
+RASBASEEND                                      equ     (RASBASE+152)
+
+struct CY
+    Lo  dd ?
+    Hi  dd ?
+ends
+
+struct DECIMAL
+    Hi32 dd ?
+    Lo64 dq ?
+ends
+
+struct VARIANT
+    union
+        struct
+            vt            dd    ?
+            wReserved1    dw    ?
+            wReserved2    dw    ?
+            wReserved3    dw    ?
+            union
+                llVal       xptr   ?
+                lVal        dw     ?
+                bVal        db     ?
+                iVal        dw     ?
+                fltVal      dd     ?
+                dblVal      dq     ?
+                boolVal     dw     ?
+                scode       dd     ?
+                __OBSOLETE__VARIANT_BOOL dw ?
+                cyVal       CY
+                date        dq     ?
+                bstrVal     dw     ?
+                punkVal     xptr   ?
+                pdispVal    xptr   ?
+                parray      xptr   ?
+                pbVal       xptr   ?
+                piVal       xptr   ?
+                plVal       xptr   ?
+                pllVal      xptr   ?
+                pfltVal     xptr   ?
+                pdblVal     xptr   ?
+                pboolVal    xptr   ?
+                pscode      xptr   ?
+                pcyVal      xptr   ?
+                __OBSOLETE__VARIANT_PBOOL xptr ?
+                pdate       xptr   ?
+                pbstrVal    xptr   ?
+                ppunkVal    xptr   ?
+                ppdispVal   xptr   ?
+                pparray     xptr   ?
+                pvarVal     xptr   ?
+                byref       xptr   ?
+                cVal        xptr   ?
+                uiVal       dw     ?
+                ulVal       dd     ?
+                ullVal      dq     ?
+                intVal      dd     ?
+                uintVal     dd     ?
+                pdecVal     xptr   ?
+                pcVal       xptr   ?
+                puiVal      xptr   ?
+                pulVal      xptr   ?
+                pullVal     xptr   ?
+                pintVal     xptr   ?
+                puintVal    xptr   ?
+                struct
+                    pvRecord  xptr ?
+                    pRecInfo  xptr ?
+                ends
+            ends
+        ends
+    ends
+    decVal  DECIMAL
+ends
+
+end if ;WINDOWS_INC

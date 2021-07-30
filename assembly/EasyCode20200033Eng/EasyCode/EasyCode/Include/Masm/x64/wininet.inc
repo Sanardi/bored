@@ -1,0 +1,1625 @@
+; =======================================================;
+;                                                        ;
+;   wininet.inc for Easy Code 2.0 64-bit Masm projects   ;
+;                  (version 1.0.4)                       ;
+;                                                        ;
+;         Copyright © Ramon Sala - 2016-2021             ;
+;                                                        ;
+; =======================================================;
+
+IFNDEF WININET_INC
+WININET_INC     EQU     1
+
+INTERNET_INVALID_PORT_NUMBER                    EQU     0
+INTERNET_DEFAULT_FTP_PORT                       EQU     21
+INTERNET_DEFAULT_GOPHER_PORT                    EQU     70
+INTERNET_DEFAULT_HTTP_PORT                      EQU     80
+INTERNET_DEFAULT_HTTPS_PORT                     EQU     443
+INTERNET_DEFAULT_SOCKS_PORT                     EQU     1080
+
+INTERNET_MAX_HOST_NAME_LENGTH                   EQU     256
+INTERNET_MAX_USER_NAME_LENGTH                   EQU     128
+INTERNET_MAX_PASSWORD_LENGTH                    EQU     128
+INTERNET_MAX_PORT_NUMBER_LENGTH                 EQU     5
+INTERNET_MAX_PORT_NUMBER_VALUE                  EQU     65535
+INTERNET_MAX_PATH_LENGTH                        EQU     2048
+INTERNET_MAX_SCHEME_LENGTH                      EQU     32
+INTERNET_MAX_URL_LENGTH                         EQU     (INTERNET_MAX_SCHEME_LENGTH + 2 OR INTERNET_MAX_PATH_LENGTH)
+
+INTERNET_KEEP_ALIVE_UNKNOWN                     EQU     (-1)
+INTERNET_KEEP_ALIVE_ENABLED                     EQU     1
+INTERNET_KEEP_ALIVE_DISABLED                    EQU     0
+
+INTERNET_REQFLAG_FROM_CACHE                     EQU     00000001H
+INTERNET_REQFLAG_ASYNC                          EQU     00000002H
+INTERNET_REQFLAG_VIA_PROXY                      EQU     00000004H
+INTERNET_REQFLAG_NO_HEADERS                     EQU     00000008H
+INTERNET_REQFLAG_PASSIVE                        EQU     00000010H
+INTERNET_REQFLAG_CACHE_WRITE_DISABLED           EQU     00000040H
+INTERNET_REQFLAG_NET_TIMEOUT                    EQU     00000080H
+
+FTP_TRANSFER_TYPE_UNKNOWN                       EQU     00000000H
+FTP_TRANSFER_TYPE_ASCII                         EQU     00000001H
+FTP_TRANSFER_TYPE_BINARY                        EQU     00000002H
+FTP_TRANSFER_TYPE_MASK                          EQU     (FTP_TRANSFER_TYPE_ASCII OR FTP_TRANSFER_TYPE_BINARY)
+
+INTERNET_FLAG_RELOAD                            EQU     80000000H
+INTERNET_FLAG_RAW_DATA                          EQU     40000000H
+INTERNET_FLAG_EXISTING_CONNECT                  EQU     20000000H
+INTERNET_FLAG_ASYNC                             EQU     10000000H
+INTERNET_FLAG_PASSIVE                           EQU     08000000H
+INTERNET_FLAG_NO_CACHE_WRITE                    EQU     04000000H
+INTERNET_FLAG_DONT_CACHE                        EQU     INTERNET_FLAG_NO_CACHE_WRITE
+INTERNET_FLAG_MAKE_PERSISTENT                   EQU     02000000H
+INTERNET_FLAG_FROM_CACHE                        EQU     01000000H
+INTERNET_FLAG_OFFLINE                           EQU     INTERNET_FLAG_FROM_CACHE
+INTERNET_FLAG_SECURE                            EQU     00800000H
+INTERNET_FLAG_KEEP_CONNECTION                   EQU     00400000H
+INTERNET_FLAG_NO_AUTO_REDIRECT                  EQU     00200000H
+INTERNET_FLAG_READ_PREFETCH                     EQU     00100000H
+INTERNET_FLAG_NO_COOKIES                        EQU     00080000H
+INTERNET_FLAG_NO_AUTH                           EQU     00040000H
+INTERNET_FLAG_CACHE_IF_NET_FAIL                 EQU     00010000H
+INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP           EQU     00008000H
+INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS          EQU     00004000H
+INTERNET_FLAG_IGNORE_CERT_DATE_INVALID          EQU     00002000H
+INTERNET_FLAG_IGNORE_CERT_CN_INVALID            EQU     00001000H
+INTERNET_FLAG_RESYNCHRONIZE                     EQU     00000800H
+INTERNET_FLAG_HYPERLINK                         EQU     00000400H
+INTERNET_FLAG_NO_UI                             EQU     00000200H
+INTERNET_FLAG_PRAGMA_NOCACHE                    EQU     00000100H
+INTERNET_FLAG_CACHE_ASYNC                       EQU     00000080H
+INTERNET_FLAG_FORMS_SUBMIT                      EQU     00000040H
+INTERNET_FLAG_FWD_BACK                          EQU     00000020H
+INTERNET_FLAG_NEED_FILE                         EQU     00000010H
+INTERNET_FLAG_BGUPDATE                          EQU     00000008H
+INTERNET_FLAG_MUST_CACHE_REQUEST                EQU     INTERNET_FLAG_NEED_FILE
+INTERNET_FLAG_TRANSFER_ASCII                    EQU     FTP_TRANSFER_TYPE_ASCII
+INTERNET_FLAG_TRANSFER_BINARY                   EQU     FTP_TRANSFER_TYPE_BINARY
+
+SECURITY_INTERNET_MASK                          EQU     (INTERNET_FLAG_IGNORE_CERT_CN_INVALID OR INTERNET_FLAG_IGNORE_CERT_DATE_INVALID OR INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS OR INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP)
+INTERNET_FLAGS_MASK                             EQU     (0FFFDFFF3H OR SECURITY_INTERNET_MASK)
+
+INTERNET_ERROR_MASK_INSERT_CDROM                EQU     01H
+INTERNET_ERROR_MASK_COMBINED_SEC_CERT           EQU     02H
+INTERNET_ERROR_MASK_NEED_MSN_SSPI_PKG           EQU     04H
+INTERNET_ERROR_MASK_LOGIN_FAILURE_DISPLAY_ENTITY_BODY EQU   08H
+INTERNET_OPTIONS_MASK                           EQU     (NOT INTERNET_FLAGS_MASK)
+
+WININET_API_FLAG_ASYNC                          EQU     00000001H
+WININET_API_FLAG_SYNC                           EQU     00000004H
+WININET_API_FLAG_USE_CONTEXT                    EQU     00000008H
+
+INTERNET_NO_CALLBACK                            EQU     0
+
+INTERNET_PER_CONN_FLAGS                         EQU     1
+INTERNET_PER_CONN_PROXY_SERVER                  EQU     2
+INTERNET_PER_CONN_PROXY_BYPASS                  EQU     3
+INTERNET_PER_CONN_AUTOCONFIG_URL                EQU     4
+INTERNET_PER_CONN_AUTODISCOVERY_FLAGS           EQU     5
+
+PROXY_TYPE_DIRECT                               EQU     00000001H
+PROXY_TYPE_PROXY                                EQU     00000002H
+PROXY_TYPE_AUTO_PROXY_URL                       EQU     00000004H
+PROXY_TYPE_AUTO_DETECT                          EQU     00000008H
+
+AUTO_PROXY_FLAG_USER_SET                        EQU     00000001H
+AUTO_PROXY_FLAG_ALWAYS_DETECT                   EQU     00000002H
+AUTO_PROXY_FLAG_DETECTION_RUN                   EQU     00000004H
+AUTO_PROXY_FLAG_MIGRATED                        EQU     00000008H
+AUTO_PROXY_FLAG_DONT_CACHE_PROXY_RESULT         EQU     00000010H
+AUTO_PROXY_FLAG_CACHE_INIT_RUN                  EQU     00000020H
+AUTO_PROXY_FLAG_DETECTION_SUSPECT               EQU     00000040H
+
+ISO_FORCE_DISCONNECTED                          EQU     00000001H
+
+INTERNET_RFC1123_FORMAT                         EQU     0
+INTERNET_RFC1123_BUFSIZE                        EQU     30
+
+ICU_ESCAPE                                      EQU     80000000H
+ICU_USERNAME                                    EQU     40000000H
+ICU_NO_ENCODE                                   EQU     20000000H
+ICU_DECODE                                      EQU     10000000H
+ICU_NO_META                                     EQU     08000000H
+ICU_ENCODE_SPACES_ONLY                          EQU     04000000H
+ICU_BROWSER_MODE                                EQU     02000000H
+ICU_ENCODE_PERCENT                              EQU     00001000H
+
+INTERNET_OPEN_TYPE_PRECONFIG                    EQU     0
+INTERNET_OPEN_TYPE_DIRECT                       EQU     1
+INTERNET_OPEN_TYPE_PROXY                        EQU     3
+INTERNET_OPEN_TYPE_PRECONFIG_WITH_NO_AUTOPROXY  EQU     4
+
+PRE_CONFIG_INTERNET_ACCESS                      EQU     INTERNET_OPEN_TYPE_PRECONFIG
+LOCAL_INTERNET_ACCESS                           EQU     INTERNET_OPEN_TYPE_DIRECT
+CERN_PROXY_INTERNET_ACCESS                      EQU     INTERNET_OPEN_TYPE_PROXY
+
+INTERNET_SERVICE_FTP                            EQU     1
+INTERNET_SERVICE_GOPHER                         EQU     2
+INTERNET_SERVICE_HTTP                           EQU     3
+
+IRF_ASYNC                                       EQU     WININET_API_FLAG_ASYNC
+IRF_SYNC                                        EQU     WININET_API_FLAG_SYNC
+IRF_USE_CONTEXT                                 EQU     WININET_API_FLAG_USE_CONTEXT
+IRF_NO_WAIT                                     EQU     00000008H
+
+ISO_GLOBAL                                      EQU     00000001H
+ISO_REGISTRY                                    EQU     00000002H
+ISO_VALID_FLAGS                                 EQU     (ISO_GLOBAL OR ISO_REGISTRY)
+
+INTERNET_OPTION_CALLBACK                        EQU     1
+INTERNET_OPTION_CONNECT_TIMEOUT                 EQU     2
+INTERNET_OPTION_CONNECT_RETRIES                 EQU     3
+INTERNET_OPTION_CONNECT_BACKOFF                 EQU     4
+INTERNET_OPTION_SEND_TIMEOUT                    EQU     5
+INTERNET_OPTION_CONTROL_SEND_TIMEOUT            EQU     INTERNET_OPTION_SEND_TIMEOUT
+INTERNET_OPTION_RECEIVE_TIMEOUT                 EQU     6
+INTERNET_OPTION_CONTROL_RECEIVE_TIMEOUT         EQU     INTERNET_OPTION_RECEIVE_TIMEOUT
+INTERNET_OPTION_DATA_SEND_TIMEOUT               EQU     7
+INTERNET_OPTION_DATA_RECEIVE_TIMEOUT            EQU     8
+INTERNET_OPTION_HANDLE_TYPE                     EQU     9
+INTERNET_OPTION_LISTEN_TIMEOUT                  EQU     11
+INTERNET_OPTION_READ_BUFFER_SIZE                EQU     12
+INTERNET_OPTION_WRITE_BUFFER_SIZE               EQU     13
+INTERNET_OPTION_ASYNC_ID                        EQU     15
+INTERNET_OPTION_ASYNC_PRIORITY                  EQU     16
+INTERNET_OPTION_PARENT_HANDLE                   EQU     21
+INTERNET_OPTION_KEEP_CONNECTION                 EQU     22
+INTERNET_OPTION_REQUEST_FLAGS                   EQU     23
+INTERNET_OPTION_EXTENDED_ERROR                  EQU     24
+INTERNET_OPTION_OFFLINE_MODE                    EQU     26
+INTERNET_OPTION_CACHE_STREAM_HANDLE             EQU     27
+INTERNET_OPTION_USERNAME                        EQU     28
+INTERNET_OPTION_PASSWORD                        EQU     29
+INTERNET_OPTION_ASYNC                           EQU     30
+INTERNET_OPTION_SECURITY_FLAGS                  EQU     31
+INTERNET_OPTION_SECURITY_CERTIFICATE_STRUCT     EQU     32
+INTERNET_OPTION_DATAFILE_NAME                   EQU     33
+INTERNET_OPTION_URL                             EQU     34
+INTERNET_OPTION_SECURITY_CERTIFICATE            EQU     35
+INTERNET_OPTION_SECURITY_KEY_BITNESS            EQU     36
+INTERNET_OPTION_REFRESH                         EQU     37
+INTERNET_OPTION_PROXY                           EQU     38
+INTERNET_OPTION_SETTINGS_CHANGED                EQU     39
+INTERNET_OPTION_VERSION                         EQU     40
+INTERNET_OPTION_USER_AGENT                      EQU     41
+INTERNET_OPTION_END_BROWSER_SESSION             EQU     42
+INTERNET_OPTION_PROXY_USERNAME                  EQU     43
+INTERNET_OPTION_PROXY_PASSWORD                  EQU     44
+INTERNET_OPTION_CONTEXT_VALUE                   EQU     45
+INTERNET_OPTION_CONNECT_LIMIT                   EQU     46
+INTERNET_OPTION_SECURITY_SELECT_CLIENT_CERT     EQU     47
+INTERNET_OPTION_POLICY                          EQU     48
+INTERNET_OPTION_DISCONNECTED_TIMEOUT            EQU     49
+INTERNET_OPTION_CONNECTED_STATE                 EQU     50
+INTERNET_OPTION_IDLE_STATE                      EQU     51
+INTERNET_OPTION_OFFLINE_SEMANTICS               EQU     52
+INTERNET_OPTION_SECONDARY_CACHE_KEY             EQU     53
+INTERNET_OPTION_CALLBACK_FILTER                 EQU     54
+INTERNET_OPTION_CONNECT_TIME                    EQU     55
+INTERNET_OPTION_SEND_THROUGHPUT                 EQU     56
+INTERNET_OPTION_RECEIVE_THROUGHPUT              EQU     57
+INTERNET_OPTION_REQUEST_PRIORITY                EQU     58
+INTERNET_OPTION_HTTP_VERSION                    EQU     59
+INTERNET_OPTION_RESET_URLCACHE_SESSION          EQU     60
+INTERNET_OPTION_ERROR_MASK                      EQU     62
+INTERNET_OPTION_FROM_CACHE_TIMEOUT              EQU     63
+INTERNET_OPTION_BYPASS_EDITED_ENTRY             EQU     64
+INTERNET_OPTION_CODEPAGE                        EQU     68
+INTERNET_OPTION_CACHE_TIMESTAMPS                EQU     69
+INTERNET_OPTION_DISABLE_AUTODIAL                EQU     70
+INTERNET_OPTION_MAX_CONNS_PER_SERVER            EQU     73
+INTERNET_OPTION_MAX_CONNS_PER_1_0_SERVER        EQU     74
+INTERNET_OPTION_PER_CONNECTION_OPTION           EQU     75
+INTERNET_OPTION_DIGEST_AUTH_UNLOAD              EQU     76
+INTERNET_OPTION_IGNORE_OFFLINE                  EQU     77
+INTERNET_FIRST_OPTION                           EQU     INTERNET_OPTION_CALLBACK
+INTERNET_LAST_OPTION                            EQU     INTERNET_OPTION_IGNORE_OFFLINE
+
+INTERNET_PRIORITY_FOREGROUND                    EQU     1000
+
+INTERNET_HANDLE_TYPE_INTERNET                   EQU     1
+INTERNET_HANDLE_TYPE_CONNECT_FTP                EQU     2
+INTERNET_HANDLE_TYPE_CONNECT_GOPHER             EQU     3
+INTERNET_HANDLE_TYPE_CONNECT_HTTP               EQU     4
+INTERNET_HANDLE_TYPE_FTP_FIND                   EQU     5
+INTERNET_HANDLE_TYPE_FTP_FIND_HTML              EQU     6
+INTERNET_HANDLE_TYPE_FTP_FILE                   EQU     7
+INTERNET_HANDLE_TYPE_FTP_FILE_HTML              EQU     8
+INTERNET_HANDLE_TYPE_GOPHER_FIND                EQU     9
+INTERNET_HANDLE_TYPE_GOPHER_FIND_HTML           EQU     10
+INTERNET_HANDLE_TYPE_GOPHER_FILE                EQU     11
+INTERNET_HANDLE_TYPE_GOPHER_FILE_HTML           EQU     12
+INTERNET_HANDLE_TYPE_HTTP_REQUEST               EQU     13
+INTERNET_HANDLE_TYPE_FILE_REQUEST               EQU     14
+
+SECURITY_FLAG_SECURE                            EQU     00000001H
+SECURITY_FLAG_STRENGTH_WEAK                     EQU     10000000H
+SECURITY_FLAG_STRENGTH_MEDIUM                   EQU     40000000H
+SECURITY_FLAG_STRENGTH_STRONG                   EQU     20000000H
+SECURITY_FLAG_UNKNOWNBIT                        EQU     80000000H
+SECURITY_FLAG_FORTEZZA                          EQU     08000000H
+SECURITY_FLAG_NORMALBITNESS                     EQU     SECURITY_FLAG_STRENGTH_WEAK
+SECURITY_FLAG_SSL                               EQU     00000002H
+SECURITY_FLAG_SSL3                              EQU     00000004H
+SECURITY_FLAG_PCT                               EQU     00000008H
+SECURITY_FLAG_PCT4                              EQU     00000010H
+SECURITY_FLAG_IETFSSL4                          EQU     00000020H
+SECURITY_FLAG_40BIT                             EQU     SECURITY_FLAG_STRENGTH_WEAK
+SECURITY_FLAG_128BIT                            EQU     SECURITY_FLAG_STRENGTH_STRONG
+SECURITY_FLAG_56BIT                             EQU     SECURITY_FLAG_STRENGTH_MEDIUM
+SECURITY_FLAG_IGNORE_REVOCATION                 EQU     00000080H
+SECURITY_FLAG_IGNORE_UNKNOWN_CA                 EQU     00000100H
+SECURITY_FLAG_IGNORE_WRONG_USAGE                EQU     00000200H
+SECURITY_FLAG_IGNORE_CERT_CN_INVALID            EQU     INTERNET_FLAG_IGNORE_CERT_CN_INVALID
+SECURITY_FLAG_IGNORE_CERT_DATE_INVALID          EQU     INTERNET_FLAG_IGNORE_CERT_DATE_INVALID
+SECURITY_FLAG_IGNORE_REDIRECT_TO_HTTPS          EQU     INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTPS
+SECURITY_FLAG_IGNORE_REDIRECT_TO_HTTP           EQU     INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP
+SECURITY_SET_MASK                               EQU     (SECURITY_FLAG_IGNORE_REVOCATION OR SECURITY_FLAG_IGNORE_UNKNOWN_CA OR SECURITY_FLAG_IGNORE_CERT_CN_INVALID OR SECURITY_FLAG_IGNORE_CERT_DATE_INVALID OR SECURITY_FLAG_IGNORE_WRONG_USAGE)
+
+INTERNET_STATUS_RESOLVING_NAME                  EQU     10
+INTERNET_STATUS_NAME_RESOLVED                   EQU     11
+INTERNET_STATUS_CONNECTING_TO_SERVER            EQU     20
+INTERNET_STATUS_CONNECTED_TO_SERVER             EQU     21
+INTERNET_STATUS_SENDING_REQUEST                 EQU     30
+INTERNET_STATUS_REQUEST_SENT                    EQU     31
+INTERNET_STATUS_RECEIVING_RESPONSE              EQU     40
+INTERNET_STATUS_RESPONSE_RECEIVED               EQU     41
+INTERNET_STATUS_CTL_RESPONSE_RECEIVED           EQU     42
+INTERNET_STATUS_PREFETCH                        EQU     43
+INTERNET_STATUS_CLOSING_CONNECTION              EQU     50
+INTERNET_STATUS_CONNECTION_CLOSED               EQU     51
+INTERNET_STATUS_HANDLE_CREATED                  EQU     60
+INTERNET_STATUS_HANDLE_CLOSING                  EQU     70
+INTERNET_STATUS_DETECTING_PROXY                 EQU     80
+INTERNET_STATUS_REQUEST_COMPLETE                EQU     100
+INTERNET_STATUS_REDIRECT                        EQU     110
+INTERNET_STATUS_INTERMEDIATE_RESPONSE           EQU     120
+INTERNET_STATUS_USER_INPUT_REQUIRED             EQU     140
+INTERNET_STATUS_STATE_CHANGE                    EQU     200
+
+INTERNET_STATE_CONNECTED                        EQU     00000001H
+INTERNET_STATE_DISCONNECTED                     EQU     00000002H
+INTERNET_STATE_DISCONNECTED_BY_USER             EQU     00000010H
+INTERNET_STATE_IDLE                             EQU     00000100H
+INTERNET_STATE_BUSY                             EQU     00000200H
+
+INTERNET_INVALID_STATUS_CALLBACK                EQU     (-1)
+
+MAX_GOPHER_DISPLAY_TEXT                         EQU     128
+MAX_GOPHER_SELECTOR_TEXT                        EQU     256
+MAX_GOPHER_HOST_NAME                            EQU     INTERNET_MAX_HOST_NAME_LENGTH
+MAX_GOPHER_LOCATOR_LENGTH                       EQU     (1 + MAX_GOPHER_DISPLAY_TEXT + 1 + MAX_GOPHER_SELECTOR_TEXT + 1 + MAX_GOPHER_HOST_NAME + 1 + INTERNET_MAX_PORT_NUMBER_LENGTH + 1 + 1 + 2)
+
+GOPHER_TYPE_TEXT_FILE                           EQU     00000001H
+GOPHER_TYPE_DIRECTORY                           EQU     00000002H
+GOPHER_TYPE_CSO                                 EQU     00000004H
+GOPHER_TYPE_ERROR                               EQU     00000008H
+GOPHER_TYPE_MAC_BINHEX                          EQU     00000010H
+GOPHER_TYPE_DOS_ARCHIVE                         EQU     00000020H
+GOPHER_TYPE_UNIX_UUENCODED                      EQU     00000040H
+GOPHER_TYPE_INDEX_SERVER                        EQU     00000080H
+GOPHER_TYPE_TELNET                              EQU     00000100H
+GOPHER_TYPE_BINARY                              EQU     00000200H
+GOPHER_TYPE_REDUNDANT                           EQU     00000400H
+GOPHER_TYPE_TN3270                              EQU     00000800H
+GOPHER_TYPE_GIF                                 EQU     00001000H
+GOPHER_TYPE_IMAGE                               EQU     00002000H
+GOPHER_TYPE_BITMAP                              EQU     00004000H
+GOPHER_TYPE_MOVIE                               EQU     00008000H
+GOPHER_TYPE_SOUND                               EQU     00010000H
+GOPHER_TYPE_HTML                                EQU     00020000H
+GOPHER_TYPE_PDF                                 EQU     00040000H
+GOPHER_TYPE_CALENDAR                            EQU     00080000H
+GOPHER_TYPE_INLINE                              EQU     00100000H
+GOPHER_TYPE_UNKNOWN                             EQU     20000000H
+GOPHER_TYPE_ASK                                 EQU     40000000H
+GOPHER_TYPE_GOPHER_PLUS                         EQU     80000000H
+
+GOPHER_TYPE_FILE_MASK                           EQU     000F7271H
+
+MAX_GOPHER_CATEGORY_NAME                        EQU     128
+MAX_GOPHER_ATTRIBUTE_NAME                       EQU     128
+MIN_GOPHER_ATTRIBUTE_LENGTH                     EQU     256
+
+GOPHER_INFO_CATEGORY                            EQU     A("+INFO")
+GOPHER_ADMIN_CATEGORY                           EQU     A("+ADMIN")
+GOPHER_VIEWS_CATEGORY                           EQU     A("+VIEWS")
+GOPHER_ABSTRACT_CATEGORY                        EQU     A("+ABSTRACT")
+GOPHER_VERONICA_CATEGORY                        EQU     A("+VERONICA")
+GOPHER_ADMIN_ATTRIBUTE                          EQU     A("Admin")
+GOPHER_MOD_DATE_ATTRIBUTE                       EQU     A("Mod-Date")
+GOPHER_TTL_ATTRIBUTE                            EQU     A("TTL")
+GOPHER_SCORE_ATTRIBUTE                          EQU     A("Score")
+GOPHER_RANGE_ATTRIBUTE                          EQU     A("Score-range")
+GOPHER_SITE_ATTRIBUTE                           EQU     A("Site")
+GOPHER_ORG_ATTRIBUTE                            EQU     A("Org")
+GOPHER_LOCATION_ATTRIBUTE                       EQU     A("Loc")
+GOPHER_GEOG_ATTRIBUTE                           EQU     A("Geog")
+GOPHER_TIMEZONE_ATTRIBUTE                       EQU     A("TZ")
+GOPHER_PROVIDER_ATTRIBUTE                       EQU     A("Provider")
+GOPHER_VERSION_ATTRIBUTE                        EQU     A("Version")
+GOPHER_ABSTRACT_ATTRIBUTE                       EQU     A("Abstract")
+GOPHER_VIEW_ATTRIBUTE                           EQU     A("View")
+GOPHER_TREEWALK_ATTRIBUTE                       EQU     A("treewalk")
+
+GOPHER_ATTRIBUTE_ID_BASE                        EQU     0ABCCCC00H
+GOPHER_CATEGORY_ID_ALL                          EQU     (GOPHER_ATTRIBUTE_ID_BASE + 1)
+GOPHER_CATEGORY_ID_INFO                         EQU     (GOPHER_ATTRIBUTE_ID_BASE + 2)
+GOPHER_CATEGORY_ID_ADMIN                        EQU     (GOPHER_ATTRIBUTE_ID_BASE + 3)
+GOPHER_CATEGORY_ID_VIEWS                        EQU     (GOPHER_ATTRIBUTE_ID_BASE + 4)
+GOPHER_CATEGORY_ID_ABSTRACT                     EQU     (GOPHER_ATTRIBUTE_ID_BASE + 5)
+GOPHER_CATEGORY_ID_VERONICA                     EQU     (GOPHER_ATTRIBUTE_ID_BASE + 6)
+GOPHER_CATEGORY_ID_ASK                          EQU     (GOPHER_ATTRIBUTE_ID_BASE + 7)
+GOPHER_CATEGORY_ID_UNKNOWN                      EQU     (GOPHER_ATTRIBUTE_ID_BASE + 8)
+GOPHER_ATTRIBUTE_ID_ALL                         EQU     (GOPHER_ATTRIBUTE_ID_BASE + 9)
+GOPHER_ATTRIBUTE_ID_ADMIN                       EQU     (GOPHER_ATTRIBUTE_ID_BASE + 10)
+GOPHER_ATTRIBUTE_ID_MOD_DATE                    EQU     (GOPHER_ATTRIBUTE_ID_BASE + 11)
+GOPHER_ATTRIBUTE_ID_TTL                         EQU     (GOPHER_ATTRIBUTE_ID_BASE + 12)
+GOPHER_ATTRIBUTE_ID_SCORE                       EQU     (GOPHER_ATTRIBUTE_ID_BASE + 13)
+GOPHER_ATTRIBUTE_ID_RANGE                       EQU     (GOPHER_ATTRIBUTE_ID_BASE + 14)
+GOPHER_ATTRIBUTE_ID_SITE                        EQU     (GOPHER_ATTRIBUTE_ID_BASE + 15)
+GOPHER_ATTRIBUTE_ID_ORG                         EQU     (GOPHER_ATTRIBUTE_ID_BASE + 16)
+GOPHER_ATTRIBUTE_ID_LOCATION                    EQU     (GOPHER_ATTRIBUTE_ID_BASE + 17)
+GOPHER_ATTRIBUTE_ID_GEOG                        EQU     (GOPHER_ATTRIBUTE_ID_BASE + 18)
+GOPHER_ATTRIBUTE_ID_TIMEZONE                    EQU     (GOPHER_ATTRIBUTE_ID_BASE + 19)
+GOPHER_ATTRIBUTE_ID_PROVIDER                    EQU     (GOPHER_ATTRIBUTE_ID_BASE + 20)
+GOPHER_ATTRIBUTE_ID_VERSION                     EQU     (GOPHER_ATTRIBUTE_ID_BASE + 21)
+GOPHER_ATTRIBUTE_ID_ABSTRACT                    EQU     (GOPHER_ATTRIBUTE_ID_BASE + 22)
+GOPHER_ATTRIBUTE_ID_VIEW                        EQU     (GOPHER_ATTRIBUTE_ID_BASE + 23)
+GOPHER_ATTRIBUTE_ID_TREEWALK                    EQU     (GOPHER_ATTRIBUTE_ID_BASE + 24)
+GOPHER_ATTRIBUTE_ID_UNKNOWN                     EQU     (GOPHER_ATTRIBUTE_ID_BASE + 25)
+
+HTTP_MAJOR_VERSION                              EQU     1
+HTTP_MINOR_VERSION                              EQU     0
+HTTP_VERSIONA                                   EQU     A("HTTP/1.0")
+HTTP_VERSIONW                                   EQU     L("HTTP/1.0")
+
+HTTP_QUERY_MIME_VERSION                         EQU     0
+HTTP_QUERY_CONTENT_TYPE                         EQU     1
+HTTP_QUERY_CONTENT_TRANSFER_ENCODING            EQU     2
+HTTP_QUERY_CONTENT_ID                           EQU     3
+HTTP_QUERY_CONTENT_DESCRIPTION                  EQU     4
+HTTP_QUERY_CONTENT_LENGTH                       EQU     5
+HTTP_QUERY_CONTENT_LANGUAGE                     EQU     6
+HTTP_QUERY_ALLOW                                EQU     7
+HTTP_QUERY_PUBLIC                               EQU     8
+HTTP_QUERY_DATE                                 EQU     9
+HTTP_QUERY_EXPIRES                              EQU     10
+HTTP_QUERY_LAST_MODIFIED                        EQU     11
+HTTP_QUERY_MESSAGE_ID                           EQU     12
+HTTP_QUERY_URI                                  EQU     13
+HTTP_QUERY_DERIVED_FROM                         EQU     14
+HTTP_QUERY_COST                                 EQU     15
+HTTP_QUERY_LINK                                 EQU     16
+HTTP_QUERY_PRAGMA                               EQU     17
+HTTP_QUERY_VERSION                              EQU     18
+HTTP_QUERY_STATUS_CODE                          EQU     19
+HTTP_QUERY_STATUS_TEXT                          EQU     20
+HTTP_QUERY_RAW_HEADERS                          EQU     21
+HTTP_QUERY_RAW_HEADERS_CRLF                     EQU     22
+HTTP_QUERY_CONNECTION                           EQU     23
+HTTP_QUERY_ACCEPT                               EQU     24
+HTTP_QUERY_ACCEPT_CHARSET                       EQU     25
+HTTP_QUERY_ACCEPT_ENCODING                      EQU     26
+HTTP_QUERY_ACCEPT_LANGUAGE                      EQU     27
+HTTP_QUERY_AUTHORIZATION                        EQU     28
+HTTP_QUERY_CONTENT_ENCODING                     EQU     29
+HTTP_QUERY_FORWARDED                            EQU     30
+HTTP_QUERY_FROM                                 EQU     31
+HTTP_QUERY_IF_MODIFIED_SINCE                    EQU     32
+HTTP_QUERY_LOCATION                             EQU     33
+HTTP_QUERY_ORIG_URI                             EQU     34
+HTTP_QUERY_REFERER                              EQU     35
+HTTP_QUERY_RETRY_AFTER                          EQU     36
+HTTP_QUERY_SERVER                               EQU     37
+HTTP_QUERY_TITLE                                EQU     38
+HTTP_QUERY_USER_AGENT                           EQU     39
+HTTP_QUERY_WWW_AUTHENTICATE                     EQU     40
+HTTP_QUERY_PROXY_AUTHENTICATE                   EQU     41
+HTTP_QUERY_ACCEPT_RANGES                        EQU     42
+HTTP_QUERY_SET_COOKIE                           EQU     43
+HTTP_QUERY_COOKIE                               EQU     44
+HTTP_QUERY_REQUEST_METHOD                       EQU     45
+HTTP_QUERY_REFRESH                              EQU     46
+HTTP_QUERY_CONTENT_DISPOSITION                  EQU     47
+HTTP_QUERY_AGE                                  EQU     48
+HTTP_QUERY_CACHE_CONTROL                        EQU     49
+HTTP_QUERY_CONTENT_BASE                         EQU     50
+HTTP_QUERY_CONTENT_LOCATION                     EQU     51
+HTTP_QUERY_CONTENT_MD5                          EQU     52
+HTTP_QUERY_CONTENT_RANGE                        EQU     53
+HTTP_QUERY_ETAG                                 EQU     54
+HTTP_QUERY_HOST                                 EQU     55
+HTTP_QUERY_IF_MATCH                             EQU     56
+HTTP_QUERY_IF_NONE_MATCH                        EQU     57
+HTTP_QUERY_IF_RANGE                             EQU     58
+HTTP_QUERY_IF_UNMODIFIED_SINCE                  EQU     59
+HTTP_QUERY_MAX_FORWARDS                         EQU     60
+HTTP_QUERY_PROXY_AUTHORIZATION                  EQU     61
+HTTP_QUERY_RANGE                                EQU     62
+HTTP_QUERY_TRANSFER_ENCODING                    EQU     63
+HTTP_QUERY_UPGRADE                              EQU     64
+HTTP_QUERY_VARY                                 EQU     65
+HTTP_QUERY_VIA                                  EQU     66
+HTTP_QUERY_WARNING                              EQU     67
+HTTP_QUERY_EXPECT                               EQU     68
+HTTP_QUERY_PROXY_CONNECTION                     EQU     69
+HTTP_QUERY_UNLESS_MODIFIED_SINCE                EQU     70
+HTTP_QUERY_ECHO_REQUEST                         EQU     71
+HTTP_QUERY_ECHO_REPLY                           EQU     72
+HTTP_QUERY_ECHO_HEADERS                         EQU     73
+HTTP_QUERY_ECHO_HEADERS_CRLF                    EQU     74
+HTTP_QUERY_MAX                                  EQU     74
+HTTP_QUERY_CUSTOM                               EQU     65535
+HTTP_QUERY_FLAG_REQUEST_HEADERS                 EQU     80000000H
+HTTP_QUERY_FLAG_SYSTEMTIME                      EQU     40000000H
+HTTP_QUERY_FLAG_NUMBER                          EQU     20000000H
+HTTP_QUERY_FLAG_COALESCE                        EQU     10000000H
+HTTP_QUERY_MODIFIER_FLAGS_MASK                  EQU     (HTTP_QUERY_FLAG_REQUEST_HEADERS OR HTTP_QUERY_FLAG_SYSTEMTIME OR HTTP_QUERY_FLAG_NUMBER OR HTTP_QUERY_FLAG_COALESCE)
+HTTP_QUERY_HEADER_MASK                          EQU     (NOT HTTP_QUERY_MODIFIER_FLAGS_MASK)
+
+HTTP_STATUS_CONTINUE                            EQU     100
+HTTP_STATUS_SWITCH_PROTOCOLS                    EQU     101
+HTTP_STATUS_OK                                  EQU     200
+HTTP_STATUS_CREATED                             EQU     201
+HTTP_STATUS_ACCEPTED                            EQU     202
+HTTP_STATUS_PARTIAL                             EQU     203
+HTTP_STATUS_NO_CONTENT                          EQU     204
+HTTP_STATUS_RESET_CONTENT                       EQU     205
+HTTP_STATUS_PARTIAL_CONTENT                     EQU     206
+HTTP_STATUS_AMBIGUOUS                           EQU     300
+HTTP_STATUS_MOVED                               EQU     301
+HTTP_STATUS_REDIRECT                            EQU     302
+HTTP_STATUS_REDIRECT_METHOD                     EQU     303
+HTTP_STATUS_NOT_MODIFIED                        EQU     304
+HTTP_STATUS_USE_PROXY                           EQU     305
+HTTP_STATUS_REDIRECT_KEEP_VERB                  EQU     307
+HTTP_STATUS_BAD_REQUEST                         EQU     400
+HTTP_STATUS_DENIED                              EQU     401
+HTTP_STATUS_PAYMENT_REQ                         EQU     402
+HTTP_STATUS_FORBIDDEN                           EQU     403
+HTTP_STATUS_NOT_FOUND                           EQU     404
+HTTP_STATUS_BAD_METHOD                          EQU     405
+HTTP_STATUS_NONE_ACCEPTABLE                     EQU     406
+HTTP_STATUS_PROXY_AUTH_REQ                      EQU     407
+HTTP_STATUS_REQUEST_TIMEOUT                     EQU     408
+HTTP_STATUS_CONFLICT                            EQU     409
+HTTP_STATUS_GONE                                EQU     410
+HTTP_STATUS_LENGTH_REQUIRED                     EQU     411
+HTTP_STATUS_PRECOND_FAILED                      EQU     412
+HTTP_STATUS_REQUEST_TOO_LARGE                   EQU     413
+HTTP_STATUS_URI_TOO_LONG                        EQU     414
+HTTP_STATUS_UNSUPPORTED_MEDIA                   EQU     415
+HTTP_STATUS_RETRY_WITH                          EQU     449
+HTTP_STATUS_SERVER_ERROR                        EQU     500
+HTTP_STATUS_NOT_SUPPORTED                       EQU     501
+HTTP_STATUS_BAD_GATEWAY                         EQU     502
+HTTP_STATUS_SERVICE_UNAVAIL                     EQU     503
+HTTP_STATUS_GATEWAY_TIMEOUT                     EQU     504
+HTTP_STATUS_VERSION_NOT_SUP                     EQU     505
+HTTP_STATUS_FIRST                               EQU     HTTP_STATUS_CONTINUE
+HTTP_STATUS_LAST                                EQU     HTTP_STATUS_VERSION_NOT_SUP
+
+HTTP_ADDREQ_INDEX_MASK                          EQU     00000FFFFH
+HTTP_ADDREQ_FLAGS_MASK                          EQU     0FFFF0000H
+HTTP_ADDREQ_FLAG_ADD_IF_NEW                     EQU     010000000H
+HTTP_ADDREQ_FLAG_ADD                            EQU     020000000H
+HTTP_ADDREQ_FLAG_COALESCE_WITH_COMMA            EQU     040000000H
+HTTP_ADDREQ_FLAG_COALESCE_WITH_SEMICOLON        EQU     001000000H
+HTTP_ADDREQ_FLAG_COALESCE                       EQU     HTTP_ADDREQ_FLAG_COALESCE_WITH_COMMA
+HTTP_ADDREQ_FLAG_REPLACE                        EQU     080000000H
+
+HSR_ASYNC                                       EQU     WININET_API_FLAG_ASYNC
+HSR_SYNC                                        EQU     WININET_API_FLAG_SYNC
+HSR_USE_CONTEXT                                 EQU     WININET_API_FLAG_USE_CONTEXT
+HSR_INITIATE                                    EQU     00000008H
+HSR_DOWNLOAD                                    EQU     00000010H
+HSR_CHUNKED                                     EQU     00000020H
+
+FLAG_ICC_FORCE_CONNECTION                       EQU     00000001H
+
+FLAGS_ERROR_UI_FILTER_FOR_ERRORS                EQU     01H
+FLAGS_ERROR_UI_FLAGS_CHANGE_OPTIONS             EQU     02H
+FLAGS_ERROR_UI_FLAGS_GENERATE_DATA              EQU     04H
+FLAGS_ERROR_UI_FLAGS_NO_UI                      EQU     08H
+FLAGS_ERROR_UI_SERIALIZE_DIALOGS                EQU     10H
+
+IFNDEF INTERNET_ERROR_BASE
+    INTERNET_ERROR_BASE                             EQU     12000
+    ERROR_INTERNET_OUT_OF_HANDLES                   EQU     (INTERNET_ERROR_BASE + 1)
+    ERROR_INTERNET_TIMEOUT                          EQU     (INTERNET_ERROR_BASE + 2)
+    ERROR_INTERNET_EXTENDED_ERROR                   EQU     (INTERNET_ERROR_BASE + 3)
+    ERROR_INTERNET_INTERNAL_ERROR                   EQU     (INTERNET_ERROR_BASE + 4)
+    ERROR_INTERNET_INVALID_URL                      EQU     (INTERNET_ERROR_BASE + 5)
+    ERROR_INTERNET_UNRECOGNIZED_SCHEME              EQU     (INTERNET_ERROR_BASE + 6)
+    ERROR_INTERNET_NAME_NOT_RESOLVED                EQU     (INTERNET_ERROR_BASE + 7)
+    ERROR_INTERNET_PROTOCOL_NOT_FOUND               EQU     (INTERNET_ERROR_BASE + 8)
+    ERROR_INTERNET_INVALID_OPTION                   EQU     (INTERNET_ERROR_BASE + 9)
+    ERROR_INTERNET_BAD_OPTION_LENGTH                EQU     (INTERNET_ERROR_BASE + 10)
+    ERROR_INTERNET_OPTION_NOT_SETTABLE              EQU     (INTERNET_ERROR_BASE + 11)
+    ERROR_INTERNET_SHUTDOWN                         EQU     (INTERNET_ERROR_BASE + 12)
+    ERROR_INTERNET_INCORRECT_USER_NAME              EQU     (INTERNET_ERROR_BASE + 13)
+    ERROR_INTERNET_INCORRECT_PASSWORD               EQU     (INTERNET_ERROR_BASE + 14)
+    ERROR_INTERNET_LOGIN_FAILURE                    EQU     (INTERNET_ERROR_BASE + 15)
+    ERROR_INTERNET_INVALID_OPERATION                EQU     (INTERNET_ERROR_BASE + 16)
+    ERROR_INTERNET_OPERATION_CANCELLED              EQU     (INTERNET_ERROR_BASE + 17)
+    ERROR_INTERNET_INCORRECT_HANDLE_TYPE            EQU     (INTERNET_ERROR_BASE + 18)
+    ERROR_INTERNET_INCORRECT_HANDLE_STATE           EQU     (INTERNET_ERROR_BASE + 19)
+    ERROR_INTERNET_NOT_PROXY_REQUEST                EQU     (INTERNET_ERROR_BASE + 20)
+    ERROR_INTERNET_REGISTRY_VALUE_NOT_FOUND         EQU     (INTERNET_ERROR_BASE + 21)
+    ERROR_INTERNET_BAD_REGISTRY_PARAMETER           EQU     (INTERNET_ERROR_BASE + 22)
+    ERROR_INTERNET_NO_DIRECT_ACCESS                 EQU     (INTERNET_ERROR_BASE + 23)
+    ERROR_INTERNET_NO_CONTEXT                       EQU     (INTERNET_ERROR_BASE + 24)
+    ERROR_INTERNET_NO_CALLBACK                      EQU     (INTERNET_ERROR_BASE + 25)
+    ERROR_INTERNET_REQUEST_PENDING                  EQU     (INTERNET_ERROR_BASE + 26)
+    ERROR_INTERNET_INCORRECT_FORMAT                 EQU     (INTERNET_ERROR_BASE + 27)
+    ERROR_INTERNET_ITEM_NOT_FOUND                   EQU     (INTERNET_ERROR_BASE + 28)
+    ERROR_INTERNET_CANNOT_CONNECT                   EQU     (INTERNET_ERROR_BASE + 29)
+    ERROR_INTERNET_CONNECTION_ABORTED               EQU     (INTERNET_ERROR_BASE + 30)
+    ERROR_INTERNET_CONNECTION_RESET                 EQU     (INTERNET_ERROR_BASE + 31)
+    ERROR_INTERNET_FORCE_RETRY                      EQU     (INTERNET_ERROR_BASE + 32)
+    ERROR_INTERNET_INVALID_PROXY_REQUEST            EQU     (INTERNET_ERROR_BASE + 33)
+    ERROR_INTERNET_NEED_UI                          EQU     (INTERNET_ERROR_BASE + 34)
+    ERROR_INTERNET_HANDLE_EXISTS                    EQU     (INTERNET_ERROR_BASE + 36)
+    ERROR_INTERNET_SEC_CERT_DATE_INVALID            EQU     (INTERNET_ERROR_BASE + 37)
+    ERROR_INTERNET_SEC_CERT_CN_INVALID              EQU     (INTERNET_ERROR_BASE + 38)
+    ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR           EQU     (INTERNET_ERROR_BASE + 39)
+    ERROR_INTERNET_HTTPS_TO_HTTP_ON_REDIR           EQU     (INTERNET_ERROR_BASE + 40)
+    ERROR_INTERNET_MIXED_SECURITY                   EQU     (INTERNET_ERROR_BASE + 41)
+    ERROR_INTERNET_CHG_POST_IS_NON_SECURE           EQU     (INTERNET_ERROR_BASE + 42)
+    ERROR_INTERNET_POST_IS_NON_SECURE               EQU     (INTERNET_ERROR_BASE + 43)
+    ERROR_INTERNET_CLIENT_AUTH_CERT_NEEDED          EQU     (INTERNET_ERROR_BASE + 44)
+    ERROR_INTERNET_INVALID_CA                       EQU     (INTERNET_ERROR_BASE + 45)
+    ERROR_INTERNET_CLIENT_AUTH_NOT_SETUP            EQU     (INTERNET_ERROR_BASE + 46)
+    ERROR_INTERNET_ASYNC_THREAD_FAILED              EQU     (INTERNET_ERROR_BASE + 47)
+    ERROR_INTERNET_REDIRECT_SCHEME_CHANGE           EQU     (INTERNET_ERROR_BASE + 48)
+    ERROR_INTERNET_DIALOG_PENDING                   EQU     (INTERNET_ERROR_BASE + 49)
+    ERROR_INTERNET_RETRY_DIALOG                     EQU     (INTERNET_ERROR_BASE + 50)
+    ERROR_INTERNET_HTTPS_HTTP_SUBMIT_REDIR          EQU     (INTERNET_ERROR_BASE + 52)
+    ERROR_INTERNET_INSERT_CDROM                     EQU     (INTERNET_ERROR_BASE + 53)
+    ERROR_INTERNET_FORTEZZA_LOGIN_NEEDED            EQU     (INTERNET_ERROR_BASE + 54)
+    ERROR_INTERNET_SEC_CERT_ERRORS                  EQU     (INTERNET_ERROR_BASE + 55)
+    ERROR_INTERNET_SEC_CERT_NO_REV                  EQU     (INTERNET_ERROR_BASE + 56)
+    ERROR_INTERNET_SEC_CERT_REV_FAILED              EQU     (INTERNET_ERROR_BASE + 57)
+    ERROR_FTP_TRANSFER_IN_PROGRESS                  EQU     (INTERNET_ERROR_BASE + 110)
+    ERROR_FTP_DROPPED                               EQU     (INTERNET_ERROR_BASE + 111)
+    ERROR_FTP_NO_PASSIVE_MODE                       EQU     (INTERNET_ERROR_BASE + 112)
+    ERROR_GOPHER_PROTOCOL_ERROR                     EQU     (INTERNET_ERROR_BASE + 130)
+    ERROR_GOPHER_NOT_FILE                           EQU     (INTERNET_ERROR_BASE + 131)
+    ERROR_GOPHER_DATA_ERROR                         EQU     (INTERNET_ERROR_BASE + 132)
+    ERROR_GOPHER_END_OF_DATA                        EQU     (INTERNET_ERROR_BASE + 133)
+    ERROR_GOPHER_INVALID_LOCATOR                    EQU     (INTERNET_ERROR_BASE + 134)
+    ERROR_GOPHER_INCORRECT_LOCATOR_TYPE             EQU     (INTERNET_ERROR_BASE + 135)
+    ERROR_GOPHER_NOT_GOPHER_PLUS                    EQU     (INTERNET_ERROR_BASE + 136)
+    ERROR_GOPHER_ATTRIBUTE_NOT_FOUND                EQU     (INTERNET_ERROR_BASE + 137)
+    ERROR_GOPHER_UNKNOWN_LOCATOR                    EQU     (INTERNET_ERROR_BASE + 138)
+    ERROR_HTTP_HEADER_NOT_FOUND                     EQU     (INTERNET_ERROR_BASE + 150)
+    ERROR_HTTP_DOWNLEVEL_SERVER                     EQU     (INTERNET_ERROR_BASE + 151)
+    ERROR_HTTP_INVALID_SERVER_RESPONSE              EQU     (INTERNET_ERROR_BASE + 152)
+    ERROR_HTTP_INVALID_HEADER                       EQU     (INTERNET_ERROR_BASE + 153)
+    ERROR_HTTP_INVALID_QUERY_REQUEST                EQU     (INTERNET_ERROR_BASE + 154)
+    ERROR_HTTP_HEADER_ALREADY_EXISTS                EQU     (INTERNET_ERROR_BASE + 155)
+    ERROR_HTTP_REDIRECT_FAILED                      EQU     (INTERNET_ERROR_BASE + 156)
+    ERROR_HTTP_NOT_REDIRECTED                       EQU     (INTERNET_ERROR_BASE + 160)
+    ERROR_HTTP_COOKIE_NEEDS_CONFIRMATION            EQU     (INTERNET_ERROR_BASE + 161)
+    ERROR_HTTP_COOKIE_DECLINED                      EQU     (INTERNET_ERROR_BASE + 162)
+    ERROR_HTTP_REDIRECT_NEEDS_CONFIRMATION          EQU     (INTERNET_ERROR_BASE + 168)
+    ERROR_INTERNET_SECURITY_CHANNEL_ERROR           EQU     (INTERNET_ERROR_BASE + 157)
+    ERROR_INTERNET_UNABLE_TO_CACHE_FILE             EQU     (INTERNET_ERROR_BASE + 158)
+    ERROR_INTERNET_TCPIP_NOT_INSTALLED              EQU     (INTERNET_ERROR_BASE + 159)
+    ERROR_INTERNET_DISCONNECTED                     EQU     (INTERNET_ERROR_BASE + 163)
+    ERROR_INTERNET_SERVER_UNREACHABLE               EQU     (INTERNET_ERROR_BASE + 164)
+    ERROR_INTERNET_PROXY_SERVER_UNREACHABLE         EQU     (INTERNET_ERROR_BASE + 165)
+    ERROR_INTERNET_BAD_AUTO_PROXY_SCRIPT            EQU     (INTERNET_ERROR_BASE + 166)
+    ERROR_INTERNET_UNABLE_TO_DOWNLOAD_SCRIPT        EQU     (INTERNET_ERROR_BASE + 167)
+    ERROR_INTERNET_SEC_INVALID_CERT                 EQU     (INTERNET_ERROR_BASE + 169)
+    ERROR_INTERNET_SEC_CERT_REVOKED                 EQU     (INTERNET_ERROR_BASE + 170)
+    ERROR_INTERNET_FAILED_DUETOSECURITYCHECK        EQU     (INTERNET_ERROR_BASE + 171)
+    ERROR_INTERNET_NOT_INITIALIZED                  EQU     (INTERNET_ERROR_BASE + 172)
+    ERROR_INTERNET_NEED_MSN_SSPI_PKG                EQU     (INTERNET_ERROR_BASE + 173)
+    ERROR_INTERNET_LOGIN_FAILURE_DISPLAY_ENTITY_BODY EQU    (INTERNET_ERROR_BASE + 174)
+    INTERNET_ERROR_LAST                             EQU     ERROR_INTERNET_LOGIN_FAILURE_DISPLAY_ENTITY_BODY
+ENDIF
+
+NORMAL_CACHE_ENTRY                              EQU     00000001H
+STICKY_CACHE_ENTRY                              EQU     00000004H
+EDITED_CACHE_ENTRY                              EQU     00000008H
+TRACK_OFFLINE_CACHE_ENTRY                       EQU     00000010H
+TRACK_ONLINE_CACHE_ENTRY                        EQU     00000020H
+SPARSE_CACHE_ENTRY                              EQU     00010000H
+COOKIE_CACHE_ENTRY                              EQU     00100000H
+URLHISTORY_CACHE_ENTRY                          EQU     00200000H
+URLCACHE_FIND_DEFAULT_FILTER                    EQU     (NORMAL_CACHE_ENTRY OR COOKIE_CACHE_ENTRY OR URLHISTORY_CACHE_ENTRY OR TRACK_OFFLINE_CACHE_ENTRY OR TRACK_ONLINE_CACHE_ENTRY OR STICKY_CACHE_ENTRY)
+
+CACHEGROUP_ATTRIBUTE_GET_ALL                    EQU     0FFFFFFFFH
+CACHEGROUP_ATTRIBUTE_BASIC                      EQU     000000001H
+CACHEGROUP_ATTRIBUTE_FLAG                       EQU     000000002H
+CACHEGROUP_ATTRIBUTE_TYPE                       EQU     000000004H
+CACHEGROUP_ATTRIBUTE_QUOTA                      EQU     000000008H
+CACHEGROUP_ATTRIBUTE_GROUPNAME                  EQU     000000010H
+CACHEGROUP_ATTRIBUTE_STORAGE                    EQU     000000020H
+CACHEGROUP_FLAG_NONPURGEABLE                    EQU     000000001H
+CACHEGROUP_FLAG_GIDONLY                         EQU     000000004H
+CACHEGROUP_FLAG_FLUSHURL_ONDELETE               EQU     000000002H
+CACHEGROUP_SEARCH_ALL                           EQU     000000000H
+CACHEGROUP_SEARCH_BYURL                         EQU     000000001H
+CACHEGROUP_TYPE_INVALID                         EQU     000000001H
+CACHEGROUP_READWRITE_MASK                       EQU     (CACHEGROUP_ATTRIBUTE_TYPE OR CACHEGROUP_ATTRIBUTE_QUOTA OR CACHEGROUP_ATTRIBUTE_GROUPNAME OR CACHEGROUP_ATTRIBUTE_STORAGE)
+
+GROUPNAME_MAX_LENGTH                            EQU     120
+GROUP_OWNER_STORAGE_SIZE                        EQU     4
+
+CACHE_ENTRY_ATTRIBUTE_FC                        EQU     00000004H
+CACHE_ENTRY_HITRATE_FC                          EQU     00000010H
+CACHE_ENTRY_MODTIME_FC                          EQU     00000040H
+CACHE_ENTRY_EXPTIME_FC                          EQU     00000080H
+CACHE_ENTRY_ACCTIME_FC                          EQU     00000100H
+CACHE_ENTRY_SYNCTIME_FC                         EQU     00000200H
+CACHE_ENTRY_HEADERINFO_FC                       EQU     00000400H
+CACHE_ENTRY_EXEMPT_DELTA_FC                     EQU     00000800H
+
+INTERNET_CACHE_GROUP_ADD                        EQU     0
+INTERNET_CACHE_GROUP_REMOVE                     EQU     1
+
+INTERNET_DIAL_FORCE_PROMPT                      EQU     2000H
+INTERNET_DIAL_SHOW_OFFLINE                      EQU     4000H
+INTERNET_DIAL_UNATTENDED                        EQU     8000H
+
+INTERENT_GOONLINE_REFRESH                       EQU     00000001H
+INTERENT_GOONLINE_MASK                          EQU     00000001H
+
+INTERNET_AUTODIAL_FORCE_ONLINE                  EQU     1
+INTERNET_AUTODIAL_FORCE_UNATTENDED              EQU     2
+INTERNET_AUTODIAL_FAILIFSECURITYCHECK           EQU     4
+INTERNET_AUTODIAL_FLAGS_MASK                    EQU     (INTERNET_AUTODIAL_FORCE_ONLINE OR INTERNET_AUTODIAL_FORCE_UNATTENDED OR INTERNET_AUTODIAL_FAILIFSECURITYCHECK)
+
+INTERNET_CONNECTION_MODEM                       EQU     01H
+INTERNET_CONNECTION_LAN                         EQU     02H
+INTERNET_CONNECTION_PROXY                       EQU     04H
+INTERNET_CONNECTION_MODEM_BUSY                  EQU     08H
+INTERNET_RAS_INSTALLED                          EQU     10H
+INTERNET_CONNECTION_OFFLINE                     EQU     20H
+INTERNET_CONNECTION_CONFIGURED                  EQU     40H
+
+INTERNET_CUSTOMDIAL_CONNECT                     EQU     0
+INTERNET_CUSTOMDIAL_UNATTENDED                  EQU     1
+INTERNET_CUSTOMDIAL_DISCONNECT                  EQU     2
+INTERNET_CUSTOMDIAL_SHOWOFFLINE                 EQU     4
+INTERNET_CUSTOMDIAL_SAFE_FOR_UNATTENDED         EQU     1
+INTERNET_CUSTOMDIAL_WILL_SUPPLY_STATE           EQU     2
+INTERNET_CUSTOMDIAL_CAN_HANGUP                  EQU     4
+
+INTERNET_DIALSTATE_DISCONNECTED                 EQU     1
+
+INTERNET_SCHEME_PARTIAL                         EQU     (-2)
+INTERNET_SCHEME_UNKNOWN                         EQU     -1
+INTERNET_SCHEME_DEFAULT                         EQU     0
+INTERNET_SCHEME_FTP                             EQU     1
+INTERNET_SCHEME_GOPHER                          EQU     2
+INTERNET_SCHEME_HTTP                            EQU     3
+INTERNET_SCHEME_HTTPS                           EQU     4
+INTERNET_SCHEME_FILE                            EQU     5
+INTERNET_SCHEME_NEWS                            EQU     6
+INTERNET_SCHEME_MAILTO                          EQU     7
+INTERNET_SCHEME_SOCKS                           EQU     8
+INTERNET_SCHEME_JAVASCRIPT                      EQU     9
+INTERNET_SCHEME_VBSCRIPT                        EQU     10
+INTERNET_SCHEME_FIRST                           EQU     INTERNET_SCHEME_FTP,
+INTERNET_SCHEME_LAST                            EQU     INTERNET_SCHEME_VBSCRIPT
+
+
+;======================================== Structures ======================================;
+INTERNET_ASYNC_RESULT STRUCT ALIGNMODE
+    dwResult    DD  ?
+    dwError     DD  ?
+INTERNET_ASYNC_RESULT ENDS
+
+INTERNET_PROXY_INFO STRUCT ALIGNMODE
+    dwAccessType    DD   ?
+    lpszProxy       XPTR ?
+    lpszProxyBypass XPTR ?
+INTERNET_PROXY_INFO EndS
+
+INTERNET_PER_CONN_OPTIONA STRUCT ALIGNMODE
+    dwOption     DD   ?
+    UNION Value
+        dwValue  DD   ?
+        pszValue XPTR ?
+        ftValue  FILETIME <>
+    ENDS
+INTERNET_PER_CONN_OPTIONA ENDS
+
+INTERNET_PER_CONN_OPTIONW STRUCT ALIGNMODE
+    dwOption     DD   ?
+    UNION Value
+        dwValue  DD   ?
+        pszValue XPTR ?
+        ftValue  FILETIME <>
+    ENDS
+INTERNET_PER_CONN_OPTIONW ENDS
+
+INTERNET_PER_CONN_OPTION_LISTA STRUCT ALIGNMODE
+    dwSize        DD    ?
+    pszConnection XPTR  ?
+    dwOptionCount DD    ?
+    dwOptionError DD    ?
+    pOptions      XPTR  ?
+INTERNET_PER_CONN_OPTION_LISTA ENDS
+
+INTERNET_PER_CONN_OPTION_LISTW STRUCT ALIGNMODE
+    dwSize        DD    ?
+    pszConnection XPTR  ?
+    dwOptionCount DD    ?
+    dwOptionError DD    ?
+    pOptions      XPTR  ?
+INTERNET_PER_CONN_OPTION_LISTW ENDS
+
+INTERNET_VERSION_INFO STRUCT ALIGNMODE
+    dwMajorVersion DD ?
+    dwMinorVersion DD ?
+INTERNET_VERSION_INFO ENDS
+
+HTTP_VERSION_INFO STRUCT ALIGNMODE
+    dwMajorVersion DD ?
+    dwMinorVersion DD ?
+HTTP_VERSION_INFO ENDS
+
+INTERNET_CONNECTED_INFO STRUCT ALIGNMODE
+    dwConnectedState DD ?
+    dwFlags          DD ?
+INTERNET_CONNECTED_INFO ENDS
+
+URL_COMPONENTSA STRUCT ALIGNMODE
+    dwStructSize      DD   ?
+    lpszScheme        XPTR ?
+    dwSchemeLength    DD   ?
+    nScheme           DD   ?
+    lpszHostName      XPTR ?
+    dwHostNameLength  DD   ?
+    nPort             DD   ?
+    lpszUserName      XPTR ?
+    dwUserNameLength  DD   ?
+    lpszPassword      XPTR ?
+    dwPasswordLength  DD   ?
+    lpszUrlPath       XPTR ?
+    dwUrlPathLength   DD   ?
+    lpszExtraInfo     XPTR ?
+    dwExtraInfoLength DD   ?
+URL_COMPONENTSA ENDS
+
+URL_COMPONENTSW STRUCT ALIGNMODE
+    dwStructSize      DD   ?
+    lpszScheme        XPTR ?
+    dwSchemeLength    DD   ?
+    nScheme           DD   ?
+    lpszHostName      XPTR ?
+    dwHostNameLength  DD   ?
+    nPort             DD   ?
+    lpszUserName      XPTR ?
+    dwUserNameLength  DD   ?
+    lpszPassword      XPTR ?
+    dwPasswordLength  DD   ?
+    lpszUrlPath       XPTR ?
+    dwUrlPathLength   DD   ?
+    lpszExtraInfo     XPTR ?
+    dwExtraInfoLength DD   ?
+URL_COMPONENTSW ENDS
+
+INTERNET_CERTIFICATE_INFO STRUCT ALIGNMODE
+    ftExpiry              FILETIME <>
+    ftStart               FILETIME <>
+    lpszSubjectInfo       XPTR ?
+    lpszIssuerInfo        XPTR ?
+    lpszProtocolName      XPTR ?
+    lpszSignatureAlgName  XPTR ?
+    lpszEncryptionAlgName XPTR ?
+    dwKeySize             DD   ?
+INTERNET_CERTIFICATE_INFO ENDS
+
+INTERNET_BUFFERSA STRUCT ALIGNMODE
+    dwStructSize    DD   ?
+    Next            DD   ?
+    lpcszHeader     XPTR ?
+    dwHeadersLength DD   ?
+    dwHeadersTotal  DD   ?
+    lpvBuffer       XPTR ?
+    dwBufferLength  DD   ?
+    dwBufferTotal   DD   ?
+    dwOffsetLow     DD   ?
+    dwOffsetHigh    DD   ?
+INTERNET_BUFFERSA ENDS
+
+INTERNET_BUFFERSW STRUCT ALIGNMODE
+    dwStructSize    DD   ?
+    Next            DD   ?
+    lpcszHeader     XPTR ?
+    dwHeadersLength DD   ?
+    dwHeadersTotal  DD   ?
+    lpvBuffer       XPTR ?
+    dwBufferLength  DD   ?
+    dwBufferTotal   DD   ?
+    dwOffsetLow     DD   ?
+    dwOffsetHigh    DD   ?
+INTERNET_BUFFERSW ENDS
+
+GOPHER_FIND_DATAA STRUCT ALIGNMODE
+    DisplayString        DB MAX_GOPHER_DISPLAY_TEXT+1 DUP(?)
+    GopherType           DD ?
+    SizeLow              DD ?
+    SizeHigh             DD ?
+    LastModificationTime FILETIME <>
+    Locator              DB MAX_GOPHER_LOCATOR_LENGTH+1 DUP(?)
+GOPHER_FIND_DATAA ENDS
+
+GOPHER_FIND_DATAW STRUCT ALIGNMODE
+    DisplayString        DW MAX_GOPHER_DISPLAY_TEXT+1 DUP(?)
+    GopherType           DD ?
+    SizeLow              DD ?
+    SizeHigh             DD ?
+    LastModificationTime FILETIME <>
+    Locator              DW MAX_GOPHER_LOCATOR_LENGTH+1 DUP(?)
+GOPHER_FIND_DATAW ENDS
+
+GOPHER_ADMIN_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    _Comment     XPTR ?
+    EmailAddress XPTR ?
+GOPHER_ADMIN_ATTRIBUTE_TYPE ENDS
+
+GOPHER_MOD_DATE_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    DateAndTime FILETIME <>
+GOPHER_MOD_DATE_ATTRIBUTE_TYPE ENDS
+
+GOPHER_TTL_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    Ttl DD ?
+GOPHER_TTL_ATTRIBUTE_TYPE ENDS
+
+GOPHER_SCORE_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    Score DD ?
+GOPHER_SCORE_ATTRIBUTE_TYPE ENDS
+
+GOPHER_SCORE_RANGE_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    LowerBound DD ?
+    UpperBound DD ?
+GOPHER_SCORE_RANGE_ATTRIBUTE_TYPE ENDS
+
+GOPHER_SITE_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    Site XPTR ?
+GOPHER_SITE_ATTRIBUTE_TYPE ENDS
+
+GOPHER_ORGANIZATION_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    Organization XPTR ?
+GOPHER_ORGANIZATION_ATTRIBUTE_TYPE ENDS
+
+GOPHER_LOCATION_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    Location XPTR ?
+GOPHER_LOCATION_ATTRIBUTE_TYPE ENDS
+
+GOPHER_GEOGRAPHICAL_LOCATION_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    DegreesNorth DD ?
+    MinutesNorth DD ?
+    SecondsNorth DD ?
+    DegreesEast  DD ?
+    MinutesEast  DD ?
+    SecondsEast  DD ?
+GOPHER_GEOGRAPHICAL_LOCATION_ATTRIBUTE_TYPE ENDS
+
+GOPHER_TIMEZONE_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    Zone DD ?
+GOPHER_TIMEZONE_ATTRIBUTE_TYPE ENDS
+
+GOPHER_PROVIDER_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    Provider DD ?
+GOPHER_PROVIDER_ATTRIBUTE_TYPE ENDS
+
+GOPHER_VERSION_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    Version DD ?
+GOPHER_VERSION_ATTRIBUTE_TYPE ENDS
+
+GOPHER_ABSTRACT_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    ShortAbstract DD ?
+    AbstractFile  DD ?
+GOPHER_ABSTRACT_ATTRIBUTE_TYPE ENDS
+
+GOPHER_VIEW_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    ContentType DD ?
+    Language    DD ?
+    _Size       DD ?
+GOPHER_VIEW_ATTRIBUTE_TYPE ENDS
+
+GOPHER_VERONICA_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    TreeWalk    DD ?
+GOPHER_VERONICA_ATTRIBUTE_TYPE ENDS
+
+GOPHER_ASK_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    QuestionType DD ?
+    QuestionText DD ?
+GOPHER_ASK_ATTRIBUTE_TYPE ENDS
+
+GOPHER_UNKNOWN_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    _Text DD ?
+GOPHER_UNKNOWN_ATTRIBUTE_TYPE ENDS
+
+GOPHER_ATTRIBUTE_TYPE STRUCT ALIGNMODE
+    CategoryId  DD ?
+    AttributeId DD ?
+    UNION AttributeType
+        Admin                GOPHER_ADMIN_ATTRIBUTE_TYPE <>
+        ModDate              GOPHER_MOD_DATE_ATTRIBUTE_TYPE <>
+        Ttl                  GOPHER_TTL_ATTRIBUTE_TYPE <>
+        Score                GOPHER_SCORE_ATTRIBUTE_TYPE <>
+        ScoreRange           GOPHER_SCORE_RANGE_ATTRIBUTE_TYPE <>
+        Site                 GOPHER_SITE_ATTRIBUTE_TYPE <>
+        Organization         GOPHER_ORGANIZATION_ATTRIBUTE_TYPE <>
+        Location             GOPHER_LOCATION_ATTRIBUTE_TYPE <>
+        GeographicalLocation GOPHER_GEOGRAPHICAL_LOCATION_ATTRIBUTE_TYPE <>
+        TimeZone             GOPHER_TIMEZONE_ATTRIBUTE_TYPE <>
+        Provider             GOPHER_PROVIDER_ATTRIBUTE_TYPE <>
+        Version              GOPHER_VERSION_ATTRIBUTE_TYPE <>
+        Abstract             GOPHER_ABSTRACT_ATTRIBUTE_TYPE <>
+        View                 GOPHER_VIEW_ATTRIBUTE_TYPE <>
+        Veronica             GOPHER_VERONICA_ATTRIBUTE_TYPE <>
+        Ask                  GOPHER_ASK_ATTRIBUTE_TYPE <>
+        _Unknown             GOPHER_UNKNOWN_ATTRIBUTE_TYPE <>
+    ENDS
+GOPHER_ATTRIBUTE_TYPE EndS
+
+INTERNET_AUTH_NOTIFY_DATA STRUCT ALIGNMODE
+    cbStruct  DD   ?
+    dwOptions DD   ?
+    pfnNotify XPTR ?
+    dwContext DD   ?
+INTERNET_AUTH_NOTIFY_DATA ENDS
+
+INTERNET_CACHE_ENTRY_INFOA STRUCT ALIGNMODE
+    dwStructSize      DD   ?
+    lpszSourceUrlName XPTR ?
+    lpszLocalFileName XPTR ?
+    CacheEntryType    DD   ?
+    dwUseCount        DD   ?
+    dwHitRate         DD   ?
+    dwSizeLow         DD   ?
+    dwSizeHigh        DD   ?
+    LastModifiedTime  FILETIME <>
+    ExpireTime        FILETIME <>
+    LastAccessTime    FILETIME <>
+    LastSyncTime      FILETIME <>
+    lpHeaderInfo      XPTR ?
+    dwHeaderInfoSize  DD   ?
+    lpszFileExtension XPTR ?
+    UNION
+        dwReserved    DD   ?
+        dwExemptDelta DD   ?
+    ENDS
+INTERNET_CACHE_ENTRY_INFOA ENDS
+
+INTERNET_CACHE_ENTRY_INFOW STRUCT ALIGNMODE
+    dwStructSize      DD   ?
+    lpszSourceUrlName XPTR ?
+    lpszLocalFileName XPTR ?
+    CacheEntryType    DD   ?
+    dwUseCount        DD   ?
+    dwHitRate         DD   ?
+    dwSizeLow         DD   ?
+    dwSizeHigh        DD   ?
+    LastModifiedTime  FILETIME <>
+    ExpireTime        FILETIME <>
+    LastAccessTime    FILETIME <>
+    LastSyncTime      FILETIME <>
+    lpHeaderInfo      XPTR ?
+    dwHeaderInfoSize  DD   ?
+    lpszFileExtension XPTR ?
+    UNION
+        dwReserved    DD   ?
+        dwExemptDelta DD   ?
+    ENDS
+INTERNET_CACHE_ENTRY_INFOW ENDS
+
+INTERNET_CACHE_TIMESTAMPS STRUCT ALIGNMODE
+    ftExpires      FILETIME <>
+    ftLastModified FILETIME <>
+INTERNET_CACHE_TIMESTAMPS ENDS
+
+INTERNET_CACHE_GROUP_INFOA STRUCT ALIGNMODE
+    dwGroupSize     DD ?
+    dwGroupFlags    DD ?
+    dwGroupType     DD ?
+    dwDiskUsage     DD ?
+    dwDiskQuota     DD ?
+    dwOwnerStorage  DD GROUP_OWNER_STORAGE_SIZE DUP(?)
+    szGroupName     DB GROUPNAME_MAX_LENGTH DUP(?)
+INTERNET_CACHE_GROUP_INFOA ENDS
+
+INTERNET_CACHE_GROUP_INFOW STRUCT ALIGNMODE
+    dwGroupSize     DD ?
+    dwGroupFlags    DD ?
+    dwGroupType     DD ?
+    dwDiskUsage     DD ?
+    dwDiskQuota     DD ?
+    dwOwnerStorage  DD GROUP_OWNER_STORAGE_SIZE DUP(?)
+    szGroupName     DW GROUPNAME_MAX_LENGTH DUP(?)
+INTERNET_CACHE_GROUP_INFOW ENDS
+
+NETRESOURCEA STRUCT ALIGNMODE
+	dwScope 		DD   ?
+	dwType 			DD   ?
+	dwDisplayType	DD   ?
+	dwUsage 		DD   ?
+	lpLocalName 	XPTR ?
+	lpRemoteName 	XPTR ?
+	lpComment 		XPTR ?
+	lpProvider 		XPTR ?
+NETRESOURCEA ENDS
+
+NETRESOURCEW STRUCT ALIGNMODE
+	dwScope 		DD   ?
+	dwType 			DD   ?
+	dwDisplayType	DD   ?
+	dwUsage 		DD   ?
+	lpLocalName 	XPTR ?
+	lpRemoteName 	XPTR ?
+	lpComment 		XPTR ?
+	lpProvider 		XPTR ?
+NETRESOURCEW ENDS
+
+CONNECTDLGSTRUCTA STRUCT ALIGNMODE
+	cbStructure	DD     ?
+	hwndOwner 	HANDLE ?
+	lpConnRes 	XPTR   ?
+	dwFlags 	DD     ?
+	dwDevNum 	DD     ?
+CONNECTDLGSTRUCTA ENDS
+
+CONNECTDLGSTRUCTW STRUCT ALIGNMODE
+	cbStructure	DD     ?
+	hwndOwner 	HANDLE ?
+	lpConnRes 	XPTR   ?
+	dwFlags 	DD     ?
+	dwDevNum 	DD     ?
+CONNECTDLGSTRUCTW ENDS
+
+DISCDLGSTRUCTA STRUCT ALIGNMODE
+	cbStructure 	DD     ?
+	hwndOwner 		HANDLE ?
+	lpLocalName 	XPTR   ?
+	lpRemoteName	XPTR   ?
+	dwFlags 		DD     ?
+DISCDLGSTRUCTA ENDS
+
+DISCDLGSTRUCTW STRUCT ALIGNMODE
+	cbStructure 	DD     ?
+	hwndOwner 		HANDLE ?
+	lpLocalName 	XPTR   ?
+	lpRemoteName	XPTR   ?
+	dwFlags 		DD     ?
+DISCDLGSTRUCTW ENDS
+
+UNIVERSAL_NAME_INFOA STRUCT ALIGNMODE
+	lpUniversalName	XPTR ?
+UNIVERSAL_NAME_INFOA ENDS
+
+UNIVERSAL_NAME_INFOW STRUCT ALIGNMODE
+	lpUniversalName	XPTR ?
+UNIVERSAL_NAME_INFOW ENDS
+
+REMOTE_NAME_INFOA STRUCT ALIGNMODE
+	lpUniversalName 	XPTR ?
+	lpConnectionName	XPTR ?
+	lpRemainingPath 	XPTR ?
+REMOTE_NAME_INFOA ENDS
+
+REMOTE_NAME_INFOW STRUCT ALIGNMODE
+	lpUniversalName 	XPTR ?
+	lpConnectionName	XPTR ?
+	lpRemainingPath		XPTR ?
+REMOTE_NAME_INFOW ENDS
+
+NETINFOSTRUCT STRUCT ALIGNMODE
+	cbStructure 		DD   ?
+	dwProviderVersion	DD   ?
+	dwStatus 			DD   ?
+	dwCharacteristics	DD   ?
+	dwHandle			XPTR ?
+	wNetType			DW   ?
+	dwPrinters			DD   ?
+	dwDrives			DD   ?
+NETINFOSTRUCT ENDS
+
+NETCONNECTINFOSTRUCT STRUCT ALIGNMODE
+	cbStructure 	DD ?
+	dwFlags 		DD ?
+	dwSpeed 		DD ?
+	dwDelay 		DD ?
+	dwOptDataSize	DD ?
+NETCONNECTINFOSTRUCT ENDS
+
+;======================================== Functions =======================================;
+CommitUrlCacheEntryA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+CommitUrlCacheEntryW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+CreateMD5SSOHash PROTO :XWORD,:XWORD,:XWORD,:XWORD
+CreateUrlCacheContainerA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+CreateUrlCacheContainerW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+CreateUrlCacheEntryA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+CreateUrlCacheEntryW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+CreateUrlCacheGroup PROTO :XWORD,:XWORD
+DeleteIE3Cache PROTO :XWORD,:XWORD,:XWORD,:XWORD
+DeleteUrlCacheContainerA PROTO :XWORD,:XWORD
+DeleteUrlCacheContainerW PROTO :XWORD,:XWORD
+DeleteUrlCacheEntryA PROTO :XWORD
+DeleteUrlCacheEntryW PROTO :XWORD
+DeleteUrlCacheGroup PROTO :XWORD,:XWORD,:XWORD,:XWORD
+DetectAutoProxyUrl PROTO :XWORD,:XWORD,:XWORD
+FindCloseUrlCache PROTO :XWORD
+FindFirstUrlCacheContainerA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+FindFirstUrlCacheContainerW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+FindFirstUrlCacheEntryA PROTO :XWORD,:XWORD,:XWORD
+FindFirstUrlCacheEntryExA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FindFirstUrlCacheEntryExW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FindFirstUrlCacheEntryW PROTO :XWORD,:XWORD,:XWORD
+FindFirstUrlCacheGroup PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FindNextUrlCacheContainerA PROTO :XWORD,:XWORD,:XWORD
+FindNextUrlCacheContainerW PROTO :XWORD,:XWORD,:XWORD
+FindNextUrlCacheEntryA PROTO :XWORD,:XWORD,:XWORD
+FindNextUrlCacheEntryExA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FindNextUrlCacheEntryExW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FindNextUrlCacheEntryW PROTO :XWORD,:XWORD,:XWORD
+FindNextUrlCacheGroup PROTO :XWORD,:XWORD,:XWORD
+ForceNexusLookup PROTO
+ForceNexusLookupExW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FreeUrlCacheSpaceA PROTO :XWORD,:XWORD,:XWORD
+FreeUrlCacheSpaceW PROTO :XWORD,:XWORD,:XWORD
+FtpCommandA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FtpCommandW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FtpCreateDirectoryA PROTO :XWORD,:XWORD
+FtpCreateDirectoryW PROTO :XWORD,:XWORD
+FtpDeleteFileA PROTO :XWORD,:XWORD
+FtpDeleteFileW PROTO :XWORD,:XWORD
+FtpFindFirstFileA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FtpFindFirstFileW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FtpGetCurrentDirectoryA PROTO :XWORD,:XWORD,:XWORD
+FtpGetCurrentDirectoryW PROTO :XWORD,:XWORD,:XWORD
+FtpGetFileA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FtpGetFileEx PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FtpGetFileSize PROTO :XWORD,:XWORD
+FtpGetFileW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FtpOpenFileA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FtpOpenFileW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FtpPutFileA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FtpPutFileEx PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FtpPutFileW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+FtpRemoveDirectoryA PROTO :XWORD,:XWORD
+FtpRemoveDirectoryW PROTO :XWORD,:XWORD
+FtpRenameFileA PROTO :XWORD,:XWORD,:XWORD
+FtpRenameFileW PROTO :XWORD,:XWORD,:XWORD
+FtpSetCurrentDirectoryA PROTO :XWORD,:XWORD
+FtpSetCurrentDirectoryW PROTO :XWORD,:XWORD
+GetUrlCacheConfigInfoA PROTO :XWORD,:XWORD,:XWORD
+GetUrlCacheConfigInfoW PROTO :XWORD,:XWORD,:XWORD
+GetUrlCacheEntryInfoA PROTO :XWORD,:XWORD,:XWORD
+GetUrlCacheEntryInfoExA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+GetUrlCacheEntryInfoExW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+GetUrlCacheEntryInfoW PROTO :XWORD,:XWORD,:XWORD
+GetUrlCacheGroupAttributeA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+GetUrlCacheGroupAttributeW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+GetUrlCacheHeaderData PROTO :XWORD,:XWORD
+GopherCreateLocatorA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+GopherCreateLocatorW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+GopherFindFirstFileA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+GopherFindFirstFileW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+GopherGetAttributeA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+GopherGetAttributeW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+GopherGetLocatorTypeA PROTO :XWORD,:XWORD
+GopherGetLocatorTypeW PROTO :XWORD,:XWORD
+GopherOpenFileA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+GopherOpenFileW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+HttpAddRequestHeadersA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+HttpAddRequestHeadersW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+HttpCheckDavComplianceA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+HttpCheckDavComplianceW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+HttpEndRequestA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+HttpEndRequestW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+HttpOpenRequestA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+HttpOpenRequestW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+IF (NTDDI_VERSION GE NTDDI_WIN7)
+    HttpPushClose PROTO :XWORD
+    HttpPushEnable PROTO :XWORD,:XPTR,:XPTR
+    HttpPushWait PROTO :XWORD,:XWORD,:XPTR
+ENDIF
+HttpQueryInfoA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+HttpQueryInfoW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+HttpSendRequestA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+HttpSendRequestExA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+HttpSendRequestExW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+HttpSendRequestW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+IF (NTDDI_VERSION GE NTDDI_WIN7)
+    HttpWebSocketCompleteUpgrade PROTO :XWORD,:XWORD
+    HttpWebSocketQueryCloseStatus PROTO :XWORD,:XPTR,:XPTR,:XWORD,:XPTR
+    HttpWebSocketReceive PROTO :XWORD,:XPTR,:XWORD,:XPTR,:XPTR
+    HttpWebSocketSend PROTO :XWORD,:XWORD,:XPTR,:XWORD
+    HttpWebSocketShutdown PROTO :XWORD,:XWORD,:XPTR,:XWORD
+ENDIF
+IncrementUrlCacheHeaderData PROTO :XWORD,:XWORD
+InternetAlgIdToStringA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetAlgIdToStringW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetAttemptConnect PROTO :XWORD
+InternetAutodial PROTO :XWORD,:XWORD
+InternetAutodialCallback PROTO :XWORD,:XWORD
+InternetAutodialHangup PROTO :XWORD
+InternetCanonicalizeUrlA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetCanonicalizeUrlW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetCheckConnectionA PROTO :XWORD,:XWORD,:XWORD
+InternetCheckConnectionW PROTO :XWORD,:XWORD,:XWORD
+InternetClearAllPerSiteCookieDecisions PROTO
+InternetCloseHandle PROTO :XWORD
+InternetCombineUrlA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetCombineUrlW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetConfirmZoneCrossingA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetConfirmZoneCrossingW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetConnectA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetConnectW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetCrackUrlA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetCrackUrlW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetCreateUrlA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetCreateUrlW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetDialA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetDialW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetEnumPerSiteCookieDecisionA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetEnumPerSiteCookieDecisionW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetErrorDlg PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetFindNextFileA PROTO :XWORD,:XWORD
+InternetFindNextFileW PROTO :XWORD,:XWORD
+InternetFortezzaCommand PROTO :XWORD,:XWORD,:XWORD
+IF (NTDDI_VERSION GE NTDDI_WIN7)
+    InternetFreeProxyInfoList PROTO :XPTR
+ENDIF
+InternetGetCertByURL PROTO :XWORD,:XWORD,:XWORD
+InternetGetCertByURLA PROTO :XWORD,:XWORD,:XWORD
+InternetGetConnectedState PROTO :XWORD,:XWORD
+InternetGetConnectedStateExA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetGetConnectedStateExW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetGetCookieA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetGetCookieExA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetGetCookieExW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetGetCookieW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetGetLastResponseInfoA PROTO :XWORD,:XWORD,:XWORD
+InternetGetLastResponseInfoW PROTO :XWORD,:XWORD,:XWORD
+InternetGetPerSiteCookieDecisionA PROTO :XWORD,:XWORD
+InternetGetPerSiteCookieDecisionW PROTO :XWORD,:XWORD
+IF (NTDDI_VERSION GE NTDDI_WIN7)
+    InternetGetProxyForUrl PROTO :XWORD,:XPTR,:XPTR
+ENDIF
+InternetGetSecurityInfoByURLA PROTO :XPTR,:XPTR,:XPTR
+InternetGetSecurityInfoByURLW PROTO :XPTR,:XPTR,:XPTR
+InternetGoOnlineA PROTO :XWORD,:XWORD,:XWORD
+InternetGoOnlineW PROTO :XWORD,:XWORD,:XWORD
+InternetHangUp PROTO :XWORD,:XWORD
+InternetInitializeAutoProxyDll PROTO :XWORD
+InternetLockRequestFile PROTO :XWORD,:XWORD
+InternetOpenA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetOpenUrlA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetOpenUrlW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetOpenW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetQueryDataAvailable PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetQueryFortezzaStatus PROTO :XWORD,:XWORD
+InternetQueryOptionA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetQueryOptionW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetReadFile PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetReadFileExA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetReadFileExW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetSecurityProtocolToStringA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetSecurityProtocolToStringW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetSetCookieA PROTO :XWORD,:XWORD,:XWORD
+InternetSetCookieExA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetSetCookieExW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetSetCookieW PROTO :XWORD,:XWORD,:XWORD
+InternetSetDialStateA PROTO :XWORD,:XWORD,:XWORD
+InternetSetDialStateW PROTO :XWORD,:XWORD,:XWORD
+InternetSetFilePointer PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetSetOptionA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetSetOptionExA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetSetOptionExW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+InternetSetOptionW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetSetPerSiteCookieDecisionA PROTO :XWORD,:XWORD
+InternetSetPerSiteCookieDecisionW PROTO :XWORD,:XWORD
+InternetSetStatusCallbackA PROTO :XWORD,:XWORD
+InternetSetStatusCallbackW PROTO :XWORD,:XWORD
+InternetShowSecurityInfoByURLA PROTO :XWORD,:XWORD
+InternetShowSecurityInfoByURLW PROTO :XWORD,:XWORD
+InternetTimeFromSystemTimeA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetTimeFromSystemTimeW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetTimeToSystemTimeA PROTO :XWORD,:XWORD,:XWORD
+InternetTimeToSystemTimeW PROTO :XWORD,:XWORD,:XWORD
+InternetUnlockRequestFile PROTO :XWORD
+InternetWriteFile PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetWriteFileExA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+InternetWriteFileExW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+IsHostInProxyBypassList PROTO :XWORD,:XWORD,:XWORD
+IsUrlCacheEntryExpiredA PROTO :XWORD,:XWORD,:XWORD
+IsUrlCacheEntryExpiredW PROTO :XWORD,:XWORD,:XWORD
+LoadUrlCacheContent PROTO
+ParseX509EncodedCertificateForListBoxEntry PROTO :XWORD,:XWORD,:XWORD,:XWORD
+PrivacyGetZonePreferenceW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+PrivacySetZonePreferenceW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+ReadUrlCacheEntryStream PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+RegisterUrlCacheNotification PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+ResumeSuspendedDownload PROTO :XWORD,:XWORD
+RetrieveUrlCacheEntryFileA PROTO :XWORD,:XWORD,:XWORD,:XWORD
+RetrieveUrlCacheEntryFileW PROTO :XWORD,:XWORD,:XWORD,:XWORD
+RetrieveUrlCacheEntryStreamA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+RetrieveUrlCacheEntryStreamW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+RunOnceUrlCache PROTO :XWORD,:XWORD,:XWORD,:XWORD
+SetUrlCacheConfigInfoA PROTO :XWORD,:XWORD
+SetUrlCacheConfigInfoW PROTO :XWORD,:XWORD
+SetUrlCacheEntryGroupA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+SetUrlCacheEntryGroupW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+SetUrlCacheEntryInfoA PROTO :XWORD,:XWORD,:XWORD
+SetUrlCacheEntryInfoW PROTO :XWORD,:XWORD,:XWORD
+SetUrlCacheGroupAttributeA PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+SetUrlCacheGroupAttributeW PROTO :XWORD,:XWORD,:XWORD,:XWORD,:XWORD,:XWORD
+SetUrlCacheHeaderData PROTO :XWORD,:XWORD
+ShowCertificate PROTO :XWORD,:XWORD
+ShowClientAuthCerts PROTO :XWORD
+ShowSecurityInfo PROTO :XWORD,:XWORD
+ShowX509EncodedCertificate PROTO :XWORD,:XWORD,:XWORD
+UnlockUrlCacheEntryFileA PROTO :XWORD,:XWORD
+UnlockUrlCacheEntryFileW PROTO :XWORD,:XWORD
+UnlockUrlCacheEntryStream PROTO :XWORD,:XWORD
+UpdateUrlCacheContentPath PROTO :XWORD
+IF (NTDDI_VERSION GE NTDDI_WIN7)
+    UrlCacheCheckEntriesExist PROTO :XPTR,:XWORD,:XPTR
+    UrlCacheCloseEntryHandle PROTO :XWORD
+    UrlCacheCreateContainer PROTO :XPTR,:XPTR,:XPTR,:XWORD,:XWORD
+    UrlCacheFreeEntryInfo PROTO :XPTR
+    UrlCacheGetEntryInfo PROTO :XWORD,:XPTR,:XPTR
+    UrlCacheGetGlobalLimit PROTO :XWORD,:XPTR
+    UrlCacheRetrieveEntryFile PROTO :XWORD,:XPTR,:XPTR,:XPTR
+    UrlCacheSetGlobalLimit PROTO :XWORD,:XWORD
+    UrlCacheUpdateEntryExtraData PROTO :XWORD,:XPTR,:XPTR,:XWORD
+ENDIF
+UrlZonesDetach PROTO
+
+IFDEF APP_UNICODE
+    HTTP_VERSION EQU <HTTP_VERSIONW>
+    INTERNET_PER_CONN_OPTION EQU <INTERNET_PER_CONN_OPTIONW>
+    INTERNET_PER_CONN_OPTION_LIST EQU <INTERNET_PER_CONN_OPTION_LISTW>
+    URL_COMPONENTS EQU <URL_COMPONENTSW>
+    INTERNET_BUFFERS EQU <INTERNET_BUFFERSW>
+    GOPHER_FIND_DATA EQU <GOPHER_FIND_DATAW>
+    INTERNET_CACHE_ENTRY_INFO EQU <INTERNET_CACHE_ENTRY_INFOW>
+    INTERNET_CACHE_GROUP_INFO EQU <INTERNET_CACHE_GROUP_INFOW>
+	NETRESOURCE EQU <NETRESOURCEW>
+	CONNECTDLGSTRUCT EQU <CONNECTDLGSTRUCTW>
+	DISCDLGSTRUCT EQU <DISCDLGSTRUCTW>
+	UNIVERSAL_NAME_INFO EQU <UNIVERSAL_NAME_INFOW>
+	REMOTE_NAME_INFO EQU <REMOTE_NAME_INFOW>
+
+    CommitUrlCacheEntry EQU <CommitUrlCacheEntryW>
+    CreateUrlCacheContainer EQU <CreateUrlCacheContainerW>
+    CreateUrlCacheEntry EQU <CreateUrlCacheEntryW>
+    DeleteUrlCacheContainer EQU <DeleteUrlCacheContainerW>
+    DeleteUrlCacheEntry EQU <DeleteUrlCacheEntryW>
+    FindFirstUrlCacheContainer EQU <FindFirstUrlCacheContainerW>
+    FindFirstUrlCacheEntry EQU <FindFirstUrlCacheEntryW>
+    FindFirstUrlCacheEntryEx EQU <FindFirstUrlCacheEntryExW>
+    FindNextUrlCacheContainer EQU <FindNextUrlCacheContainerW>
+    FindNextUrlCacheEntry EQU <FindNextUrlCacheEntryW>
+    FindNextUrlCacheEntryEx EQU <FindNextUrlCacheEntryExW>
+    FreeUrlCacheSpace EQU <FreeUrlCacheSpaceW>
+    FtpCommand EQU <FtpCommandW>
+    FtpCreateDirectory EQU <FtpCreateDirectoryW>
+    FtpDeleteFile EQU <FtpDeleteFileW>
+    FtpFindFirstFile EQU <FtpFindFirstFileW>
+    FtpGetCurrentDirectory EQU <FtpGetCurrentDirectoryW>
+    FtpGetFile EQU <FtpGetFileW>
+    FtpOpenFile EQU <FtpOpenFileW>
+    FtpPutFile EQU <FtpPutFileW>
+    FtpRemoveDirectory EQU <FtpRemoveDirectoryW>
+    FtpRenameFile EQU <FtpRenameFileW>
+    FtpSetCurrentDirectory EQU <FtpSetCurrentDirectoryW>
+    GetUrlCacheConfigInfo EQU <GetUrlCacheConfigInfoW>
+    GetUrlCacheEntryInfo EQU <GetUrlCacheEntryInfoW>
+    GetUrlCacheEntryInfoEx EQU <GetUrlCacheEntryInfoExW>
+    GetUrlCacheGroupAttribute EQU <GetUrlCacheGroupAttributeW>
+    GopherCreateLocator EQU <GopherCreateLocatorW>
+    GopherFindFirstFile EQU <GopherFindFirstFileW>
+    GopherGetAttribute EQU <GopherGetAttributeW>
+    GopherGetLocatorType EQU <GopherGetLocatorTypeW>
+    GopherOpenFile EQU <GopherOpenFileW>
+    HttpAddRequestHeaders EQU <HttpAddRequestHeadersW>
+    HttpCheckDavCompliance EQU <HttpCheckDavComplianceW>
+    HttpEndRequest EQU <HttpEndRequestW>
+    HttpOpenRequest EQU <HttpOpenRequestW>
+    HttpQueryInfo EQU <HttpQueryInfoW>
+    HttpSendRequest EQU <HttpSendRequestW>
+    HttpSendRequestEx EQU <HttpSendRequestExW>
+    InternetAlgIdToString EQU <InternetAlgIdToStringW>
+    InternetCanonicalizeUrl EQU <InternetCanonicalizeUrlW>
+    InternetCheckConnection EQU <InternetCheckConnectionW>
+    InternetCombineUrl EQU <InternetCombineUrlW>
+    InternetConfirmZoneCrossing EQU <InternetConfirmZoneCrossingW>
+    InternetConnect EQU <InternetConnectW>
+    InternetCrackUrl EQU <InternetCrackUrlW>
+    InternetCreateUrl EQU <InternetCreateUrlW>
+    InternetDial EQU <InternetDialW>
+    InternetEnumPerSiteCookieDecision EQU <InternetEnumPerSiteCookieDecisionW>
+    InternetFindNextFile EQU <InternetFindNextFileW>
+    InternetGetConnectedStateEx EQU <InternetGetConnectedStateExW>
+    InternetGetCookie EQU <InternetGetCookieW>
+    InternetGetCookieEx EQU <InternetGetCookieExW>
+    InternetGetLastResponseInfo EQU <InternetGetLastResponseInfoW>
+    InternetGetPerSiteCookieDecision EQU <InternetGetPerSiteCookieDecisionW>
+    InternetGetSecurityInfoByURL EQU <InternetGetSecurityInfoByURLW>
+    InternetGoOnline EQU <InternetGoOnlineW>
+    InternetOpen EQU <InternetOpenW>
+    InternetOpenUrl EQU <InternetOpenUrlW>
+    InternetQueryOption EQU <InternetQueryOptionW>
+    InternetReadFileEx EQU <InternetReadFileExW>
+    InternetSecurityProtocolToString EQU <InternetSecurityProtocolToStringW>
+    InternetSetCookie EQU <InternetSetCookieW>
+    InternetSetCookieEx EQU <InternetSetCookieExW>
+    InternetSetDialState EQU <InternetSetDialStateW>
+    InternetSetOption EQU <InternetSetOptionW>
+    InternetSetOptionEx EQU <InternetSetOptionExW>
+    InternetSetPerSiteCookieDecision EQU <InternetSetPerSiteCookieDecisionW>
+    InternetSetStatusCallback EQU <InternetSetStatusCallbackW>
+    InternetShowSecurityInfoByURL EQU <InternetShowSecurityInfoByURLW>
+    InternetTimeFromSystemTime EQU <InternetTimeFromSystemTimeW>
+    InternetTimeToSystemTime EQU <InternetTimeToSystemTimeW>
+    InternetWriteFileEx EQU <InternetWriteFileExW>
+    IsUrlCacheEntryExpired EQU <IsUrlCacheEntryExpiredW>
+    RetrieveUrlCacheEntryFile EQU <RetrieveUrlCacheEntryFileW>
+    RetrieveUrlCacheEntryStream EQU <RetrieveUrlCacheEntryStreamW>
+    SetUrlCacheConfigInfo EQU <SetUrlCacheConfigInfoW>
+    SetUrlCacheEntryGroup EQU <SetUrlCacheEntryGroupW>
+    SetUrlCacheEntryInfo EQU <SetUrlCacheEntryInfoW>
+    SetUrlCacheGroupAttribute EQU <SetUrlCacheGroupAttributeW>
+    UnlockUrlCacheEntryFile EQU <UnlockUrlCacheEntryFileW>
+ELSE
+    HTTP_VERSION EQU <HTTP_VERSIONA>
+    INTERNET_PER_CONN_OPTION EQU <INTERNET_PER_CONN_OPTIONA>
+    INTERNET_PER_CONN_OPTION_LIST EQU <INTERNET_PER_CONN_OPTION_LISTA>
+    URL_COMPONENTS EQU <URL_COMPONENTSA>
+    INTERNET_BUFFERS EQU <INTERNET_BUFFERSA>
+    GOPHER_FIND_DATA EQU <GOPHER_FIND_DATAA>
+    INTERNET_CACHE_ENTRY_INFO EQU <INTERNET_CACHE_ENTRY_INFOA>
+    INTERNET_CACHE_GROUP_INFO EQU <INTERNET_CACHE_GROUP_INFOA>
+	NETRESOURCE EQU <NETRESOURCEA>
+	CONNECTDLGSTRUCT EQU <CONNECTDLGSTRUCTA>
+	DISCDLGSTRUCT EQU <DISCDLGSTRUCTA>
+	UNIVERSAL_NAME_INFO EQU <UNIVERSAL_NAME_INFOA>
+	REMOTE_NAME_INFO EQU <REMOTE_NAME_INFOA>
+
+    CommitUrlCacheEntry EQU <CommitUrlCacheEntryA>
+    CreateUrlCacheContainer EQU <CreateUrlCacheContainerA>
+    CreateUrlCacheEntry EQU <CreateUrlCacheEntryA>
+    DeleteUrlCacheContainer EQU <DeleteUrlCacheContainerA>
+    DeleteUrlCacheEntry EQU <DeleteUrlCacheEntryA>
+    FindFirstUrlCacheContainer EQU <FindFirstUrlCacheContainerA>
+    FindFirstUrlCacheEntry EQU <FindFirstUrlCacheEntryA>
+    FindFirstUrlCacheEntryEx EQU <FindFirstUrlCacheEntryExA>
+    FindNextUrlCacheContainer EQU <FindNextUrlCacheContainerA>
+    FindNextUrlCacheEntry EQU <FindNextUrlCacheEntryA>
+    FindNextUrlCacheEntryEx EQU <FindNextUrlCacheEntryExA>
+    FreeUrlCacheSpace EQU <FreeUrlCacheSpaceA>
+    FtpCommand EQU <FtpCommandA>
+    FtpCreateDirectory EQU <FtpCreateDirectoryA>
+    FtpDeleteFile EQU <FtpDeleteFileA>
+    FtpFindFirstFile EQU <FtpFindFirstFileA>
+    FtpGetCurrentDirectory EQU <FtpGetCurrentDirectoryA>
+    FtpGetFile EQU <FtpGetFileA>
+    FtpOpenFile EQU <FtpOpenFileA>
+    FtpPutFile EQU <FtpPutFileA>
+    FtpRemoveDirectory EQU <FtpRemoveDirectoryA>
+    FtpRenameFile EQU <FtpRenameFileA>
+    FtpSetCurrentDirectory EQU <FtpSetCurrentDirectoryA>
+    GetUrlCacheConfigInfo EQU <GetUrlCacheConfigInfoA>
+    GetUrlCacheEntryInfo EQU <GetUrlCacheEntryInfoA>
+    GetUrlCacheEntryInfoEx EQU <GetUrlCacheEntryInfoExA>
+    GetUrlCacheGroupAttribute EQU <GetUrlCacheGroupAttributeA>
+    GopherCreateLocator EQU <GopherCreateLocatorA>
+    GopherFindFirstFile EQU <GopherFindFirstFileA>
+    GopherGetAttribute EQU <GopherGetAttributeA>
+    GopherGetLocatorType EQU <GopherGetLocatorTypeA>
+    GopherOpenFile EQU <GopherOpenFileA>
+    HttpAddRequestHeaders EQU <HttpAddRequestHeadersA>
+    HttpCheckDavCompliance EQU <HttpCheckDavComplianceA>
+    HttpEndRequest EQU <HttpEndRequestA>
+    HttpOpenRequest EQU <HttpOpenRequestA>
+    HttpQueryInfo EQU <HttpQueryInfoA>
+    HttpSendRequest EQU <HttpSendRequestA>
+    HttpSendRequestEx EQU <HttpSendRequestExA>
+    InternetAlgIdToString EQU <InternetAlgIdToStringA>
+    InternetCanonicalizeUrl EQU <InternetCanonicalizeUrlA>
+    InternetCheckConnection EQU <InternetCheckConnectionA>
+    InternetCombineUrl EQU <InternetCombineUrlA>
+    InternetConfirmZoneCrossing EQU <InternetConfirmZoneCrossingA>
+    InternetConnect EQU <InternetConnectA>
+    InternetCrackUrl EQU <InternetCrackUrlA>
+    InternetCreateUrl EQU <InternetCreateUrlA>
+    InternetDial EQU <InternetDialA>
+    InternetEnumPerSiteCookieDecision EQU <InternetEnumPerSiteCookieDecisionA>
+    InternetFindNextFile EQU <InternetFindNextFileA>
+    InternetGetConnectedStateEx EQU <InternetGetConnectedStateExA>
+    InternetGetCookie EQU <InternetGetCookieA>
+    InternetGetCookieEx EQU <InternetGetCookieExA>
+    InternetGetLastResponseInfo EQU <InternetGetLastResponseInfoA>
+    InternetGetPerSiteCookieDecision EQU <InternetGetPerSiteCookieDecisionA>
+    InternetGetSecurityInfoByURL EQU <InternetGetSecurityInfoByURLA>
+    InternetGoOnline EQU <InternetGoOnlineA>
+    InternetOpen EQU <InternetOpenA>
+    InternetOpenUrl EQU <InternetOpenUrlA>
+    InternetQueryOption EQU <InternetQueryOptionA>
+    InternetReadFileEx EQU <InternetReadFileExA>
+    InternetSecurityProtocolToString EQU <InternetSecurityProtocolToStringA>
+    InternetSetCookie EQU <InternetSetCookieA>
+    InternetSetCookieEx EQU <InternetSetCookieExA>
+    InternetSetDialState EQU <InternetSetDialStateA>
+    InternetSetOption EQU <InternetSetOptionA>
+    InternetSetOptionEx EQU <InternetSetOptionExA>
+    InternetSetPerSiteCookieDecision EQU <InternetSetPerSiteCookieDecisionA>
+    InternetSetStatusCallback EQU <InternetSetStatusCallbackA>
+    InternetShowSecurityInfoByURL EQU <InternetShowSecurityInfoByURLA>
+    InternetTimeFromSystemTime EQU <InternetTimeFromSystemTimeA>
+    InternetTimeToSystemTime EQU <InternetTimeToSystemTimeA>
+    InternetWriteFileEx EQU <InternetWriteFileExA>
+    IsUrlCacheEntryExpired EQU <IsUrlCacheEntryExpiredA>
+    RetrieveUrlCacheEntryFile EQU <RetrieveUrlCacheEntryFileA>
+    RetrieveUrlCacheEntryStream EQU <RetrieveUrlCacheEntryStreamA>
+    SetUrlCacheConfigInfo EQU <SetUrlCacheConfigInfoA>
+    SetUrlCacheEntryGroup EQU <SetUrlCacheEntryGroupA>
+    SetUrlCacheEntryInfo EQU <SetUrlCacheEntryInfoA>
+    SetUrlCacheGroupAttribute EQU <SetUrlCacheGroupAttributeA>
+    UnlockUrlCacheEntryFile EQU <UnlockUrlCacheEntryFileA>
+ENDIF
+
+;======================= Undocumented functions (unknown arguments) =======================;
+;DeleteWpadCacheForNetworks PROTO VARARG
+;ReadUrlCacheEntryStreamEx PROTO VARARG
+;UrlCacheContainerSetEntryMaximumAge PROTO VARARG
+;UrlCacheFindFirstEntry PROTO VARARG
+;UrlCacheFindNextEntry PROTO VARARG
+;UrlCacheGetContentPaths PROTO VARARG
+;UrlCacheReadEntryStream PROTO VARARG
+;UrlCacheRetrieveEntryStream PROTO VARARG
+;IF (NTDDI_VERSION GE NTDDI_WIN7)
+;    AppCacheCheckManifest PROTO VARARG
+;    AppCacheCloseHandle PROTO VARARG
+;    AppCacheDeleteGroup PROTO VARARG
+;    AppCacheDeleteIEGroup PROTO VARARG
+;    AppCacheDuplicateHandle PROTO VARARG
+;    AppCacheFinalize PROTO VARARG
+;    AppCacheFreeDownloadList PROTO VARARG
+;    AppCacheFreeGroupList PROTO VARARG
+;    AppCacheFreeIESpace PROTO VARARG
+;    AppCacheFreeSpace PROTO VARARG
+;    AppCacheGetDownloadList PROTO VARARG
+;    AppCacheGetFallbackUrl PROTO VARARG
+;    AppCacheGetGroupList PROTO VARARG
+;    AppCacheGetIEGroupList PROTO VARARG
+;    AppCacheGetInfo PROTO VARARG
+;    AppCacheGetManifestUrl PROTO VARARG
+;    AppCacheLookup PROTO VARARG
+;    CommitUrlCacheEntryBinaryBlob PROTO VARARG
+;    CreateUrlCacheEntryExW PROTO VARARG
+;    GetProxyDllInfo PROTO VARARG
+;    GetUrlCacheEntryBinaryBlob PROTO VARARG
+;    HttpCloseDependencyHandle PROTO VARARG
+;    HttpDuplicateDependencyHandle PROTO VARARG
+;    HttpGetServerCredentials PROTO VARARG
+;    HttpGetTunnelSocket PROTO VARARG
+;    HttpIsHostHstsEnabled PROTO VARARG
+;    HttpOpenDependencyHandle PROTO VARARG
+;    HttpWebSocketClose PROTO VARARG
+;    InternetFreeCookies PROTO VARARG
+;    InternetGetCookieEx2 PROTO VARARG
+;    InternetSetCookieEx2 PROTO VARARG
+;ENDIF
+
+;IF (NTDDI_VERSION GE NTDDI_WIN10)
+;    AppCacheCreateAndCommitFile PROTO VARARG
+;    UrlCacheFreeGlobalSpace PROTO VARARG
+;    UrlCacheGetGlobalCacheSize PROTO VARARG
+;    UrlCacheServer PROTO VARARG
+;ENDIF
+
+ENDIF ;WININET_INC

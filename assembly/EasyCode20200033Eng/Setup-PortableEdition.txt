@@ -1,0 +1,115 @@
+Easy Code® Visual Assembler v2
+32-bit/64-bit (Windows XP and later)
+Copyright © 2004-2021, Ramon Sala. All rights reserved.
+
+
+INSTALLATION & CONFIGURATION (32-Bit and 64-Bit Versions) 
+=========================================================
+Portable Edition
+
+- Description
+-------------
+Easy Code  is an integrated  rapid application  development system  (RAD) which
+utilizes a  visual component-assisted  programming environment for the assembly
+language. It features  an enhanced IDE with graphical user interface  (GUI) and
+object components.  Easy Code is especially designed for integration with ASMC,
+FASM, GOASM, JWASM, MASM32, MASM64, POASM, SOLASM and UASM  assembler libraries
+and tools. Version  2.00.0.0012 and later also include the 32-bit and 64-bit of
+Easy Code.
+
+
+- Installation
+--------------
+1. Please exit from any running instance(s) of Easy Code before continuing with
+the installation process.
+
+2. Windows  XP and Later:  Right click on the  "EasyCode.zip"  file and  in the
+context menu choose the 'Properties' option.  In the window that will be shown,
+click the  "Unblock" button (for Windows 10 check the  "Unblock" check box) and
+then click the  "OK"  button so that  all files included in the  "EasyCode.zip"
+file can be started normally. All of this is due to a Windows security rule and
+has nothing to do with Easy Code.
+
+3. Extract the  "EasyCode.zip" file  to the  desktop and the  "EasyCode" folder
+will be created.
+
+4. Move the  "EasyCode" folder  to any of  your hard disks.  However, using the
+root system drive  ("C:") is not recommended  but is instead,  strongly advised
+against.  This is especially the case in Windows 8 and later due to permissions
+restrictions.  If this is not the first time you have installed Easy Code 2 and
+the  "EasyCode" folder  already exists, simply  overwrite it. Rest assured that
+the data in your  'EasyCode' folder will be  neither deleted nor modified, just
+the necessary files in order to update Easy Code v2 to this new version will be
+overwritten.
+
+5. If this  is the first time you  download Easy Code 2, close all applications
+and open the EasyCode folder. Run the "Settings.exe" program, if possible as an
+Administrator. Choose the desired options and then press the "OK" button.
+WARNING: On Windows 8.1 and Windows 10  is essential  to run this program as an
+Administrator.
+
+6. Run the  "EasyCode.exe or EasyCode64.exe" programs (which are located in the
+"EasyCode\Bin" folder) or use the icons on the desktop if you created them with
+the "Settings" program.
+
+7. Attention:  If you are running  Easy Code for the first time  YOU MUST GO to
+the  'Tools-->Settings' menu item, select the 'Configurations' tab, and set the
+paths for all  configuration files or,  at least,  for those you  wish to  work
+with, such as GoAsm or Masm. The configuration files (*.cfg) are located in the
+'Config' folder (see the "Remarks" section below) and they are distributed with
+default values as a guide for you to know what to configure. However, they need
+to be modified  according to the paths where your tools are located. Now please
+carefully read the  "Settings" topic of the Easy Code help file, located in the
+"EasyCode\Help" folder.
+
+8. Maintenance: Since Easy Code NEVER writes your "*.cfg" files in order not to
+modify your configurations, it is recommended to check  the "*.ori"  files when
+downloading a new version.  If they have changed from the previous version, you
+should copy the modifications  (usually new opcodes) from each  "*.ori" file to
+its corresponding "*.cfg" one.  However, last versions of  Easy Code already do
+most of those changes automatically.
+
+
+- Remarks
+---------
+1. The configuration files are placed in the  "EasyCode\Config"  folder and are
+distributed with the "*.ori" (original) extension.  However, they must have the
+"*.cfg"  extension in order to work.  When Easy Code  starts, it checks whether
+each "*.ori" file has its "*.cfg" equivalent file.  If the "*.cfg" file already
+exists nothing happens,  if not,  it makes a copy of the  "*.ori" file but with
+the "*.cfg" extension. Doing so makes sure that the "*.cfg" files will never be
+overwritten  as they are  the valid files  where  all  configurations are saved
+depending on the available tools while, at the same time, the "*.ori" files are
+always available  as a reference for the  "Settings" process.  Easy Code always
+takes care of making all necessary copies from "*.ori" to "*.cfg" extension, so
+you do not have to worry about that (please see the step 8. Maintenance).
+
+2. Please see the  Easy Code help file  in order to know what tools you need to
+install - such as MASM32 SDK, or the 'Go Tools',  as well as the GoASM Headers.
+
+3. If you want to have the help file in  Czech language, please download it at:
+https://easycode.cat/English/Download/ECv2CzechHelp.zip
+
+
+- Conclusion
+------------
+Easy Code is now ready to be used.  You can run  it by  double-clicking  on the
+desktop shortcut  if you chose to  create one (see the  'Installation' section,
+item 6). At this time, the "Settings.exe" file is no longer needed. So, you may
+delete it if you like and without significant consequence. However, doing so is
+not very advisable  in such  case where  its settings  have become corrupted or
+over-written by a different programming application.
+
+
+
+............................................
+Please visit the Easy Code related forums:
+    http://www.masm32.com/board/index.php
+    http://board.flatassembler.net
+
+Thank you!
+
+Ramon Sala
+
+----------------
+Rev. 17-APR-2021

@@ -1,0 +1,20 @@
+;==============================================;
+; Syntax for ASMC, JWASM, MASM, POASM and UASM ;
+;==============================================;
+DoEvents Proc Uses Ecx Edx
+	Local msg:MSG
+
+@@:	Push PM_REMOVE
+	Push 0
+	Push 0
+	Push 0
+	Lea Eax, msg
+	Push Eax
+	Call PeekMessage
+	Or Eax, Eax
+	Jz @F
+	Invoke TranslateMessage, Addr msg
+	Invoke DispatchMessage, Addr msg
+	Jmp @B
+@@:	Ret
+DoEvents EndP

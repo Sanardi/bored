@@ -1,0 +1,71 @@
+Easy Code® Visual Assembler v2
+32-bit/64-bit (Windows XP and later)
+Copyright © 2004-2021, Ramon Sala / Héctor A. Medina.  All rights reserved.
+
+
+LICENSE FOR USE AND DISTRIBUTION
+================================
+
+- Acknowledgements and Assignments
+----------------------------------
+A. For the sole purpose and remainder of this specific license: any authors, any publishers, any distributors, as well as any legal copyright holders of this software and its constituent components - each and all entities shall herein, be referenced to individually and/or collectively as "AGENT".
+
+B. For the sole purpose and remainder of this specific license: any procurers, any evaluators or testers, any purchasers or consumers, or any other users of this software and its constituent components (users which might not be specifically mentioned by name or category) whether the aforementioned be:
+
+- single or multiple in number...
+- a real human, a group, a venture, a proprietorship, a corporation, or any other organizational entity...
+- designated as a profit oriented business or organization, or as a charity, aid/relief, benevolent, or otherwise non-profit oriented business or organization...
+- prospective/evaluative, professional, research, occasional, hobbyist, regular, amateur, or otherwise in intended usage of this software...
+- inquisitive, novice, intermediate, expert, or otherwise skilled in their usage and/or knowledge of this software...
+
+each and all such entities shall herein, be referenced to individually and/or collectively as "USER".
+
+
+- Directives, Prohibitions, Permissions, and Exemptions
+-------------------------------------------------------
+    In addendum to all stipulations and prohibitions previously set forth in any copyright notice regarded adjacent to this product or intellectual property, the following annotated items and exceptions are hereby joined and take prevalence in giving USER limited license to use and/or distribute this software:
+
+A. The respective software application or product to which this license is formally attached and granted, is currently free and without cost, and as such, its intended purpose (at present) is to be distributed liberally.  Therefore, USER is prohibited from selling, negotiating, or trading this software in exchange for any internationally recognized form of currency or monies, or for any other valued entity.  However, USER is in fact permitted to redistribute this software application or a modified version of it, to any separate party, yet only so long as such exchange is also executed for free and without cost to any subsequent party or procurer.
+
+B. USER is prohibited from modifying this specific license or its contents in any manner, or to any extent, without permission from the respective application's author(s) and/or copyright owner(s).
+
+C. USER is permitted to use this application and its components to create software programs/applications to be distributed and used for any legally recognized and/or allowed purpose, whether such purpose is educational, research, open-source, commercial, industrial, retail, private, or otherwise in nature.  Though this application is itself distributed free without cost, any software program or application created using 'Easy Code' may be sold by USER (or any party designated and authorized by USER) in exchange for monetary profit, commodity goods, services, or other valued entity.  However, USER is prohibited from using this application to produce any subsequent software program or application of which its intended purpose or use is deemed illegal, prohibited, or contraband within a given internationally recognized nation or state, as well as any municipality or province within that nation or state in which said software is expected to be distributed.
+
+D. USER is permitted to modify this application and its component parts (apart from this specific license) as desired, so long as the original author and/or copyright owner is credited, and a link to the download page of original distribution site (https://www.easycode.cat/English/index.htm) is additionally provided along with both this license file [license.txt] and the accompanying copyright file [copyright.txt].
+
+E. USER is permitted to redistribute this application and its component parts, or alternatively, a version of the same having been modified or customized - either in function, output, or appearance - by any means of transfer under the condition that the original author and/or copyright owner is credited, and a link to the download page of original distribution site (www.easycode.cat/English/index.htm) is additionally provided along with both this license file [license.txt] and the accompanying copyright file [copyright.txt].
+
+F. This license is subject to change or cancellation at any time and without prior notice, at which time, prevalence of all user rights and restrictions will revert back to the stipulations set forth in the original copyright notice.  Any such cancellation or changes in license will be made applicable successively - beginning with the immediate-most (most recent) version of this software to be publicly released following said changes or cancellation, as no alteration in license can or will (nor should it, in good faith and conscience) be made retroactive toward any previously released version.
+
+
+- Warranty Disclaimer
+---------------------
+A. AGENT shall not be liable, in any event or to any separate party, for direct, indirect, special, incidental, or consequential damages, including lost profits, damaged hardware, or personal injury arising from the use of this software and/or its documentation, even if AGENT has been advised in a past, present, or future time context toward the possibility of such defects existing within the software and/or any damages which might arise from its use.
+
+B. AGENT specifically disclaims any warranties, including but not limited to, any implied warranties of merchantability and fitness for any conceived purpose.  This software and its accompanying documentation provided aside, if any, are supplied by AGENT strictly "as is" for properly authorized persons to legally obtain and utilize at USER's own discretion, risk, and detriment.
+
+C. AGENT makes neither assertion nor promise regarding the effectiveness, stability, or safety of this software in regard to its installation or use on USER's hardware/operating system arrangement or setup, as AGENT has no realistic nor reasonably expected means of foreseeing any user's particular system setup or configuration.
+
+D. Summary -
+IT IS THE USER'S SOLE OBLIGATION TO POSSESS THE PROPER KNOWLEDGE AND SKILLS NECESSARY TO:
+
+- understand the resulting functionality, both the internal (how the application itself operates) and the external (any changes or effects upon the host computer sytem as well as its file and/or hardware contents), of this software component.
+- understand how to correctly implement this software component in correlation to its design as intended.
+- determine beforehand whether or not this software component will work correctly and favorably with USER's specific computer system setup or configuration.
+- understand and determine beforehand what possible damages might occur during any case in which even the slightest issue of incompatibility might arise from the implementation and use of this software component, as well as to create beforehand and with subsequent regularity - backup copies of important data, files, and system configurations.
+
+    Therefore, be it known that: AGENT bears no obligation to provide USER with any form of financial restitution, reimbursement, repair, maintenance, support, update, enhancement, or modification.  As such, the continued use of this software from this point strictly implies the full comprehension of, and subsequently, the unreserved agreement with, this WARRANTY DISCLAIMER, regardless of whether USER might actually have imparted the volition either to meticulously read it or to have its terminology, meaning, and validity thoroughly explained to him/her by a qualified attorney or barrister who is specialized in warranty law.
+
+
+
+............................................
+Please visit the Easy Code related forums:
+    http://www.masm32.com/board/index.php
+    http://board.flatassembler.net
+
+Thank you!
+
+Ramon Sala
+
+----------------
+Rev. 17-APR-2021

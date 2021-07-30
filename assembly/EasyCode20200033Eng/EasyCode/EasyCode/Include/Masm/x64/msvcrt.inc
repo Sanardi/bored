@@ -1,0 +1,2219 @@
+;=====================================================;
+;                                                     ;
+;  msvcrt.inc for Easy Code 2.0 64-bit Masm projects  ;
+;             (version 1.0.4 - 09/06/2018)            ;
+;                                                     ;
+;      Copyright © Héctor A. Medina - 2015-2018       ;
+;                                                     ;
+;=====================================================;
+
+IFNDEF MSVCRT_INC
+MSVCRT_INC        EQU        1
+
+_CVTBUFSIZE     EQU   (309 + 40)
+
+
+IF (NTDDI_VERSION LE NTDDI_VISTA)
+    $I10_OUTPUT PROTO :VARARG
+ENDIF
+??_7__non_rtti_object@@6B@ PROTO :VARARG
+??_7bad_cast@@6B@ PROTO :VARARG
+??_7bad_typeid@@6B@ PROTO :VARARG
+??_7exception@@6B@ PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??_E__non_rtti_object@@UAEPAXI@Z PROTO :VARARG
+    ??_Ebad_cast@@UAEPAXI@Z PROTO :VARARG
+    ??_Ebad_typeid@@UAEPAXI@Z PROTO :VARARG
+    ??_Eexception@@UAEPAXI@Z PROTO :VARARG
+    ??_Fbad_cast@@QAEXXZ PROTO :VARARG
+ENDIF
+??_Fbad_cast@@QEAAXXZ PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??_Fbad_typeid@@QAEXXZ PROTO :VARARG
+ENDIF
+??_Fbad_typeid@@QEAAXXZ PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??_G__non_rtti_object@@UAEPAXI@Z PROTO :VARARG
+    ??_Gbad_cast@@UAEPAXI@Z PROTO :VARARG
+    ??_Gbad_typeid@@UAEPAXI@Z PROTO :VARARG
+    ??_Gexception@@UAEPAXI@Z PROTO :VARARG
+    ??_U@YAPAXI@Z PROTO :VARARG
+    ??_U@YAPAXIHPBDH@Z PROTO :VARARG
+ENDIF
+??_U@YAPEAX_K@Z PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_WIN7)
+    ??_U@YAPEAX_KHPEBDH@Z PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??_V@YAXPAX@Z PROTO :VARARG
+ENDIF
+??_V@YAXPEAX@Z PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??0__non_rtti_object@@QAE@ABV0@@Z PROTO :VARARG
+    ??0__non_rtti_object@@QAE@PBD@Z PROTO :VARARG
+ENDIF
+??0__non_rtti_object@@QEAA@AEBV0@@Z PROTO :VARARG
+??0__non_rtti_object@@QEAA@PEBD@Z PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    ??0bad_cast@@AAE@PBQBD@Z PROTO :VARARG
+ENDIF
+??0bad_cast@@AEAA@PEBQEBD@Z PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    ??0bad_cast@@QAE@ABQBD@Z PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??0bad_cast@@QAE@ABV0@@Z PROTO :VARARG
+    ??0bad_cast@@QAE@PBD@Z PROTO :VARARG
+ENDIF
+??0bad_cast@@QEAA@AEBQEBD@Z PROTO :VARARG
+??0bad_cast@@QEAA@AEBV0@@Z PROTO :VARARG
+??0bad_cast@@QEAA@PEBD@Z PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??0bad_typeid@@QAE@ABV0@@Z PROTO :VARARG
+    ??0bad_typeid@@QAE@PBD@Z PROTO :VARARG
+ENDIF
+??0bad_typeid@@QEAA@AEBV0@@Z PROTO :VARARG
+??0bad_typeid@@QEAA@PEBD@Z PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??0exception@@QAE@ABQBD@Z PROTO :VARARG
+    ??0exception@@QAE@ABQBDH@Z PROTO :VARARG
+    ??0exception@@QAE@ABV0@@Z PROTO :VARARG
+    ??0exception@@QAE@XZ PROTO :VARARG
+ENDIF
+??0exception@@QEAA@AEBQEBD@Z PROTO :VARARG
+??0exception@@QEAA@AEBQEBDH@Z PROTO :VARARG
+??0exception@@QEAA@AEBV0@@Z PROTO :VARARG
+??0exception@@QEAA@XZ PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??1__non_rtti_object@@UAE@XZ PROTO :VARARG
+ENDIF
+??1__non_rtti_object@@UEAA@XZ PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??1bad_cast@@UAE@XZ PROTO :VARARG
+ENDIF
+??1bad_cast@@UEAA@XZ PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??1bad_typeid@@UAE@XZ PROTO :VARARG
+ENDIF
+??1bad_typeid@@UEAA@XZ PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??1exception@@UAE@XZ PROTO :VARARG
+ENDIF
+??1exception@@UEAA@XZ PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??1type_info@@UAE@XZ PROTO :VARARG
+ENDIF
+??1type_info@@UEAA@XZ PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??2@YAPAXI@Z PROTO :VARARG
+    ??2@YAPAXIHPBDH@Z PROTO :VARARG
+ENDIF
+??2@YAPEAX_K@Z PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_WIN7)
+    ??2@YAPEAX_KHPEBDH@Z PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??3@YAXPAX@Z PROTO :VARARG
+ENDIF
+??3@YAXPEAX@Z PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??4__non_rtti_object@@QAEAAV0@ABV0@@Z PROTO :VARARG
+ENDIF
+??4__non_rtti_object@@QEAAAEAV0@AEBV0@@Z PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??4bad_cast@@QAEAAV0@ABV0@@Z PROTO :VARARG
+ENDIF
+??4bad_cast@@QEAAAEAV0@AEBV0@@Z PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??4bad_typeid@@QAEAAV0@ABV0@@Z PROTO :VARARG
+ENDIF
+??4bad_typeid@@QEAAAEAV0@AEBV0@@Z PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??4exception@@QAEAAV0@ABV0@@Z PROTO :VARARG
+ENDIF
+??4exception@@QEAAAEAV0@AEBV0@@Z PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??8type_info@@QBEHABV0@@Z PROTO :VARARG
+ENDIF
+??8type_info@@QEBAHAEBV0@@Z PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ??9type_info@@QBEHABV0@@Z PROTO :VARARG
+ENDIF
+??9type_info@@QEBAHAEBV0@@Z PROTO :VARARG
+?_query_new_handler@@YAP6AH_K@ZXZ PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ?_query_new_handler@@YAP6AHI@ZXZ PROTO :VARARG
+ENDIF
+?_query_new_mode@@YAHXZ PROTO :VARARG
+?_set_new_handler@@YAP6AH_K@ZP6AH0@Z@Z PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ?_set_new_handler@@YAP6AHI@ZP6AHI@Z@Z PROTO :VARARG
+ENDIF
+?_set_new_mode@@YAHH@Z PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ?_set_se_translator@@YAP6AXIPAU_EXCEPTION_POINTERS@@@ZP6AXI0@Z@Z PROTO :VARARG
+ENDIF
+?_set_se_translator@@YAP6AXIPEAU_EXCEPTION_POINTERS@@@ZP6AXI0@Z@Z PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ?before@type_info@@QBEHABV1@@Z PROTO :VARARG
+ENDIF
+?before@type_info@@QEBAHAEBV1@@Z PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ?name@type_info@@QBEPBDXZ PROTO :VARARG
+ENDIF
+?name@type_info@@QEBAPEBDXZ PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ?raw_name@type_info@@QBEPBDXZ PROTO :VARARG
+ENDIF
+?raw_name@type_info@@QEBAPEBDXZ PROTO :VARARG
+?set_new_handler@@YAP6AXXZP6AXXZ@Z PROTO :VARARG
+?set_terminate@@YAP6AXXZP6AXXZ@Z PROTO :VARARG
+?set_unexpected@@YAP6AXXZP6AXXZ@Z PROTO :VARARG
+?terminate@@YAXXZ PROTO :VARARG
+?unexpected@@YAXXZ PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    ?what@exception@@UBEPBDXZ PROTO :VARARG
+ENDIF
+?what@exception@@UEBAPEBDXZ PROTO :VARARG
+___lc_codepage_func PROTO
+___lc_collate_cp_func PROTO
+___lc_handle_func PROTO
+___mb_cur_max_func PROTO :VARARG
+___setlc_active_func PROTO :VARARG
+___unguarded_readlc_active_add_func PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_WIN10)
+    __AdjustPointer PROTO :VARARG
+ENDIF
+__argc PROTO :VARARG
+__argv PROTO :VARARG
+__badioinfo PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_WINXP)
+    IFNDEF __C_specific_handler
+        __C_specific_handler PROTO :XPTR, :XWORD, :XPTR, :XPTR ;Duplicated
+    ENDIF
+ENDIF
+__CppXcptFilter PROTO :VARARG
+__crtCompareStringA PROTO :VARARG
+__crtCompareStringW PROTO :VARARG
+__crtGetLocaleInfoW PROTO :VARARG
+__crtGetStringTypeW PROTO :VARARG
+__crtLCMapStringA PROTO :VARARG
+__crtLCMapStringW PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    __CxxCallUnwindDelDtor PROTO :VARARG
+    __CxxCallUnwindDtor PROTO :VARARG
+    __CxxCallUnwindVecDtor PROTO :VARARG
+    __CxxDetectRethrow PROTO :VARARG
+    __CxxExceptionFilter PROTO :VARARG
+ENDIF
+__CxxFrameHandler PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    __CxxFrameHandler2 PROTO :VARARG
+    __CxxFrameHandler3 PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    __CxxLongjmpUnwind PROTO :VARARG
+    __CxxQueryExceptionSize PROTO :VARARG
+    __CxxRegisterExceptionObject PROTO :VARARG
+    __CxxUnregisterExceptionObject PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    __daylight PROTO :VARARG
+ENDIF
+__DestructExceptionObject PROTO :VARARG
+__dllonexit PROTO :VARARG
+__doserrno PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    __dstbias PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_WIN10)
+    __ExceptionPtrAssign PROTO :VARARG
+    __ExceptionPtrCompare PROTO :VARARG
+    __ExceptionPtrCopy PROTO :VARARG
+    __ExceptionPtrCopyException PROTO :VARARG
+    __ExceptionPtrCreate PROTO :VARARG
+    __ExceptionPtrCurrentException PROTO :VARARG
+    __ExceptionPtrDestroy PROTO :VARARG
+    __ExceptionPtrRethrow PROTO :VARARG
+    __ExceptionPtrSwap PROTO :VARARG
+    __ExceptionPtrToBool PROTO :VARARG
+ENDIF
+__fpecode PROTO :VARARG
+__getmainargs PROTO :VARARG
+__initenv PROTO :VARARG
+__iob_func PROTO :VARARG
+__isascii PROTO :QWORD
+__iscsym PROTO :VARARG
+__iscsymf PROTO :VARARG
+__lc_codepage PROTO :VARARG
+__lc_collate_cp PROTO :VARARG
+__lc_handle PROTO :VARARG
+__lconv_init PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    __libm_sse2_acos PROTO :VARARG
+    __libm_sse2_acosf PROTO :VARARG
+    __libm_sse2_asin PROTO :VARARG
+    __libm_sse2_asinf PROTO :VARARG
+    __libm_sse2_atan PROTO :VARARG
+    __libm_sse2_atan2 PROTO :VARARG
+    __libm_sse2_atanf PROTO :VARARG
+    __libm_sse2_cos PROTO :VARARG
+    __libm_sse2_cosf PROTO :VARARG
+    __libm_sse2_exp PROTO :VARARG
+    __libm_sse2_expf PROTO :VARARG
+    __libm_sse2_log PROTO :VARARG
+    __libm_sse2_log10 PROTO :VARARG
+    __libm_sse2_log10f PROTO :VARARG
+    __libm_sse2_logf PROTO :VARARG
+    __libm_sse2_pow PROTO :VARARG
+    __libm_sse2_powf PROTO :VARARG
+    __libm_sse2_sin PROTO :VARARG
+    __libm_sse2_sinf PROTO :VARARG
+    __libm_sse2_tan PROTO :VARARG
+    __libm_sse2_tanf PROTO :VARARG
+ENDIF
+__mb_cur_max PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    __p___argc PROTO :VARARG
+    __p___argv PROTO :VARARG
+    __p___initenv PROTO :VARARG
+    __p___mb_cur_max PROTO :VARARG
+    __p___wargv PROTO :VARARG
+    __p___winitenv PROTO :VARARG
+    __p__acmdln PROTO :VARARG
+    __p__amblksiz PROTO :VARARG
+    __p__commode PROTO :VARARG
+    __p__daylight PROTO :VARARG
+    __p__dstbias PROTO :VARARG
+    __p__environ PROTO :VARARG
+    __p__fileinfo PROTO :VARARG
+    __p__fmode PROTO :VARARG
+    __p__iob PROTO :VARARG
+    __p__mbcasemap PROTO :VARARG
+    __p__mbctype PROTO :VARARG
+    __p__osver PROTO :VARARG
+    __p__pctype PROTO :VARARG
+    __p__pgmptr PROTO :VARARG
+    __p__pwctype PROTO :VARARG
+    __p__timezone PROTO :VARARG
+    __p__tzname PROTO :VARARG
+    __p__wcmdln PROTO :VARARG
+    __p__wenviron PROTO :VARARG
+    __p__winmajor PROTO :VARARG
+    __p__winminor PROTO :VARARG
+    __p__winver PROTO :VARARG
+    __p__wpgmptr PROTO :VARARG
+ENDIF
+__pctype_func PROTO :VARARG
+__pioinfo PROTO :VARARG
+__pwctype_func PROTO :VARARG
+__pxcptinfoptrs PROTO :VARARG
+__RTCastToVoid PROTO :VARARG
+__RTDynamicCast PROTO :VARARG
+__RTtypeid PROTO :VARARG
+__set_app_type PROTO :VARARG
+__setlc_active PROTO :VARARG
+__setusermatherr PROTO :VARARG
+__STRINGTOLD PROTO :VARARG
+__strncnt PROTO :VARARG
+__threadhandle PROTO :VARARG
+__threadid PROTO :VARARG
+__toascii PROTO :VARARG
+__uncaught_exception PROTO :VARARG
+__unDName PROTO :VARARG
+__unDNameEx PROTO :VARARG
+__unguarded_readlc_active PROTO :VARARG
+__wargv PROTO :VARARG
+__wcserror PROTO :VARARG
+__wcserror_s PROTO :VARARG
+__wcsncnt PROTO :VARARG
+__wgetmainargs PROTO :VARARG
+__winitenv PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _abnormal_termination PROTO :VARARG
+ENDIF
+_abs64 PROTO :QWORD
+_access PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _access_s PROTO :QWORD, :QWORD
+ENDIF
+_acmdln PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _adj_fdiv_m16i PROTO :VARARG
+    _adj_fdiv_m32 PROTO :VARARG
+    _adj_fdiv_m32i PROTO :VARARG
+    _adj_fdiv_m64 PROTO :VARARG
+    _adj_fdiv_r PROTO :VARARG
+    _adj_fdivr_m16i PROTO :VARARG
+    _adj_fdivr_m32 PROTO :VARARG
+    _adj_fdivr_m32i PROTO :VARARG
+    _adj_fdivr_m64 PROTO :VARARG
+    _adj_fpatan PROTO :VARARG
+    _adj_fprem PROTO :VARARG
+    _adj_fprem1 PROTO :VARARG
+    _adj_fptan PROTO :VARARG
+    _adjust_fdiv PROTO :VARARG
+ENDIF
+_aexit_rtn PROTO :VARARG
+_aligned_free PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _aligned_free_dbg PROTO :VARARG
+ENDIF
+_aligned_malloc PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _aligned_malloc_dbg PROTO :VARARG
+ENDIF
+_aligned_offset_malloc PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _aligned_offset_malloc_dbg PROTO :VARARG
+ENDIF
+_aligned_offset_realloc PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _aligned_offset_realloc_dbg PROTO :VARARG
+ENDIF
+_aligned_realloc PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _aligned_realloc_dbg PROTO :VARARG
+ENDIF
+_amsg_exit PROTO :VARARG
+_assert PROTO :VARARG
+_atodbl PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _atodbl_l PROTO :QWORD, :QWORD, :QWORD
+    _atof_l PROTO :VARARG
+    _atoflt_l PROTO :VARARG
+    _atoi_l PROTO :VARARG
+ENDIF
+_atoi64 PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _atoi64_l PROTO :QWORD, :QWORD
+    _atol_l PROTO :VARARG
+ENDIF
+_atoldbl PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _atoldbl_l PROTO :QWORD, :QWORD, :QWORD
+ENDIF
+_beep PROTO :QWORD, :QWORD
+_beginthread PROTO :VARARG
+_beginthreadex PROTO :VARARG
+_c_exit PROTO :VARARG
+_cabs PROTO :QWORD
+_callnewh PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _calloc_dbg PROTO :VARARG
+ENDIF
+_cexit PROTO :VARARG
+_cgets PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _cgets_s PROTO :VARARG
+ENDIF
+_cgetws PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _cgetws_s PROTO :VARARG
+ENDIF
+_chdir PROTO :QWORD
+_chdrive PROTO :QWORD
+_chgsign PROTO :QWORD
+_chgsignf PROTO :QWORD
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _chkesp PROTO :QWORD, :QWORD
+ENDIF
+_chmod PROTO :QWORD, :QWORD
+_chsize PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _chsize_s PROTO :VARARG
+    _chvalidator PROTO :VARARG
+    _chvalidator_l PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _CIacos PROTO :VARARG
+    _CIasin PROTO :VARARG
+    _CIatan PROTO :VARARG
+    _CIatan2 PROTO :VARARG
+    _CIcos PROTO :VARARG
+    _CIcosh PROTO :VARARG
+    _CIexp PROTO :VARARG
+    _CIfmod PROTO :VARARG
+    _CIlog PROTO :VARARG
+    _CIlog10 PROTO :VARARG
+    _CIpow PROTO :VARARG
+    _CIsin PROTO :VARARG
+    _CIsinh PROTO :VARARG
+    _CIsqrt PROTO :VARARG
+    _CItan PROTO :VARARG
+    _CItanh PROTO :VARARG
+ENDIF
+_clearfp PROTO
+_close PROTO :VARARG
+_commit PROTO :VARARG
+_commode PROTO :VARARG
+_control87 PROTO :VARARG
+_controlfp PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _controlfp_s PROTO :VARARG
+ENDIF
+_copysign PROTO :QWORD, :QWORD
+_copysignf PROTO :VARARG
+_cprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _cprintf_l PROTO :VARARG
+    _cprintf_p PROTO :VARARG
+    _cprintf_p_l PROTO :VARARG
+    _cprintf_s PROTO :VARARG
+    _cprintf_s_l PROTO :VARARG
+ENDIF
+_cputs PROTO :QWORD
+_cputws PROTO :VARARG
+_creat PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_WIN8)
+    _create_locale PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _crtAssertBusy PROTO :VARARG
+    _crtBreakAlloc PROTO :VARARG
+    _CrtCheckMemory PROTO :VARARG
+    _CrtDbgBreak PROTO :VARARG
+    _crtDbgFlag PROTO :VARARG
+    _CrtDbgReport PROTO :VARARG
+    _CrtDbgReportV PROTO :VARARG
+    _CrtDbgReportW PROTO :VARARG
+    _CrtDbgReportWV PROTO :VARARG
+    _CrtDoForAllClientObjects PROTO :VARARG
+    _CrtDumpMemoryLeaks PROTO :VARARG
+    _CrtIsMemoryBlock PROTO :VARARG
+    _CrtIsValidHeapPointer PROTO :VARARG
+    _CrtIsValidPointer PROTO :VARARG
+    _CrtMemCheckpoint PROTO :VARARG
+    _CrtMemDifference PROTO :VARARG
+    _CrtMemDumpAllObjectsSince PROTO :VARARG
+    _CrtMemDumpStatistics PROTO :VARARG
+    _CrtReportBlockType PROTO :VARARG
+    _CrtSetAllocHook PROTO :VARARG
+    _CrtSetBreakAlloc PROTO :VARARG
+    _CrtSetDbgBlockType PROTO :VARARG
+    _CrtSetDbgFlag PROTO :VARARG
+    _CrtSetDumpClient PROTO :VARARG
+    _CrtSetReportFile PROTO :VARARG
+    _CrtSetReportHook PROTO :VARARG
+    _CrtSetReportHook2 PROTO :VARARG
+    _CrtSetReportMode PROTO :VARARG
+ENDIF
+_cscanf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _cscanf_l PROTO :VARARG
+    _cscanf_s PROTO :VARARG
+    _cscanf_s_l PROTO :VARARG
+    _ctime32 PROTO :QWORD
+    _ctime32_s PROTO :QWORD, :QWORD, :QWORD
+ENDIF
+_ctime64 PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ctime64_s PROTO :QWORD, :QWORD, :QWORD
+ENDIF
+_ctype PROTO :VARARG
+_cwait PROTO :QWORD, :QWORD, :QWORD
+_cwprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _cwprintf_l PROTO :VARARG
+    _cwprintf_p PROTO :VARARG
+    _cwprintf_p_l PROTO :VARARG
+    _cwprintf_s PROTO :VARARG
+    _cwprintf_s_l PROTO :VARARG
+ENDIF
+_cwscanf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _cwscanf_l PROTO :VARARG
+    _cwscanf_s PROTO :VARARG
+    _cwscanf_s_l PROTO :VARARG
+ENDIF
+_CxxThrowException PROTO :VARARG
+_daylight PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _difftime32 PROTO :QWORD, :QWORD
+    _difftime64 PROTO :QWORD, :QWORD
+ENDIF
+_dstbias PROTO :VARARG
+_dup PROTO :VARARG
+_dup2 PROTO :VARARG
+_ecvt PROTO :QWORD, :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ecvt_s PROTO :QWORD, :QWORD, :QWORD, :QWORD, :QWORD, :QWORD
+ENDIF
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _EH_prolog PROTO :VARARG
+ENDIF
+_endthread PROTO :VARARG
+_endthreadex PROTO :VARARG
+_environ PROTO :VARARG
+_eof PROTO :VARARG
+_errno PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _except_handler2 PROTO :VARARG
+    _except_handler3 PROTO :VARARG
+    _except_handler4_common PROTO :VARARG
+ENDIF
+_execl PROTO :VARARG
+_execle PROTO :VARARG
+_execlp PROTO :VARARG
+_execlpe PROTO :VARARG
+_execv PROTO :VARARG
+_execve PROTO :VARARG
+_execvp PROTO :VARARG
+_execvpe PROTO :VARARG
+_exit PROTO :VARARG
+_expand PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _expand_dbg PROTO :VARARG
+ENDIF
+_fcloseall PROTO :VARARG
+_fcvt PROTO :QWORD, :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _fcvt_s PROTO :QWORD, :QWORD, :QWORD, :QWORD, :QWORD, :QWORD
+ENDIF
+_fdopen PROTO :VARARG
+_fgetchar PROTO :VARARG
+_fgetwchar PROTO :VARARG
+_filbuf PROTO :VARARG
+_fileinfo PROTO :VARARG
+_filelength PROTO :VARARG
+_filelengthi64 PROTO :VARARG
+_fileno PROTO :VARARG
+_findclose PROTO :VARARG
+_findfirst PROTO :VARARG
+_findfirst64 PROTO :VARARG
+_findfirsti64 PROTO :VARARG
+_findnext PROTO :VARARG
+_findnext64 PROTO :VARARG
+_findnexti64 PROTO :VARARG
+_finite PROTO :QWORD
+_finitef PROTO :VARARG
+_flsbuf PROTO :VARARG
+_flushall PROTO :VARARG
+_fmode PROTO :VARARG
+_fpclass PROTO :QWORD
+_fpclassf PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _fpieee_flt PROTO :VARARG
+ENDIF
+_fpreset PROTO
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _fprintf_l PROTO :VARARG
+    _fprintf_p PROTO :VARARG
+    _fprintf_p_l PROTO :VARARG
+    _fprintf_s_l PROTO :VARARG
+ENDIF
+_fputchar PROTO :VARARG
+_fputwchar PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _free_dbg PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_WIN8)
+    _free_locale PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _freea PROTO :VARARG
+    _freea_s PROTO :VARARG
+    _fscanf_l PROTO :VARARG
+    _fscanf_s_l PROTO :VARARG
+    _fseeki64 PROTO :VARARG
+ENDIF
+_fsopen PROTO :VARARG
+_fstat PROTO :VARARG
+_fstat64 PROTO :VARARG
+_fstati64 PROTO :VARARG
+_ftime PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ftime32 PROTO :QWORD
+    _ftime32_s PROTO :QWORD
+ENDIF
+_ftime64 PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ftime64_s PROTO :QWORD
+ENDIF
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _ftol PROTO :VARARG
+    _ftol2 PROTO :VARARG
+    _ftol2_sse PROTO :VARARG
+    _ftol2_sse_excpt PROTO :VARARG
+ENDIF
+_fullpath PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _fullpath_dbg PROTO :VARARG
+ENDIF
+_futime PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _futime32 PROTO :VARARG
+ENDIF
+_futime64 PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _fwprintf_l PROTO :VARARG
+    _fwprintf_p PROTO :VARARG
+    _fwprintf_p_l PROTO :VARARG
+    _fwprintf_s_l PROTO :VARARG
+    _fwscanf_l PROTO :VARARG
+    _fwscanf_s_l PROTO :VARARG
+ENDIF
+_gcvt PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _gcvt_s PROTO :QWORD, :QWORD, :QWORD, :QWORD
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_WIN8)
+    _get_current_locale PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _get_doserrno PROTO :VARARG
+    _get_environ PROTO :VARARG
+    _get_errno PROTO :VARARG
+    _get_fileinfo PROTO :VARARG
+    _get_fmode PROTO :VARARG
+ENDIF
+_get_heap_handle PROTO :VARARG
+_get_osfhandle PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _get_osplatform PROTO :QWORD
+    _get_osver PROTO :QWORD
+    _get_output_format PROTO :VARARG
+    _get_pgmptr PROTO :VARARG
+ENDIF
+_get_sbh_threshold PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _get_wenviron PROTO :VARARG
+    _get_winmajor PROTO :QWORD
+    _get_winminor PROTO :QWORD
+    _get_winver PROTO :QWORD
+    _get_wpgmptr PROTO :VARARG
+ENDIF
+_getch PROTO :VARARG
+_getche PROTO :VARARG
+_getcwd PROTO :QWORD, :QWORD
+_Getdays PROTO
+_getdcwd PROTO :VARARG
+_getdiskfree PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION LE NTDDI_VISTA)
+    _getdllprocaddr PROTO :VARARG
+ENDIF
+_getdrive PROTO
+_getdrives PROTO
+_getmaxstdio PROTO
+_getmbcp PROTO
+_Getmonths PROTO
+_getpid PROTO
+_getsystime PROTO :QWORD
+_Gettnames PROTO
+_getw PROTO :VARARG
+_getwch PROTO :VARARG
+_getwche PROTO :VARARG
+_getws PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _global_unwind2 PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _gmtime32 PROTO :QWORD
+    _gmtime32_s PROTO :QWORD, :QWORD
+ENDIF
+_gmtime64 PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _gmtime64_s PROTO :QWORD, :QWORD
+ENDIF
+IF (NTDDI_VERSION LE NTDDI_VISTA)
+_heapadd PROTO :VARARG
+ENDIF
+_heapchk PROTO :VARARG
+_heapmin PROTO :VARARG
+_heapset PROTO :VARARG
+IF (NTDDI_VERSION LE NTDDI_VISTA)
+    _heapused PROTO :VARARG
+ENDIF
+_heapwalk PROTO :VARARG
+_HUGE PROTO :VARARG
+_hypot PROTO :QWORD, :QWORD
+_hypotf PROTO :VARARG
+_i64toa PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _i64toa_s PROTO :QWORD, :QWORD, :QWORD, :QWORD ;Duplicated in _ntoskrnl.inc
+ENDIF
+_i64tow PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _i64tow_s PROTO :QWORD, :QWORD, :QWORD, :QWORD ;Duplicated in _ntoskrnl.inc
+ENDIF
+_initterm PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _initterm_e PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _inp PROTO :VARARG
+    _inpd PROTO :VARARG
+    _inpw PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _invalid_parameter PROTO :VARARG
+ENDIF
+_iob PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _isalnum_l PROTO :VARARG
+    _isalpha_l PROTO :VARARG
+ENDIF
+_isatty PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _iscntrl_l PROTO :VARARG
+ENDIF
+_isctype PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _isctype_l PROTO :VARARG
+    _isdigit_l PROTO :VARARG
+    _isgraph_l PROTO :VARARG
+    _isleadbyte_l PROTO :VARARG
+    _islower_l PROTO :VARARG
+ENDIF
+_ismbbalnum PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbbalnum_l PROTO :VARARG
+ENDIF
+_ismbbalpha PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbbalpha_l PROTO :VARARG
+ENDIF
+_ismbbgraph PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbbgraph_l PROTO :VARARG
+ENDIF
+_ismbbkalnum PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbbkalnum_l PROTO :VARARG
+ENDIF
+_ismbbkana PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbbkana_l PROTO :VARARG
+ENDIF
+_ismbbkprint PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbbkprint_l PROTO :VARARG
+ENDIF
+_ismbbkpunct PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbbkpunct_l PROTO :VARARG
+ENDIF
+_ismbblead PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbblead_l PROTO :VARARG
+ENDIF
+_ismbbprint PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbbprint_l PROTO :VARARG
+ENDIF
+_ismbbpunct PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbbpunct_l PROTO :VARARG
+ENDIF
+_ismbbtrail PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbbtrail_l PROTO :VARARG
+ENDIF
+_ismbcalnum PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbcalnum_l PROTO :VARARG
+ENDIF
+_ismbcalpha PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbcalpha_l PROTO :VARARG
+ENDIF
+_ismbcdigit PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbcdigit_l PROTO :VARARG
+ENDIF
+_ismbcgraph PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbcgraph_l PROTO :VARARG
+ENDIF
+_ismbchira PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbchira_l PROTO :VARARG
+ENDIF
+_ismbckata PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbckata_l PROTO :VARARG
+ENDIF
+_ismbcl0 PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbcl0_l PROTO :VARARG
+ENDIF
+_ismbcl1 PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbcl1_l PROTO :VARARG
+ENDIF
+_ismbcl2 PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbcl2_l PROTO :VARARG
+ENDIF
+_ismbclegal PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbclegal_l PROTO :VARARG
+ENDIF
+_ismbclower PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbclower_l PROTO :VARARG
+ENDIF
+_ismbcprint PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbcprint_l PROTO :VARARG
+ENDIF
+_ismbcpunct PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbcpunct_l PROTO :VARARG
+ENDIF
+_ismbcspace PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbcspace_l PROTO :VARARG
+ENDIF
+_ismbcsymbol PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbcsymbol_l PROTO :VARARG
+ENDIF
+_ismbcupper PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbcupper_l PROTO :VARARG
+ENDIF
+_ismbslead PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbslead_l PROTO :VARARG
+ENDIF
+_ismbstrail PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ismbstrail_l PROTO :VARARG
+ENDIF
+_isnan PROTO :REAL8
+_isnanf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _isprint_l PROTO :VARARG
+    _isspace_l PROTO :VARARG
+    _isupper_l PROTO :VARARG
+    _iswalnum_l PROTO :VARARG
+    _iswalpha_l PROTO :VARARG
+    _iswcntrl_l PROTO :VARARG
+    _iswctype_l PROTO :VARARG
+    _iswdigit_l PROTO :VARARG
+    _iswgraph_l PROTO :VARARG
+    _iswlower_l PROTO :VARARG
+    _iswprint_l PROTO :VARARG
+    _iswpunct_l PROTO :VARARG
+    _iswspace_l PROTO :VARARG
+    _iswupper_l PROTO :VARARG
+    _iswxdigit_l PROTO :VARARG
+    _isxdigit_l PROTO :VARARG
+ENDIF
+_itoa PROTO :QWORD, :QWORD, :QWORD ;Duplicated in _ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _itoa_s PROTO :QWORD, :QWORD, :QWORD, :QWORD ;Duplicated in _ntoskrnl.inc
+ENDIF
+_itow PROTO :QWORD, :QWORD, :QWORD ;Duplicated in _ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _itow_s PROTO :QWORD, :QWORD, :QWORD, :QWORD ;Duplicated in _ntoskrnl.inc
+ENDIF
+_j0 PROTO :REAL8
+_j1 PROTO :REAL8
+_jn PROTO :QWORD, :REAL8
+_kbhit PROTO :VARARG
+_lfind PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _lfind_s PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION LE NTDDI_VISTA)
+    _loaddll PROTO :VARARG
+ENDIF
+_local_unwind PROTO
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _local_unwind2 PROTO :VARARG
+    _local_unwind4 PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _localtime32 PROTO :QWORD
+    _localtime32_s PROTO :QWORD, :QWORD
+ENDIF
+_localtime64 PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _localtime64_s PROTO :QWORD, :QWORD
+ENDIF
+_lock PROTO :VARARG
+_locking PROTO :VARARG
+_logb PROTO :QWORD
+_logbf PROTO :QWORD
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _longjmpex PROTO :VARARG
+ENDIF
+_lrotl PROTO :QWORD, :QWORD
+_lrotr PROTO :QWORD, :QWORD
+_lsearch PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _lsearch_s PROTO :VARARG
+ENDIF
+_lseek PROTO :VARARG
+_lseeki64 PROTO :VARARG
+_ltoa PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ltoa_s PROTO :QWORD, :QWORD, :QWORD, :QWORD ;Duplicated in _ntoskrnl.inc
+ENDIF
+_ltow PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ltow_s PROTO :QWORD, :QWORD, :QWORD, :QWORD ;Duplicated in _ntoskrnl.inc
+ENDIF
+_makepath PROTO :XPTR, :XPTR, :XPTR, :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _makepath_s PROTO :XPTR, :SIZE_T, :XPTR, :XPTR, :XPTR, :XPTR    ;Duplicated in _ntoskrnl.inc
+    _malloc_dbg PROTO :SIZE_T, :QWORD, :XPTR, :QWORD
+ENDIF
+_mbbtombc PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbbtombc_l PROTO :QWORD, :QWORD
+ENDIF
+_mbbtype PROTO :QWORD, :QWORD
+_mbcasemap PROTO :VARARG
+_mbccpy PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbccpy_l PROTO :XPTR, :XPTR, :QWORD
+    _mbccpy_s PROTO :XPTR, :SIZE_T, :XPTR, :XPTR
+    _mbccpy_s_l PROTO :XPTR, :SIZE_T, :XPTR, :XPTR, :QWORD
+ENDIF
+_mbcjistojms PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbcjistojms_l PROTO :QWORD, :QWORD
+ENDIF
+_mbcjmstojis PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbcjmstojis_l PROTO :QWORD
+ENDIF
+_mbclen PROTO :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbclen_l PROTO :VARARG
+ENDIF
+_mbctohira PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbctohira_l PROTO :QWORD, :QWORD
+ENDIF
+_mbctokata PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbctokata_l PROTO :QWORD, :QWORD
+ENDIF
+_mbctolower PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbctolower_l PROTO :QWORD, :QWORD
+ENDIF
+_mbctombb PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbctombb_l PROTO :QWORD, :QWORD
+ENDIF
+_mbctoupper PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbctoupper_l PROTO :QWORD, :QWORD
+ENDIF
+_mbctype PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mblen_l PROTO :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsbtype PROTO :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsbtype_l PROTO :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbscat PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbscat_s PROTO :XPTR, :SIZE_T, :XPTR
+    _mbscat_s_l PROTO :XPTR, :SIZE_T, :XPTR, :QWORD
+ENDIF
+_mbschr PROTO :XPTR, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbschr_l PROTO :XPTR, :QWORD, :QWORD
+ENDIF
+_mbscmp PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbscmp_l PROTO :XPTR, :XPTR, :QWORD
+ENDIF
+_mbscoll PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbscoll_l PROTO :XPTR, :XPTR, :QWORD
+ENDIF
+_mbscpy PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbscpy_s PROTO :XPTR, :SIZE_T, :XPTR
+    _mbscpy_s_l PROTO :XPTR, :SIZE_T, :XPTR, :QWORD
+ENDIF
+_mbscspn PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbscspn_l PROTO :XPTR, :XPTR, :QWORD
+ENDIF
+_mbsdec PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsdec_l PROTO :XPTR, :XPTR, :QWORD
+ENDIF
+_mbsdup PROTO :XPTR
+_mbsicmp PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsicmp_l PROTO :XPTR, :XPTR, :QWORD
+ENDIF
+_mbsicoll PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsicoll_l PROTO :XPTR, :XPTR, :QWORD
+ENDIF
+_mbsinc PROTO :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsinc_l PROTO :XPTR, :QWORD
+ENDIF
+_mbslen PROTO :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbslen_l PROTO :XPTR, :QWORD
+ENDIF
+_mbslwr PROTO :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbslwr_l PROTO :XPTR, :QWORD
+    _mbslwr_s PROTO :XPTR, :SIZE_T
+    _mbslwr_s_l PROTO :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsnbcat PROTO :XPTR, :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnbcat_l PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+    _mbsnbcat_s PROTO :XPTR, :SIZE_T, :XPTR, :SIZE_T
+    _mbsnbcat_s_l PROTO :XPTR, :SIZE_T, :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsnbcmp PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnbcmp_l PROTO :XPTR, :XPTR, :QWORD
+ENDIF
+_mbsnbcnt PROTO :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnbcnt_l PROTO :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsnbcoll PROTO :XPTR, :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnbcoll_l PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsnbcpy PROTO :XPTR, :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnbcpy_l PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+    _mbsnbcpy_s PROTO :XPTR, :SIZE_T, :XPTR, :SIZE_T
+    _mbsnbcpy_s_l PROTO :XPTR, :SIZE_T, :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsnbicmp PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnbicmp_l PROTO :XPTR, :XPTR, :SIZE_T
+ENDIF
+_mbsnbicoll PROTO :XPTR, :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnbicoll_l PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsnbset PROTO :XPTR, :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnbset_l PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+    _mbsnbset_s PROTO :XPTR, :SIZE_T, :QWORD, :SIZE_T
+    _mbsnbset_s_l PROTO :XPTR, :SIZE_T, :QWORD, :SIZE_T, :QWORD
+ENDIF
+_mbsncat PROTO :XPTR, :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsncat_l PROTO :XPTR, :SIZE_T, :XPTR, :SIZE_T, :QWORD
+    _mbsncat_s PROTO :QWORD, :QWORD, :QWORD, :QWORD
+    _mbsncat_s_l PROTO :VARARG
+ENDIF
+_mbsnccnt PROTO :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnccnt_l PROTO :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsncmp PROTO :XPTR, :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsncmp_l PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsncoll PROTO :XPTR, :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsncoll_l PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsncpy PROTO :XPTR, :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsncpy_l PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+    _mbsncpy_s PROTO :XPTR, :SIZE_T, :XPTR, :SIZE_T
+    _mbsncpy_s_l PROTO :XPTR, :SIZE_T, :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsnextc PROTO :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnextc_l PROTO :XPTR, :QWORD
+ENDIF
+_mbsnicmp PROTO :XPTR, :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnicmp_l PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsnicoll PROTO :XPTR, :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnicoll_l PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsninc PROTO :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsninc_l PROTO :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsnlen PROTO :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnlen_l PROTO :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsnset PROTO :XPTR, :QWORD, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsnset_l PROTO :XPTR, :QWORD, :SIZE_T, :QWORD
+    _mbsnset_s PROTO :XPTR, :SIZE_T, :QWORD, :SIZE_T
+    _mbsnset_s_l PROTO :XPTR, :SIZE_T, :QWORD, :SIZE_T, :QWORD
+ENDIF
+_mbspbrk PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbspbrk_l PROTO :XPTR, :XPTR, :QWORD
+ENDIF
+_mbsrchr PROTO :XPTR, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsrchr_l PROTO :XPTR, :QWORD, :QWORD
+ENDIF
+_mbsrev PROTO :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsrev_l PROTO :XPTR, :QWORD
+ENDIF
+_mbsset PROTO :XPTR, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsset_l PROTO :XPTR, :QWORD, :QWORD
+    _mbsset_s PROTO :XPTR, :SIZE_T, :QWORD
+    _mbsset_s_l PROTO :XPTR, :SIZE_T, :QWORD, :QWORD
+ENDIF
+_mbsspn PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsspn_l PROTO :XPTR, :XPTR, :QWORD
+ENDIF
+_mbsspnp PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsspnp_l PROTO :XPTR, :XPTR, :QWORD
+ENDIF
+_mbsstr PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsstr_l PROTO :XPTR, :XPTR, :QWORD
+ENDIF
+_mbstok PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbstok_l PROTO :XPTR, :XPTR, :QWORD
+    _mbstok_s PROTO :XPTR, :XPTR, :XPTR
+    _mbstok_s_l PROTO :XPTR, :XPTR, :XPTR, :QWORD
+    _mbstowcs_l PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+    _mbstowcs_s_l PROTO :SIZE_T, :XPTR, :SIZE_T, :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbstrlen PROTO :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbstrlen_l PROTO :XPTR, :QWORD
+ENDIF
+_mbstrnlen PROTO :XPTR, :SIZE_T
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbstrnlen_l PROTO :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mbsupr PROTO :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mbsupr_l PROTO :XPTR, :QWORD
+    _mbsupr_s PROTO :XPTR, :SIZE_T
+    _mbsupr_s_l PROTO :XPTR, :SIZE_T, :QWORD
+    _mbtowc_l PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+ENDIF
+_memccpy PROTO :QWORD, :QWORD, :QWORD, :QWORD
+_memicmp PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _memicmp_l PROTO :XPTR, :XPTR, :SIZE_T, :QWORD
+ENDIF
+_mkdir PROTO :QWORD
+_mkgmtime PROTO :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mkgmtime32 PROTO :XPTR
+ENDIF
+_mkgmtime64 PROTO :XPTR
+_mktemp PROTO :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _mktemp_s PROTO :XPTR, :SIZE_T
+    _mktime32 PROTO :XPTR
+ENDIF
+_mktime64 PROTO :XPTR
+_msize PROTO :XPTR
+IF (NTDDI_VERSION GE NTDDI_WIN7)
+    _msize_dbg PROTO :XPTR, :QWORD
+ENDIF
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _msize_debug PROTO :VARARG
+ENDIF
+_nextafter PROTO :REAL8, :REAL8
+_nextafterf PROTO :REAL8, :REAL8
+_onexit PROTO :QWORD
+_open PROTO :XPTR, :QWORD, :QWORD
+_open_osfhandle PROTO :QWORD, :QWORD
+_osplatform PROTO :VARARG
+_osver PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _outp PROTO :VARARG
+    _outpd PROTO :VARARG
+    _outpw PROTO :VARARG
+ENDIF
+_pclose PROTO :QWORD
+_pctype PROTO :VARARG
+_pgmptr PROTO :VARARG
+_pipe PROTO :QWORD, :QWORD, :QWORD
+_popen PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _printf_l PROTO :XPTR, :QWORD, :VARARG
+    _printf_p PROTO :VARARG
+    _printf_p_l PROTO :VARARG
+    _printf_s_l PROTO :XPTR, :QWORD, :VARARG
+ENDIF
+_purecall PROTO                             ;Duplicated
+_putch PROTO :QWORD
+_putenv PROTO :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _putenv_s PROTO :XPTR, :XPTR
+ENDIF
+_putw PROTO :QWORD, :XPTR
+_putwch PROTO :QWORD
+_putws PROTO :XPTR
+_pwctype PROTO :VARARG
+_read PROTO :QWORD, :XPTR, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _realloc_dbg PROTO :XPTR, :SIZE_T, :QWORD, :XPTR, :QWORD
+ENDIF
+_resetstkoflw PROTO
+_rmdir PROTO :XPTR
+_rmtmp PROTO
+_rotl PROTO :QWORD, :QWORD
+_rotl64 PROTO :QWORD, :QWORD
+_rotr PROTO :QWORD, :QWORD
+_rotr64 PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _safe_fdiv PROTO :VARARG
+    _safe_fdivr PROTO :VARARG
+    _safe_fprem PROTO :VARARG
+    _safe_fprem1 PROTO :VARARG
+ENDIF
+_scalb PROTO :QWORD, :QWORD
+_scalbf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _scanf_l PROTO :VARARG
+    _scanf_s_l PROTO :VARARG
+ENDIF
+_scprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _scprintf_l PROTO :VARARG
+    _scprintf_p_l PROTO :VARARG
+ENDIF
+_scwprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _scwprintf_l PROTO :VARARG
+    _scwprintf_p_l PROTO :VARARG
+ENDIF
+_searchenv PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _searchenv_s PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _seh_longjmp_unwind PROTO :VARARG
+    _seh_longjmp_unwind4 PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _set_controlfp PROTO :VARARG
+    _set_doserrno PROTO :VARARG
+    _set_errno PROTO :VARARG
+ENDIF
+_set_error_mode PROTO :VARARG
+_set_fileinfo PROTO :VARARG
+_set_fmode PROTO :VARARG
+_set_output_format PROTO :VARARG
+_set_sbh_threshold PROTO :VARARG
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _set_SSE2_enable PROTO :VARARG
+ENDIF
+_seterrormode PROTO :VARARG
+_setjmp PROTO :XPTR
+IF (NTDDI_VERSION EQ NTDDI_VISTA)
+    _setjmp3 PROTO :VARARG
+ENDIF
+_setjmpex PROTO :XPTR
+_setmaxstdio PROTO :VARARG
+_setmbcp PROTO :VARARG
+_setmode PROTO :VARARG
+_setsystime PROTO :VARARG
+_sleep PROTO :QWORD
+_snprintf PROTO :XPTR, :SIZE_T, :XPTR, :VARARG ;Duplicated
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _snprintf_c PROTO :VARARG
+    _snprintf_c_l PROTO :VARARG
+    _snprintf_l PROTO :VARARG
+    _snprintf_s PROTO :XPTR, :SIZE_T, :SIZE_T, :XPTR, :VARARG ;Duplicated
+    _snprintf_s_l PROTO :VARARG
+ENDIF
+_snscanf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _snscanf_l PROTO :VARARG
+    _snscanf_s PROTO :VARARG
+    _snscanf_s_l PROTO :VARARG
+ENDIF
+_snwprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _snwprintf_l PROTO :VARARG
+    _snwprintf_s PROTO :VARARG
+    _snwprintf_s_l PROTO :VARARG
+ENDIF
+_snwscanf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _snwscanf_l PROTO :VARARG
+    _snwscanf_s PROTO :VARARG
+    _snwscanf_s_l PROTO :VARARG
+ENDIF
+_sopen PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _sopen_s PROTO :VARARG
+ENDIF
+_spawnl PROTO :VARARG
+_spawnle PROTO :VARARG
+_spawnlp PROTO :VARARG
+_spawnlpe PROTO :VARARG
+_spawnv PROTO :VARARG
+_spawnve PROTO :VARARG
+_spawnvp PROTO :VARARG
+_spawnvpe PROTO :VARARG
+_splitpath PROTO :QWORD, :QWORD, :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _splitpath_s PROTO :XPTR, :XPTR, :SIZE_T, :XPTR, :SIZE_T, :XPTR, :SIZE_T, :XPTR, :SIZE_T ;Duplicated
+    _sprintf_l PROTO :VARARG
+    _sprintf_p_l PROTO :VARARG
+    _sprintf_s_l PROTO :VARARG
+    _sscanf_l PROTO :VARARG
+    _sscanf_s_l PROTO :VARARG
+ENDIF
+_stat PROTO :QWORD, :QWORD
+_stat64 PROTO :QWORD, :QWORD
+_stati64 PROTO :QWORD, :QWORD
+_statusfp PROTO
+_strcmpi PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strcoll_l PROTO :VARARG
+ENDIF
+_strdate PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strdate_s PROTO :QWORD, :QWORD
+ENDIF
+_strdup PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strdup_dbg PROTO :VARARG
+ENDIF
+_strerror PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strerror_s PROTO :VARARG
+ENDIF
+_Strftime PROTO :QWORD, :QWORD, :QWORD, :QWORD
+_stricmp PROTO :XPTR, :XPTR              ;Duplicated in ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _stricmp_l PROTO :VARARG
+ENDIF
+_stricoll PROTO :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _stricoll_l PROTO :VARARG
+ENDIF
+_strlwr PROTO :XPTR                    ;Duplicated in ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strlwr_l PROTO :VARARG
+    _strlwr_s PROTO :VARARG
+    _strlwr_s_l PROTO :VARARG
+ENDIF
+_strncoll PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strncoll_l PROTO :VARARG
+ENDIF
+_strnicmp PROTO :XPTR, :XPTR, :SIZE_T ;Duplicated
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strnicmp_l PROTO :VARARG
+ENDIF
+_strnicoll PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strnicoll_l PROTO :VARARG
+ENDIF
+_strnset PROTO :XPTR, :XWORD, :SIZE_T ;Duplicated
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strnset_s PROTO :XPTR, :SIZE_T, :XWORD, :SIZE_T ;Duplicated
+ENDIF
+_strrev PROTO :XPTR ;Duplicated
+_strset PROTO :XPTR, :XWORD ;Duplicated
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strset_s PROTO :XPTR, :SIZE_T, :XWORD ;Duplicated
+ENDIF
+_strtime PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strtime_s PROTO :QWORD, :QWORD
+    _strtod_l PROTO :VARARG
+ENDIF
+_strtoi64 PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strtoi64_l PROTO :VARARG
+    _strtol_l PROTO :VARARG
+ENDIF
+_strtoui64 PROTO :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strtoui64_l PROTO :VARARG
+    _strtoul_l PROTO :VARARG
+ENDIF
+_strupr PROTO :XPTR                     ;Duplicated in ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _strupr_l PROTO :VARARG
+    _strupr_s PROTO :VARARG
+    _strupr_s_l PROTO :VARARG
+    _strxfrm_l PROTO :VARARG
+ENDIF
+_swab PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _swprintf PROTO :XPTR, :SIZE_T, :XPTR, :VARARG ;Duplicated
+    _swprintf_c PROTO :VARARG
+    _swprintf_c_l PROTO :VARARG
+    _swprintf_p_l PROTO :VARARG
+    _swprintf_s_l PROTO :VARARG
+    _swscanf_l PROTO :VARARG
+    _swscanf_s_l PROTO :VARARG
+ENDIF
+_sys_errlist PROTO :VARARG
+_sys_nerr PROTO :VARARG
+_tell PROTO :VARARG
+_telli64 PROTO :VARARG
+_tempnam PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _tempnam_dbg PROTO :VARARG
+    _time32 PROTO :QWORD
+ENDIF
+_time64 PROTO :QWORD
+_timezone PROTO :VARARG
+_tolower PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _tolower_l PROTO :VARARG
+ENDIF
+_toupper PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _toupper_l PROTO :VARARG
+    _towlower_l PROTO :VARARG
+    _towupper_l PROTO :VARARG
+ENDIF
+_tzname PROTO :VARARG
+_tzset PROTO :VARARG
+_ui64toa PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ui64toa_s PROTO :QWORD, :QWORD, :QWORD, :QWORD ;Duplicated in _ntoskrnl.inc
+ENDIF
+_ui64tow  PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ui64tow_s PROTO :QWORD, :QWORD, :QWORD, :QWORD ;Duplicated in _ntoskrnl.inc
+ENDIF
+_ultoa PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ultoa_s PROTO :QWORD, :QWORD, :QWORD, :QWORD   ;Duplicated in _ntoskrnl.inc
+ENDIF
+_ultow PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _ultow_s PROTO :QWORD, :QWORD, :QWORD, :QWORD   ;Duplicated in _ntoskrnl.inc
+ENDIF
+_umask PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _umask_s PROTO :VARARG
+ENDIF
+_ungetch PROTO :VARARG
+_ungetwch PROTO :VARARG
+_unlink PROTO :VARARG
+IF (NTDDI_VERSION LE NTDDI_VISTA)
+    _unloaddll PROTO :VARARG
+ENDIF
+_unlock PROTO :VARARG
+_utime PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _utime32 PROTO :VARARG
+ENDIF
+_utime64 PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _vcprintf PROTO :VARARG
+    _vcprintf_l PROTO :VARARG
+    _vcprintf_p PROTO :VARARG
+    _vcprintf_p_l PROTO :VARARG
+    _vcprintf_s PROTO :VARARG
+    _vcprintf_s_l PROTO :VARARG
+    _vcwprintf PROTO :VARARG
+    _vcwprintf_l PROTO :VARARG
+    _vcwprintf_p PROTO :VARARG
+    _vcwprintf_p_l PROTO :VARARG
+    _vcwprintf_s PROTO :VARARG
+    _vcwprintf_s_l PROTO :VARARG
+    _vfprintf_l PROTO :VARARG
+    _vfprintf_p PROTO :VARARG
+    _vfprintf_p_l PROTO :VARARG
+    _vfprintf_s_l PROTO :VARARG
+    _vfwprintf_l PROTO :VARARG
+    _vfwprintf_p PROTO :VARARG
+    _vfwprintf_p_l PROTO :VARARG
+    _vfwprintf_s_l PROTO :VARARG
+    _vprintf_l PROTO :VARARG
+    _vprintf_p PROTO :VARARG
+    _vprintf_p_l PROTO :VARARG
+    _vprintf_s_l PROTO :VARARG
+ENDIF
+_vscprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _vscprintf_l PROTO :VARARG
+    _vscprintf_p_l PROTO :VARARG
+ENDIF
+_vscwprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _vscwprintf_l PROTO :VARARG
+    _vscwprintf_p_l PROTO :VARARG
+ENDIF
+_vsnprintf PROTO :XPTR, :SIZE_T, :XPTR, :VARARG ;Duplicated
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _vsnprintf_c PROTO :VARARG
+    _vsnprintf_c_l PROTO :VARARG
+    _vsnprintf_l PROTO :VARARG
+    _vsnprintf_s PROTO :XPTR, :SIZE_T, :SIZE_T, :XPTR, :VARARG ;Duplicated
+    _vsnprintf_s_l PROTO :VARARG
+ENDIF
+_vsnwprintf PROTO :XPTR, :SIZE_T, :XPTR, :VARARG ;Duplicated
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _vsnwprintf_l PROTO :VARARG
+    _vsnwprintf_s PROTO :XPTR, :SIZE_T, :SIZE_T, :XPTR, :VARARG ;Duplicated
+    _vsnwprintf_s_l PROTO :VARARG
+    _vsprintf_l PROTO :VARARG
+    _vsprintf_p PROTO :VARARG
+    _vsprintf_p_l PROTO :VARARG
+    _vsprintf_s_l PROTO :VARARG
+    _vswprintf PROTO :XPTR, :SIZE_T, :XPTR, :VARARG ;Duplicated
+    _vswprintf_c PROTO :VARARG
+    _vswprintf_c_l PROTO :VARARG
+    _vswprintf_l PROTO :VARARG
+    _vswprintf_p_l PROTO :VARARG
+    _vswprintf_s_l PROTO :VARARG
+    _vwprintf_l PROTO :VARARG
+    _vwprintf_p PROTO :VARARG
+    _vwprintf_p_l PROTO :VARARG
+    _vwprintf_s_l PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_WIN10)
+    _W_Getdays PROTO :VARARG
+    _W_Getmonths PROTO :VARARG
+    _W_Gettnames PROTO :VARARG
+ENDIF
+_waccess PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _waccess_s PROTO :QWORD, :QWORD
+ENDIF
+_wasctime PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wasctime_s PROTO :VARARG
+    _wassert PROTO :VARARG
+ENDIf
+_wchdir PROTO :QWORD
+_wchmod PROTO :QWORD, :QWORD
+_wcmdln PROTO :VARARG
+_wcreat PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcscoll_l PROTO :VARARG
+ENDIF
+_wcsdup PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcsdup_dbg PROTO :VARARG
+ENDIF
+_wcserror PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcserror_s PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_WIN10)
+    _Wcsftime PROTO :VARARG
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcsftime_l PROTO :VARARG
+ENDIF
+_wcsicmp PROTO :XPTR, :XPTR ;Duplicated
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcsicmp_l PROTO :VARARG
+ENDIF
+_wcsicoll PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcsicoll_l PROTO :VARARG
+ENDIF
+_wcslwr PROTO :XPTR                                     ;Duplicated in _ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcslwr_l PROTO :VARARG
+    _wcslwr_s PROTO :VARARG
+    _wcslwr_s_l PROTO :VARARG
+ENDIF
+_wcsncoll PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcsncoll_l PROTO :VARARG
+ENDIF
+_wcsnicmp PROTO :XPTR, :XPTR, :SIZE_T ;Duplicated
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcsnicmp_l PROTO :VARARG
+ENDIF
+_wcsnicoll PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcsnicoll_l PROTO :VARARG
+ENDIF
+_wcsnset PROTO :XPTR, :XWORD, :SIZE_T ;Duplicated
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcsnset_s PROTO :XPTR, :SIZE_T, :XWORD, :SIZE_T ;Duplicated
+ENDIF
+_wcsrev PROTO :XPTR ;Duplicated
+_wcsset PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcsset_s PROTO :XPTR, :SIZE_T, :XWORD ;Duplicated
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_WIN8)
+    _wcstod_l PROTO :VARARG
+ENDIF
+_wcstoi64 PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcstoi64_l PROTO :VARARG
+    _wcstol_l PROTO :VARARG
+    _wcstombs_l PROTO :VARARG
+    _wcstombs_s_l PROTO :VARARG
+ENDIF
+_wcstoui64 PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcstoui64_l PROTO :VARARG
+    _wcstoul_l PROTO :VARARG
+ENDIF
+_wcsupr PROTO :XPTR                                     ;Duplicated in _ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wcsupr_l PROTO :VARARG
+    _wcsupr_s PROTO :VARARG
+    _wcsupr_s_l PROTO :VARARG
+    _wcsxfrm_l PROTO :VARARG
+ENDIF
+_wctime PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wctime32 PROTO :QWORD
+    _wctime32_s PROTO :QWORD, :QWORD, :QWORD
+ENDIF
+_wctime64 PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wctime64_s PROTO :QWORD, :QWORD, :QWORD
+    _wctomb_l PROTO :VARARG
+    _wctomb_s_l PROTO :VARARG
+ENDIF
+_wctype PROTO :VARARG
+_wenviron PROTO :VARARG
+_wexecl PROTO :VARARG
+_wexecle PROTO :VARARG
+_wexeclp PROTO :VARARG
+_wexeclpe PROTO :VARARG
+_wexecv PROTO :VARARG
+_wexecve PROTO :VARARG
+_wexecvp PROTO :VARARG
+_wexecvpe PROTO :VARARG
+_wfdopen PROTO :VARARG
+_wfindfirst PROTO :VARARG
+_wfindfirst64 PROTO :VARARG
+_wfindfirsti64 PROTO :VARARG
+_wfindnext PROTO :VARARG
+_wfindnext64 PROTO :VARARG
+_wfindnexti64 PROTO :VARARG
+_wfopen PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wfopen_s PROTO :VARARG
+ENDIF
+_wfreopen PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wfreopen_s PROTO :VARARG
+ENDIF
+_wfsopen PROTO :VARARG
+_wfullpath PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wfullpath_dbg PROTO :VARARG
+ENDIF
+_wgetcwd PROTO :QWORD, :QWORD
+_wgetdcwd PROTO :VARARG
+_wgetenv PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wgetenv_s PROTO :VARARG
+ENDIF
+_winmajor PROTO :VARARG
+_winminor PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _winput_s PROTO :VARARG
+ENDIF
+_winver PROTO :VARARG
+_wmakepath PROTO :XPTR, :XPTR, :XPTR, :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wmakepath_s PROTO :XPTR, :SIZE_T, :XPTR, :XPTR, :XPTR, :XPTR    ;Duplicated in _ntoskrnl.inc
+ENDIF
+_wmkdir PROTO :VARARG
+_wmktemp PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wmktemp_s PROTO :VARARG
+ENDIF
+_wopen PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _woutput_s PROTO :VARARG
+ENDIF
+_wperror PROTO :VARARG
+_wpgmptr PROTO :VARARG
+_wpopen PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wprintf_l PROTO :VARARG
+    _wprintf_p PROTO :VARARG
+    _wprintf_p_l PROTO :VARARG
+    _wprintf_s_l PROTO :VARARG
+ENDIF
+_wputenv PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wputenv_s PROTO :VARARG
+ENDIF
+_wremove PROTO :QWORD
+_wrename PROTO :QWORD, :QWORD
+_write PROTO :VARARG
+_wrmdir PROTO :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wscanf_l PROTO :VARARG
+    _wscanf_s_l PROTO :VARARG
+ENDIF
+_wsearchenv PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wsearchenv_s PROTO :VARARG
+ENDIF
+_wsetlocale PROTO :VARARG
+_wsopen PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wsopen_s PROTO :VARARG
+ENDIF
+_wspawnl PROTO :VARARG
+_wspawnle PROTO :VARARG
+_wspawnlp PROTO :VARARG
+_wspawnlpe PROTO :VARARG
+_wspawnv PROTO :VARARG
+_wspawnve PROTO :VARARG
+_wspawnvp PROTO :VARARG
+_wspawnvpe PROTO :VARARG
+_wsplitpath PROTO :QWORD, :QWORD, :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wsplitpath_s PROTO :XPTR, :XPTR, :SIZE_T, :XPTR, :SIZE_T, :XPTR, :SIZE_T, :XPTR, :SIZE_T ;Duplicated
+ENDIF
+_wstat PROTO :QWORD, :QWORD
+_wstat64 PROTO :QWORD, :QWORD
+_wstati64 PROTO :QWORD, :QWORD
+_wstrdate PROTO :QWORD
+_wstrdate_s PROTO :QWORD, :QWORD
+_wstrtime PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wstrtime_s PROTO :QWORD, :QWORD
+ENDIF
+_wsystem PROTO :VARARG
+_wtempnam PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wtempnam_dbg PROTO :VARARG
+ENDIF
+_wtmpnam PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wtmpnam_s PROTO :VARARG
+ENDIF
+_wtof PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wtof_l PROTO :VARARG
+ENDIF
+_wtoi PROTO :QWORD ;Duplicated in _ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wtoi_l PROTO :VARARG
+ENDIF
+_wtoi64 PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wtoi64_l PROTO :VARARG
+ENDIF
+_wtol PROTO :QWORD ;Duplicated in _ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wtol_l PROTO :VARARG
+ENDIF
+_wunlink PROTO :VARARG
+_wutime PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    _wutime32 PROTO :VARARG
+ENDIF
+_wutime64 PROTO :VARARG
+_XcptFilter PROTO :VARARG
+_y0 PROTO :REAL8
+_y1 PROTO :REAL8
+_yn PROTO :QWORD, :REAL8
+abort PROTO :VARARG
+abs PROTO :QWORD
+acos PROTO :QWORD
+acosf PROTO :VARARG
+asctime PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    asctime_s PROTO :VARARG
+ENDIF
+asin PROTO :QWORD
+asinf PROTO :VARARG
+atan PROTO :QWORD
+atan2 PROTO :VARARG
+atan2f PROTO :VARARG
+atanf PROTO :VARARG
+atexit PROTO :VARARG
+atof PROTO :QWORD
+atoi PROTO :QWORD ;Duplicated in _ntoskrnl.inc
+atol PROTO :QWORD ;Duplicated in _ntoskrnl.inc
+bsearch PROTO :XPTR, :XPTR,D :XPTR, :XPTR, :XPTR ;Duplicated
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    bsearch_s PROTO :XPTR, :XPTR, :XPTR, :XPTR, :XPTR ;Duplicated
+    btowc PROTO :VARARG
+ENDIF
+calloc PROTO :QWORD, :QWORD
+ceil PROTO :QWORD
+ceilf PROTO :VARARG
+clearerr PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    clearerr_s PROTO :VARARG
+ENDIF
+clock PROTO
+cos PROTO :QWORD
+cosf PROTO :VARARG
+cosh PROTO :QWORD
+coshf PROTO :VARARG
+ctime PROTO :QWORD
+difftime PROTO :QWORD, :QWORD
+;div PROTO :QWORD, :QWORD   ;Name conflicts
+exit PROTO :VARARG
+exp PROTO :QWORD
+expf PROTO :VARARG
+;fabs PROTO :VARARG         ;Name conflicts
+fclose PROTO :QWORD
+feof PROTO :VARARG
+ferror PROTO :VARARG
+fflush PROTO :VARARG
+fgetc PROTO :VARARG
+fgetpos PROTO :VARARG
+fgets PROTO :VARARG
+fgetwc PROTO :VARARG
+fgetws PROTO :VARARG
+floor PROTO :QWORD
+floorf PROTO :QWORD
+fmod PROTO :VARARG
+fmodf PROTO :VARARG
+fopen Proto :QWord, :QWord
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    fopen_s PROTO :VARARG
+ENDIF
+fprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    fprintf_s PROTO :VARARG
+ENDIF
+fputc PROTO :VARARG
+fputs PROTO :VARARG
+fputwc PROTO :VARARG
+fputws PROTO :VARARG
+fread Proto :QWord, :QWord, :QWord, :QWord
+free PROTO :QWORD
+freopen PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    freopen_s PROTO :VARARG
+ENDIF
+frexp PROTO :VARARG
+fscanf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    fscanf_s PROTO :VARARG
+ENDIF
+fseek PROTO :VARARG
+fsetpos PROTO :VARARG
+ftell PROTO :VARARG
+fwprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    fwprintf_s PROTO :VARARG
+ENDIF
+fwrite PROTO :VARARG
+fwscanf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    fwscanf_s PROTO :VARARG
+ENDIF
+getc PROTO :VARARG
+getchar PROTO :VARARG
+getenv PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    getenv_s PROTO :QWORD, :QWORD, :QWORD, :QWORD
+ENDIF
+gets PROTO :VARARG
+getwc PROTO :VARARG
+getwchar PROTO :VARARG
+gmtime PROTO :VARARG
+is_wctype PROTO :VARARG
+isalnum PROTO :XWORD
+isalpha PROTO :XWORD
+iscntrl PROTO :XWORD
+isdigit PROTO :XWORD                  ;Duplicated in _ntoskrnl.inc
+isgraph PROTO :QWORD
+isleadbyte PROTO :QWORD
+islower PROTO :XWORD                  ;Duplicated in _ntoskrnl.inc
+isprint PROTO :XWORD                  ;Duplicated in _ntoskrnl.inc
+ispunct PROTO :XWORD
+isspace PROTO :XWORD                  ;Duplicated in _ntoskrnl.inc
+isupper PROTO :XWORD                  ;Duplicated in _ntoskrnl.inc
+iswalnum PROTO :XWORD
+iswalpha PROTO :XWORD
+iswascii PROTO :VARARG
+iswcntrl PROTO :XWORD
+iswctype PROTO :VARARG
+iswdigit PROTO :XWORD
+iswgraph PROTO :QWORD
+iswlower PROTO :QWORD
+iswprint PROTO :QWORD
+iswpunct PROTO :XWORD
+iswspace PROTO :QWORD
+iswupper PROTO :QWORD
+iswxdigit PROTO :VARARG
+isxdigit PROTO :XWORD ;Duplicated
+labs PROTO :QWORD
+ldexp PROTO :QWORD, :QWORD
+ldiv PROTO :QWORD, :QWORD
+localeconv PROTO :VARARG
+localtime PROTO :QWORD
+log PROTO :QWORD
+log10 PROTO :QWORD
+log10f PROTO :VARARG
+logf PROTO :VARARG
+longjmp PROTO :XPTR, :XWORD ;Duplicated
+malloc PROTO :QWORD
+mblen PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    mbrlen PROTO :VARARG
+    mbrtowc PROTO :VARARG
+    mbsdup_dbg PROTO :VARARG
+    mbsrtowcs PROTO :VARARG
+    mbsrtowcs_s PROTO :VARARG
+ENDIF
+mbstowcs PROTO :XPTR, :XPTR, :SIZE_T ;Duplicated
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    mbstowcs_s PROTO :VARARG
+ENDIF
+mbtowc PROTO :XPTR, :XPTR, :SIZE_T ;Duplicated
+memchr PROTO :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+memcmp PROTO :XPTR, :XPTR, :SIZE_T ;Duplicated
+memcpy PROTO :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    memcpy_s PROTO :QWORD, :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+ENDIF
+IFNDEF memmove
+    memmove PROTO :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    memmove_s PROTO :QWORD, :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+ENDIF
+IFNDEF memset
+    memset PROTO :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+ENDIF
+mktime PROTO :VARARG
+modf PROTO :QWORD, :QWORD
+modff PROTO :QWORD, :QWORD
+perror PROTO :VARARG
+pow PROTO :QWORD, :QWORD
+powf PROTO :QWORD, :QWORD
+printf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    printf_s PROTO :VARARG
+ENDIF
+putc PROTO :VARARG
+putchar PROTO :VARARG
+puts PROTO :VARARG
+putwc PROTO :VARARG
+putwchar PROTO :VARARG
+qsort PROTO :PVOID, :SIZE_T, :SIZE_T, :XPTR ;Duplicated
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    qsort_s PROTO :VARARG
+ENDIF
+raise PROTO :VARARG
+rand PROTO                          ;Duplicated in ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    rand_s PROTO :QWORD
+ENDIF
+realloc PROTO :QWORD, :QWORD
+remove PROTO :QWORD
+rename PROTO :VARARG
+rewind PROTO :VARARG
+scanf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    scanf_s PROTO :VARARG
+ENDIF
+setbuf PROTO :VARARG
+setjmp PROTO :VARARG
+setlocale PROTO :VARARG
+setvbuf PROTO :VARARG
+signal PROTO :VARARG
+sin PROTO :QWORD
+sinf PROTO :VARARG
+sinh PROTO :QWORD
+sinhf PROTO :VARARG
+sprintf PROTO :QWORD, :QWORD, :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    sprintf_s PROTO :QWORD, :QWORD, :QWORD, :VARARG
+ENDIF
+sqrt PROTO :QWORD
+sqrtf PROTO :VARARG
+srand PROTO :QWORD
+sscanf PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    sscanf_s PROTO :VARARG
+ENDIF
+strcat PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    strcat_s PROTO :QWORD, :QWORD, :QWORD
+ENDIF
+strchr PROTO :QWORD, :QWORD
+strcmp PROTO :QWORD, :QWORD
+strcoll PROTO :QWORD, :QWORD
+strcpy PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    strcpy_s PROTO :QWORD, :QWORD, :QWORD
+ENDIF
+strcspn PROTO :QWORD, :QWORD
+strerror PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    strerror_s PROTO :VARARG
+ENDIF
+strftime PROTO :QWORD, :QWORD, :QWORD, :QWORD
+strlen PROTO :QWORD
+strncat PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    strncat_s PROTO :QWORD, :QWORD, :QWORD, :QWORD
+ENDIF
+strncmp PROTO :QWORD, :QWORD, :QWORD
+strncpy PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    strncpy_s PROTO :QWORD, :QWORD, :QWORD, :QWORD
+ENDIF
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    strnlen PROTO :QWORD, :QWORD
+ENDIF
+strpbrk PROTO :QWORD, :QWORD
+strrchr PROTO :QWORD, :QWORD
+strspn PROTO :QWORD, :QWORD
+strstr PROTO :QWORD, :QWORD
+strtod PROTO :QWORD, :QWORD
+strtok PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    strtok_s PROTO :QWORD, :QWORD, :QWORD
+ENDIF
+strtol PROTO :QWORD, :QWORD, :QWORD
+strtoul PROTO :QWORD, :QWORD, :QWORD
+strxfrm PROTO :VARARG
+swprintf PROTO :QWORD, :QWORD, :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    swprintf_s PROTO :QWORD, :QWORD, :QWORD, :VARARG
+ENDIF
+swscanf PROTO :QWORD, :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    swscanf_s PROTO :VARARG
+ENDIF
+system PROTO :VARARG
+tan PROTO :QWORD
+tanf PROTO :VARARG
+tanh PROTO :QWORD
+IF (NTDDI_VERSION GE NTDDI_WIN7)
+    tanhf PROTO :VARARG
+ENDIF
+time PROTO :QWORD
+tmpfile PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    tmpfile_s PROTO :VARARG
+ENDIF
+tmpnam PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    tmpnam_s PROTO :VARARG
+ENDIF
+tolower PROTO :XWORD ;Duplicated
+toupper PROTO :XWORD ;Duplicated
+towlower PROTO :XWORD ;Duplicated
+towupper PROTO :XWORD ;Duplicated
+ungetc PROTO :VARARG
+ungetwc PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    utime PROTO :VARARG
+ENDIF
+vfprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    vfprintf_s PROTO :VARARG
+ENDIF
+vfwprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    vfwprintf_s PROTO :VARARG
+ENDIF
+vprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    vprintf_s PROTO :VARARG
+    vsnprintf PROTO :VARARG
+ENDIF
+vsprintf PROTO :XPTR, :XPTR, :VARARG                ;Duplicated in ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    vsprintf_s PROTO :XPTR, :SIZE_T, :XPTR, :VARARG     ;Duplicated in ntoskrnl.inc
+ENDIF
+vswprintf PROTO :XPTR, :XPTR, :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    vswprintf_s PROTO :XPTR, :SIZE_T, :XPTR, :VARARG    ;Duplicated in ntoskrnl.inc
+ENDIF
+vwprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    vwprintf_s PROTO :VARARG
+    wcrtomb PROTO :VARARG
+    wcrtomb_s PROTO :VARARG
+ENDIF
+wcscat PROTO :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    wcscat_s PROTO :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+ENDIF
+wcschr PROTO :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+wcscmp PROTO :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+wcscoll PROTO :QWORD, :QWORD
+wcscpy PROTO :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    wcscpy_s PROTO :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+ENDIF
+wcscspn PROTO :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+wcsftime PROTO :QWORD, :QWORD, :QWORD, :QWORD
+wcslen PROTO :QWORD ;Duplicated in _ntoskrnl.inc
+wcsncat PROTO :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    wcsncat_s PROTO :QWORD, :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+ENDIF
+wcsncmp PROTO :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+wcsncpy PROTO :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    wcsncpy_s PROTO :QWORD, :QWORD, :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+    wcsnlen PROTO :QWORD, :QWORD                    ;Duplicated in ntoskrnl.inc
+ENDIF
+wcspbrk PROTO :QWORD, :QWORD
+wcsrchr PROTO :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    wcsrtombs PROTO :VARARG
+    wcsrtombs_s PROTO :VARARG
+ENDIF
+wcsspn PROTO :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+wcsstr PROTO :QWORD, :QWORD ;Duplicated in ntoskrnl.inc
+wcstod PROTO :QWORD, :QWORD
+wcstok PROTO :QWORD, :QWORD
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    wcstok_s PROTO :QWORD, :QWORD, :QWORD
+ENDIF
+wcstol PROTO :QWORD, :QWORD, :QWORD
+wcstombs PROTO :XPTR, :XPTR, :SIZE_T ;Duplicated in ntoskrnl.inc
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    wcstombs_s PROTO :VARARG
+ENDIF
+wcstoul PROTO :QWORD, :QWORD, :QWORD   ;Duplicated in ntoskrnl.inc
+wcsxfrm PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    wctob PROTO :QWORD
+ENDIF
+wctomb PROTO :XPTR, :XWORD ;Duplicated
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    wctomb_s PROTO :VARARG
+ENDIF
+wprintf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    wprintf_s PROTO :VARARG
+ENDIF
+wscanf PROTO :VARARG
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    wscanf_s PROTO :VARARG
+ENDIF
+
+IFDEF APP_UNICODE
+    __crtCompareString Equ <__crtCompareStringW>
+    __crtGetLocaleInfo Equ <__crtGetLocaleInfoW>
+    __crtGetStringType Equ <__crtGetStringTypeW>
+    __crtLCMapString EQU <__crtLCMapStringW>
+ELSE
+    __crtCompareString Equ <__crtCompareStringA>
+    __crtLCMapString Equ <__crtLCMapStringA>
+ENDIF
+
+ENDIF ;MSVCRT_INC

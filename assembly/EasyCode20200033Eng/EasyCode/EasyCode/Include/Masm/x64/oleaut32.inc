@@ -1,0 +1,634 @@
+;=======================================================;
+;                                                       ;
+;  oleaut32.inc for Easy Code 2.0 64-bit Masm projects  ;
+;                   (version 1.0.2)                     ;
+;                                                       ;
+;           Copyright © Ramon Sala 2016-2018            ;
+;                                                       ;
+;=======================================================;
+
+IFNDEF OLEAUT32_INC
+OLEAUT32_INC       EQU        1
+
+
+LOAD_TLB_AS_32BIT                                       EQU     020H
+LOAD_TLB_AS_64BIT                                       EQU     040H
+MASK_TO_RESET_TLB_BITS                                  EQU     NOT (LOAD_TLB_AS_32BIT OR LOAD_TLB_AS_64BIT)
+
+STDOLE_MAJORVERNUM                                      EQU     01H
+STDOLE_MINORVERNUM                                      EQU     00H
+STDOLE_LCID                                             EQU     00H
+
+STDOLE2_MAJORVERNUM                                     EQU     02H
+STDOLE2_MINORVERNUM                                     EQU     00H
+STDOLE2_LCID                                            EQU     00H
+
+VARIANT_NOVALUEPROP                                     EQU     001H
+VARIANT_ALPHABOOL                                       EQU     002H
+VARIANT_NOUSEROVERRIDE                                  EQU     004H
+VARIANT_CALENDAR_HIJRI                                  EQU     008H
+VARIANT_LOCALBOOL                                       EQU     010H
+VARIANT_CALENDAR_THAI                                   EQU     020H
+VARIANT_CALENDAR_GREGORIAN                              EQU     040H
+VARIANT_USE_NLS                                         EQU     080H
+
+VAR_CALENDAR_THAI                                       EQU     000000080H
+VAR_CALENDAR_GREGORIAN                                  EQU     000000100H
+VAR_CALENDAR_HIJRI                                      EQU     000000008H
+
+VAR_TIMEVALUEONLY                                       EQU     000000001H
+VAR_DATEVALUEONLY                                       EQU     000000002H
+VAR_VALIDDATE                                           EQU     000000004H
+VAR_LOCALBOOL                                           EQU     000000010H
+VAR_FORMAT_NOSUBSTITUTE                                 EQU     000000020H
+VAR_FOURDIGITYEARS                                      EQU     000000040H
+
+IFNDEF LOCALE_USE_NLS
+    LOCALE_USE_NLS                                      EQU     010000000H
+ENDIF
+
+NUMPRS_LEADING_WHITE                                    EQU     0001H
+NUMPRS_TRAILING_WHITE                                   EQU     0002H
+NUMPRS_LEADING_PLUS                                     EQU     0004H
+NUMPRS_TRAILING_PLUS                                    EQU     0008H
+NUMPRS_LEADING_MINUS                                    EQU     0010H
+NUMPRS_TRAILING_MINUS                                   EQU     0020H
+NUMPRS_HEX_OCT                                          EQU     0040H
+NUMPRS_PARENS                                           EQU     0080H
+NUMPRS_DECIMAL                                          EQU     0100H
+NUMPRS_THOUSANDS                                        EQU     0200H
+NUMPRS_CURRENCY                                         EQU     0400H
+NUMPRS_EXPONENT                                         EQU     0800H
+NUMPRS_USE_ALL                                          EQU     1000H
+NUMPRS_STD                                              EQU     1FFFH
+NUMPRS_NEG                                              EQU     10000H
+NUMPRS_INEXACT                                          EQU     20000H
+
+VARCMP_LT                                               EQU     0
+VARCMP_EQ                                               EQU     1
+VARCMP_GT                                               EQU     2
+VARCMP_NULL                                             EQU     3
+
+VT_RESERVED                                             EQU     08000H
+VT_HARDTYPE                                             EQU     VT_RESERVED
+
+DISPID_UNKNOWN                                          EQU     (-1)
+
+MEMBERID_NIL                                            EQU     DISPID_UNKNOWN
+ID_DEFAULTINST                                          EQU     (-2)
+
+DISPATCH_METHOD                                         EQU     01H
+DISPATCH_PROPERTYGET                                    EQU     02H
+DISPATCH_PROPERTYPUT                                    EQU     04H
+DISPATCH_PROPERTYPUTREF                                 EQU     08H
+
+ACTIVEOBJECT_STRONG                                     EQU     00H
+ACTIVEOBJECT_WEAK                                       EQU     01H
+
+
+REGKIND_DEFAULT                                         EQU     0
+REGKIND_REGISTER                                        EQU     1
+REGKIND_NONE                                            EQU     2
+
+
+;======================================== Structures ======================================;
+NUMPARSE STRUCT ALIGNMODE
+    cDig       DD ?
+    dwInFlags  DD ?
+    dwOutFlags DD ?
+    cchUsed    DD ?
+    nBaseShift DD ?
+    nPwr10     DD ?
+NUMPARSE ENDS
+
+UDATE STRUCT ALIGNMODE
+    _st SYSTEMTIME <>
+    wDayOfYear DW ?
+UDATE ENDS
+
+PARAMDATA STRUCT ALIGNMODE
+    szName     XPTR ?
+    vt         VARTYPE ?
+PARAMDATA ENDS
+
+METHODDATA STRUCT ALIGNMODE
+    szName     XPTR ?
+    ppdata     XPTR ?
+    dispid     DD   ?
+    iMeth      DD   ?
+    cc         DD   ?
+    cArgs      DD   ?
+    wFlags     DW   ?
+    vtReturn   DW   ?
+METHODDATA ENDS
+
+INTERFACEDATA STRUCT ALIGNMODE
+    pmethdata  XPTR ?
+    cMembers   DD   ?
+INTERFACEDATA ENDS
+
+
+;======================================== Functions =======================================;
+BSTR_UserFree PROTO :XWORD, :XWORD
+BSTR_UserFree64 PROTO :XPTR, :XPTR
+BSTR_UserMarshal PROTO :XWORD, :XWORD, :XWORD
+BSTR_UserMarshal64 PROTO :XPTR, :XPTR, :XPTR
+BSTR_UserSize PROTO :XWORD, :XWORD, :XWORD
+BSTR_UserSize64 PROTO :XPTR, :XWORD, :XPTR
+BSTR_UserUnmarshal PROTO :XWORD, :XWORD, :XWORD
+BSTR_UserUnmarshal64 PROTO :XPTR, :XPTR, :XPTR
+BstrFromVector PROTO :XWORD, :XWORD
+ClearCustData PROTO :XWORD
+CreateDispTypeInfo PROTO :XWORD, :XWORD, :XWORD
+CreateErrorInfo PROTO :XWORD
+CreateStdDispatch PROTO :XWORD, :XWORD, :XWORD, :XWORD
+CreateTypeLib PROTO :XWORD, :XWORD, :XWORD
+CreateTypeLib2 PROTO :XWORD, :XWORD, :XWORD
+DispCallFunc PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+DispGetIDsOfNames PROTO :XWORD, :XWORD, :XWORD, :XWORD
+DispGetParam PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+DispInvoke PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+IFNDEF DllCanUnloadNow
+    DllCanUnloadNow PROTO
+ENDIF
+IFNDEF DllGetClassObject
+    DllGetClassObject PROTO :XWORD, :XPTR, :XPTR
+ENDIF
+IFNDEF DllRegisterServer
+    DllRegisterServer PROTO
+ENDIF
+IFNDEF DllUnregisterServer
+    DllUnregisterServer PROTO
+ENDIF
+DosDateTimeToVariantTime PROTO :XWORD, :XWORD, :XWORD
+GetActiveObject PROTO :XWORD, :XWORD, :XWORD
+GetAltMonthNames PROTO :XWORD, :XWORD
+IFNDEF GetErrorInfo
+	GetErrorInfo PROTO :XWORD, :XWORD
+ENDIF
+GetRecordInfoFromGuids PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+GetRecordInfoFromTypeInfo PROTO :XWORD, :XWORD
+GetVarConversionLocaleSetting PROTO :XWORD
+IF (NTDDI_VERSION GE NTDDI_WIN8)
+    HWND_UserFree PROTO :XPTR, :XPTR
+    HWND_UserFree64 PROTO :XPTR, :XPTR
+    HWND_UserMarshal PROTO :XPTR, :XPTR, :XPTR
+    HWND_UserMarshal64 PROTO :XPTR, :XPTR, :XPTR
+    HWND_UserSize PROTO :XPTR, :XWORD, :XPTR
+    HWND_UserSize64 PROTO :XPTR, :XWORD, :XPTR
+    HWND_UserUnmarshal PROTO :XPTR, :XPTR, :XPTR
+    HWND_UserUnmarshal64 PROTO :XPTR, :XPTR, :XPTR
+ENDIF
+LHashValOfNameSys PROTO :XWORD, :XWORD, :XPTR
+LHashValOfNameSysA PROTO :XWORD, :XWORD, :XPTR
+LoadRegTypeLib PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XPTR
+LoadTypeLib PROTO :XPTR, :XPTR
+LoadTypeLibEx PROTO :XPTR, :XWORD, :XPTR
+LPSAFEARRAY_Marshal PROTO :XWORD, :XWORD, :XWORD, :XWORD
+LPSAFEARRAY_Size PROTO :XWORD, :XWORD, :XWORD, :XWORD
+LPSAFEARRAY_Unmarshal PROTO :XWORD, :XWORD, :XWORD, :XWORD
+LPSAFEARRAY_UserFree PROTO :XWORD, :XWORD
+LPSAFEARRAY_UserFree64 PROTO :XPTR, :XPTR
+LPSAFEARRAY_UserMarshal PROTO :XWORD, :XWORD, :XWORD
+LPSAFEARRAY_UserMarshal64 PROTO :XPTR, :XPTR, :XPTR
+LPSAFEARRAY_UserSize PROTO :XWORD, :XWORD, :XWORD
+LPSAFEARRAY_UserSize64 PROTO :XPTR, :XWORD, :XPTR
+LPSAFEARRAY_UserUnmarshal PROTO :XWORD, :XWORD, :XWORD
+LPSAFEARRAY_UserUnmarshal64 PROTO :XPTR, :XPTR, :XPTR
+OaBuildVersion PROTO
+OACreateTypeLib2 PROTO :XWORD, :XPTR, :XPTR
+IF (NTDDI_VERSION GE NTDDI_VISTA)
+    OaEnablePerUserTLibRegistration PROTO
+ENDIF
+OleCreateFontIndirect PROTO :XWORD, :XWORD, :XWORD
+OleCreatePictureIndirect PROTO :XWORD, :XWORD, :XWORD, :XWORD
+OleCreatePropertyFrame PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+OleCreatePropertyFrameIndirect PROTO :XWORD
+OleIconToCursor PROTO :XWORD, :XWORD
+OleLoadPicture PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+OleLoadPictureEx PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+OleLoadPictureFile PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+OleLoadPictureFileEx PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+OleLoadPicturePath PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+OleSavePictureFile PROTO :XWORD, :XWORD
+OleTranslateColor PROTO :XWORD, :XWORD, :XWORD
+QueryPathOfRegTypeLib PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+RegisterActiveObject PROTO :XWORD, :XWORD, :XWORD, :XWORD
+RegisterTypeLib PROTO :XWORD, :XWORD, :XWORD
+RegisterTypeLibForUser PROTO :XWORD, :XWORD, :XWORD
+RevokeActiveObject PROTO :XWORD, :XWORD
+SafeArrayAccessData PROTO :XWORD, :XWORD
+SafeArrayAllocData PROTO :XWORD
+SafeArrayAllocDescriptor PROTO :XWORD, :XWORD
+SafeArrayAllocDescriptorEx PROTO :XWORD, :XWORD, :XWORD
+SafeArrayCopy PROTO :XWORD, :XWORD
+SafeArrayCopyData PROTO :XWORD, :XWORD
+SafeArrayCreate PROTO :XWORD, :XWORD, :XWORD
+SafeArrayCreateEx PROTO :XWORD, :XWORD, :XWORD, :XWORD
+SafeArrayCreateVector PROTO :XWORD, :XWORD, :XWORD
+SafeArrayCreateVectorEx PROTO :XWORD, :XWORD, :XWORD, :XWORD
+SafeArrayDestroy PROTO :XWORD
+SafeArrayDestroyData PROTO :XWORD
+SafeArrayDestroyDescriptor PROTO :XWORD
+SafeArrayGetDim PROTO :XWORD
+SafeArrayGetElement PROTO :XWORD, :XWORD, :XWORD
+SafeArrayGetElemsize PROTO :XWORD
+SafeArrayGetIID PROTO :XWORD, :XWORD
+SafeArrayGetLBound PROTO :XWORD, :XWORD, :XWORD
+SafeArrayGetRecordInfo PROTO :XWORD, :XWORD
+SafeArrayGetUBound PROTO :XWORD, :XWORD, :XWORD
+SafeArrayGetVartype PROTO :XWORD, :XWORD
+SafeArrayLock PROTO :XWORD
+SafeArrayPtrOfIndex PROTO :XWORD, :XWORD, :XWORD
+SafeArrayPutElement PROTO :XWORD, :XWORD, :XWORD
+SafeArrayRedim PROTO :XWORD, :XWORD
+SafeArraySetIID PROTO :XWORD, :XWORD
+SafeArraySetRecordInfo PROTO :XWORD, :XWORD
+SafeArrayUnaccessData PROTO :XWORD
+SafeArrayUnlock PROTO :XWORD
+IFNDEF SetErrorInfo
+	SetErrorInfo PROTO :XWORD, :XWORD
+ENDIF
+SetOaNoCache PROTO :VARARG
+SetVarConversionLocaleSetting PROTO :XWORD
+SysAllocString PROTO :XWORD
+SysAllocStringByteLen PROTO :XWORD, :XWORD
+SysAllocStringLen PROTO :XWORD, :XWORD
+SysFreeString PROTO :XWORD
+SysReAllocString PROTO :XWORD, :XWORD
+SysReAllocStringLen PROTO :XWORD, :XWORD, :XWORD
+SysStringByteLen PROTO :XWORD
+SysStringLen PROTO :XWORD
+SystemTimeToVariantTime PROTO :XWORD, :XWORD
+UnRegisterTypeLib PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+UnRegisterTypeLibForUser PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarAbs PROTO :XWORD, :XWORD
+VarAdd PROTO :XWORD, :XWORD, :XWORD
+VarAnd PROTO :XWORD, :XWORD, :XWORD
+VarBoolFromCy PROTO :XWORD, :XWORD, :XWORD
+VarBoolFromDate PROTO :XWORD, :XWORD, :XWORD
+VarBoolFromDec PROTO :XWORD, :XWORD
+VarBoolFromDisp PROTO :XWORD, :XWORD, :XWORD
+VarBoolFromI1 PROTO :XWORD, :XWORD
+VarBoolFromI2 PROTO :XWORD, :XWORD
+VarBoolFromI4 PROTO :XWORD, :XWORD
+VarBoolFromI8 PROTO :XWORD, :XWORD, :XWORD
+VarBoolFromR4 PROTO :XWORD, :XWORD
+VarBoolFromR8 PROTO :XWORD, :XWORD, :XWORD
+VarBoolFromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarBoolFromUI1 PROTO :XWORD, :XWORD
+VarBoolFromUI2 PROTO :XWORD, :XWORD
+VarBoolFromUI4 PROTO :XWORD, :XWORD
+VarBoolFromUI8 PROTO :XWORD, :XWORD, :XWORD
+VarBstrCat PROTO :XWORD, :XWORD, :XWORD
+VarBstrCmp PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromBool PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromCy PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromDate PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromDec PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromDisp PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromI1 PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromI2 PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromI4 PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromI8 PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromR4 PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromR8 PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromUI1 PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromUI2 PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromUI4 PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarBstrFromUI8 PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarCat PROTO :XWORD, :XWORD, :XWORD
+VarCmp PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarCyAbs PROTO :XWORD, :XWORD, :XWORD
+VarCyAdd PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarCyCmp PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarCyCmpR8 PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarCyFix PROTO :XWORD, :XWORD, :XWORD
+VarCyFromBool PROTO :XWORD, :XWORD
+VarCyFromDate PROTO :XWORD, :XWORD, :XWORD
+VarCyFromDec PROTO :XWORD, :XWORD
+VarCyFromDisp PROTO :XWORD, :XWORD, :XWORD
+VarCyFromI1 PROTO :XWORD, :XWORD
+VarCyFromI2 PROTO :XWORD, :XWORD
+VarCyFromI4 PROTO :XWORD, :XWORD
+VarCyFromI8 PROTO :XWORD, :XWORD, :XWORD
+VarCyFromR4 PROTO :XWORD, :XWORD
+VarCyFromR8 PROTO :XWORD, :XWORD, :XWORD
+VarCyFromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarCyFromUI1 PROTO :XWORD, :XWORD
+VarCyFromUI2 PROTO :XWORD, :XWORD
+VarCyFromUI4 PROTO :XWORD, :XWORD
+VarCyFromUI8 PROTO :XWORD, :XWORD, :XWORD
+VarCyInt PROTO :XWORD, :XWORD, :XWORD
+VarCyMul PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarCyMulI4 PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarCyMulI8 PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarCyNeg PROTO :XWORD, :XWORD, :XWORD
+VarCyRound PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarCySub PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarDateFromBool PROTO :XWORD, :XWORD
+VarDateFromCy PROTO :XWORD, :XWORD, :XWORD
+VarDateFromDec PROTO :XWORD, :XWORD
+VarDateFromDisp PROTO :XWORD, :XWORD, :XWORD
+VarDateFromI1 PROTO :XWORD, :XWORD
+VarDateFromI2 PROTO :XWORD, :XWORD
+VarDateFromI4 PROTO :XWORD, :XWORD
+VarDateFromI8 PROTO :XWORD, :XWORD, :XWORD
+VarDateFromR4 PROTO :XWORD, :XWORD
+VarDateFromR8 PROTO :XWORD, :XWORD, :XWORD
+VarDateFromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarDateFromUI1 PROTO :XWORD, :XWORD
+VarDateFromUI2 PROTO :XWORD, :XWORD
+VarDateFromUI4 PROTO :XWORD, :XWORD
+VarDateFromUI8 PROTO :XWORD, :XWORD, :XWORD
+VarDateFromUdate PROTO :XWORD, :XWORD, :XWORD
+VarDateFromUdateEx PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarDecAbs PROTO :XWORD, :XWORD
+VarDecAdd PROTO :XWORD, :XWORD, :XWORD
+VarDecCmp PROTO :XWORD, :XWORD
+VarDecCmpR8 PROTO :XWORD, :XWORD, :XWORD
+VarDecDiv PROTO :XWORD, :XWORD, :XWORD
+VarDecFix PROTO :XWORD, :XWORD
+VarDecFromBool PROTO :XWORD, :XWORD
+VarDecFromCy PROTO :XWORD, :XWORD, :XWORD
+VarDecFromDate PROTO :XWORD, :XWORD, :XWORD
+VarDecFromDisp PROTO :XWORD, :XWORD, :XWORD
+VarDecFromI1 PROTO :XWORD, :XWORD
+VarDecFromI2 PROTO :XWORD, :XWORD
+VarDecFromI4 PROTO :XWORD, :XWORD
+VarDecFromI8 PROTO :XWORD, :XWORD, :XWORD
+VarDecFromR4 PROTO :XWORD, :XWORD
+VarDecFromR8 PROTO :XWORD, :XWORD, :XWORD
+VarDecFromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarDecFromUI1 PROTO :XWORD, :XWORD
+VarDecFromUI2 PROTO :XWORD, :XWORD
+VarDecFromUI4 PROTO :XWORD, :XWORD
+VarDecFromUI8 PROTO :XWORD, :XWORD, :XWORD
+VarDecInt PROTO :XWORD, :XWORD
+VarDecMul PROTO :XWORD, :XWORD, :XWORD
+VarDecNeg PROTO :XWORD, :XWORD
+VarDecRound PROTO :XWORD, :XWORD, :XWORD
+VarDecSub PROTO :XWORD, :XWORD, :XWORD
+VarDiv PROTO :XWORD, :XWORD, :XWORD
+VarEqv PROTO :XWORD, :XWORD, :XWORD
+VarFix PROTO :XWORD, :XWORD
+VarFormat PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarFormatCurrency PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarFormatDateTime PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarFormatFromTokens PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarFormatNumber PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarFormatPercent PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarI1FromBool PROTO :XWORD, :XWORD
+VarI1FromCy PROTO :XWORD, :XWORD, :XWORD
+VarI1FromDate PROTO :XWORD, :XWORD, :XWORD
+VarI1FromDec PROTO :XWORD, :XWORD
+VarI1FromDisp PROTO :XWORD, :XWORD, :XWORD
+VarI1FromI2 PROTO :XWORD, :XWORD
+VarI1FromI4 PROTO :XWORD, :XWORD
+VarI1FromI8 PROTO :XWORD, :XWORD, :XWORD
+VarI1FromR4 PROTO :XWORD, :XWORD
+VarI1FromR8 PROTO :XWORD, :XWORD, :XWORD
+VarI1FromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarI1FromUI1 PROTO :XWORD, :XWORD
+VarI1FromUI2 PROTO :XWORD, :XWORD
+VarI1FromUI4 PROTO :XWORD, :XWORD
+VarI1FromUI8 PROTO :XWORD, :XWORD, :XWORD
+VarI2FromBool PROTO :XWORD, :XWORD
+VarI2FromCy PROTO :XWORD, :XWORD, :XWORD
+VarI2FromDate PROTO :XWORD, :XWORD, :XWORD
+VarI2FromDec PROTO :XWORD, :XWORD
+VarI2FromDisp PROTO :XWORD, :XWORD, :XWORD
+VarI2FromI1 PROTO :XWORD, :XWORD
+VarI2FromI4 PROTO :XWORD, :XWORD
+VarI2FromI8 PROTO :XWORD, :XWORD, :XWORD
+VarI2FromR4 PROTO :XWORD, :XWORD
+VarI2FromR8 PROTO :XWORD, :XWORD, :XWORD
+VarI2FromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarI2FromUI1 PROTO :XWORD, :XWORD
+VarI2FromUI2 PROTO :XWORD, :XWORD
+VarI2FromUI4 PROTO :XWORD, :XWORD
+VarI2FromUI8 PROTO :XWORD, :XWORD, :XWORD
+VarI4FromBool PROTO :XWORD, :XWORD
+VarI4FromCy PROTO :XWORD, :XWORD, :XWORD
+VarI4FromDate PROTO :XWORD, :XWORD, :XWORD
+VarI4FromDec PROTO :XWORD, :XWORD
+VarI4FromDisp PROTO :XWORD, :XWORD, :XWORD
+VarI4FromI1 PROTO :XWORD, :XWORD
+VarI4FromI2 PROTO :XWORD, :XWORD
+VarI4FromI8 PROTO :XWORD, :XWORD, :XWORD
+VarI4FromR4 PROTO :XWORD, :XWORD
+VarI4FromR8 PROTO :XWORD, :XWORD, :XWORD
+VarI4FromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarI4FromUI1 PROTO :XWORD, :XWORD
+VarI4FromUI2 PROTO :XWORD, :XWORD
+VarI4FromUI4 PROTO :XWORD, :XWORD
+VarI4FromUI8 PROTO :XWORD, :XWORD, :XWORD
+VarI8FromBool PROTO :XWORD, :XWORD
+VarI8FromCy PROTO :XWORD, :XWORD, :XWORD
+VarI8FromDate PROTO :XWORD, :XWORD, :XWORD
+VarI8FromDec PROTO :XWORD, :XWORD
+VarI8FromDisp PROTO :XWORD, :XWORD, :XWORD
+VarI8FromI1 PROTO :XWORD, :XWORD
+VarI8FromI2 PROTO :XWORD, :XWORD
+VarI8FromR4 PROTO :XWORD, :XWORD
+VarI8FromR8 PROTO :XWORD, :XWORD, :XWORD
+VarI8FromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarI8FromUI1 PROTO :XWORD, :XWORD
+VarI8FromUI2 PROTO :XWORD, :XWORD
+VarI8FromUI4 PROTO :XWORD, :XWORD
+VarI8FromUI8 PROTO :XWORD, :XWORD, :XWORD
+VARIANT_UserFree PROTO :XWORD, :XWORD
+VARIANT_UserFree64 PROTO :XPTR, :XPTR
+VARIANT_UserMarshal PROTO :XWORD, :XWORD, :XWORD
+VARIANT_UserMarshal64 PROTO :XPTR, :XPTR, :XPTR
+VARIANT_UserSize PROTO :XWORD, :XWORD, :XWORD
+VARIANT_UserSize64 PROTO :XPTR, :XWORD, :XPTR
+VARIANT_UserUnmarshal PROTO :XWORD, :XWORD, :XWORD
+VARIANT_UserUnmarshal64 PROTO :XPTR, :XPTR, :XPTR
+VariantChangeType PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VariantChangeTypeEx PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VariantClear PROTO :XWORD
+VariantCopy PROTO :XWORD, :XWORD
+VariantCopyInd PROTO :XWORD, :XWORD
+VariantInit PROTO :XWORD
+VariantTimeToDosDateTime PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VariantTimeToSystemTime PROTO :REAL8, :XPTR
+VarIdiv PROTO :XWORD, :XWORD, :XWORD
+VarImp PROTO :XWORD, :XWORD, :XWORD
+VarInt PROTO :XWORD, :XWORD
+VarMod PROTO :XWORD, :XWORD, :XWORD
+VarMonthName PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarMul PROTO :XWORD, :XWORD, :XWORD
+VarNeg PROTO :XWORD, :XWORD
+VarNot PROTO :XWORD, :XWORD
+VarNumFromParseNum PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarOr PROTO :XWORD, :XWORD, :XWORD
+VarParseNumFromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarPow PROTO :XWORD, :XWORD, :XWORD
+VarR4CmpR8 PROTO :XWORD, :XWORD, :XWORD
+VarR4FromBool PROTO :XWORD, :XWORD
+VarR4FromCy PROTO :XWORD, :XWORD, :XWORD
+VarR4FromDate PROTO :XWORD, :XWORD, :XWORD
+VarR4FromDec PROTO :XWORD, :XWORD
+VarR4FromDisp PROTO :XWORD, :XWORD, :XWORD
+VarR4FromI1 PROTO :XWORD, :XWORD
+VarR4FromI2 PROTO :XWORD, :XWORD
+VarR4FromI4 PROTO :XWORD, :XWORD
+VarR4FromI8 PROTO :XWORD, :XWORD, :XWORD
+VarR4FromR8 PROTO :XWORD, :XWORD, :XWORD
+VarR4FromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarR4FromUI1 PROTO :XWORD, :XWORD
+VarR4FromUI2 PROTO :XWORD, :XWORD
+VarR4FromUI4 PROTO :XWORD, :XWORD
+VarR4FromUI8 PROTO :XWORD, :XWORD, :XWORD
+VarR8FromBool PROTO :XWORD, :XWORD
+VarR8FromCy PROTO :XWORD, :XWORD, :XWORD
+VarR8FromDate PROTO :XWORD, :XWORD, :XWORD
+VarR8FromDec PROTO :XWORD, :XWORD
+VarR8FromDisp PROTO :XWORD, :XWORD, :XWORD
+VarR8FromI1 PROTO :XWORD, :XWORD
+VarR8FromI2 PROTO :XWORD, :XWORD
+VarR8FromI4 PROTO :XWORD, :XWORD
+VarR8FromI8 PROTO :XWORD, :XWORD, :XWORD
+VarR8FromR4 PROTO :XWORD, :XWORD
+VarR8FromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarR8FromUI1 PROTO :XWORD, :XWORD
+VarR8FromUI2 PROTO :XWORD, :XWORD
+VarR8FromUI4 PROTO :XWORD, :XWORD
+VarR8FromUI8 PROTO :XWORD, :XWORD, :XWORD
+VarR8Pow PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarR8Round PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarRound PROTO :XWORD, :XWORD, :XWORD
+VarSub PROTO :XWORD, :XWORD, :XWORD
+VarTokenizeFormatString PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarUdateFromDate PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarUI1FromBool PROTO :XWORD, :XWORD
+VarUI1FromCy PROTO :XWORD, :XWORD, :XWORD
+VarUI1FromDate PROTO :XWORD, :XWORD, :XWORD
+VarUI1FromDec PROTO :XWORD, :XWORD
+VarUI1FromDisp PROTO :XWORD, :XWORD, :XWORD
+VarUI1FromI1 PROTO :XWORD, :XWORD
+VarUI1FromI2 PROTO :XWORD, :XWORD
+VarUI1FromI4 PROTO :XWORD, :XWORD
+VarUI1FromI8 PROTO :XWORD, :XWORD, :XWORD
+VarUI1FromR4 PROTO :XWORD, :XWORD
+VarUI1FromR8 PROTO :XWORD, :XWORD, :XWORD
+VarUI1FromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarUI1FromUI2 PROTO :XWORD, :XWORD
+VarUI1FromUI4 PROTO :XWORD, :XWORD
+VarUI1FromUI8 PROTO :XWORD, :XWORD, :XWORD
+VarUI2FromBool PROTO :XWORD, :XWORD
+VarUI2FromCy PROTO :XWORD, :XWORD, :XWORD
+VarUI2FromDate PROTO :XWORD, :XWORD, :XWORD
+VarUI2FromDec PROTO :XWORD, :XWORD
+VarUI2FromDisp PROTO :XWORD, :XWORD, :XWORD
+VarUI2FromI1 PROTO :XWORD, :XWORD
+VarUI2FromI2 PROTO :XWORD, :XWORD
+VarUI2FromI4 PROTO :XWORD, :XWORD
+VarUI2FromI8 PROTO :XWORD, :XWORD, :XWORD
+VarUI2FromR4 PROTO :XWORD, :XWORD
+VarUI2FromR8 PROTO :XWORD, :XWORD, :XWORD
+VarUI2FromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarUI2FromUI1 PROTO :XWORD, :XWORD
+VarUI2FromUI4 PROTO :XWORD, :XWORD
+VarUI2FromUI8 PROTO :XWORD, :XWORD, :XWORD
+VarUI4FromBool PROTO :XWORD, :XWORD
+VarUI4FromCy PROTO :XWORD, :XWORD, :XWORD
+VarUI4FromDate PROTO :XWORD, :XWORD, :XWORD
+VarUI4FromDec PROTO :XWORD, :XWORD
+VarUI4FromDisp PROTO :XWORD, :XWORD, :XWORD
+VarUI4FromI1 PROTO :XWORD, :XWORD
+VarUI4FromI2 PROTO :XWORD, :XWORD
+VarUI4FromI4 PROTO :XWORD, :XWORD
+VarUI4FromI8 PROTO :XWORD, :XWORD, :XWORD
+VarUI4FromR4 PROTO :XWORD, :XWORD
+VarUI4FromR8 PROTO :XWORD, :XWORD, :XWORD
+VarUI4FromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarUI4FromUI1 PROTO :XWORD, :XWORD
+VarUI4FromUI2 PROTO :XWORD, :XWORD
+VarUI4FromUI8 PROTO :XWORD, :XWORD, :XWORD
+VarUI8FromBool PROTO :XWORD, :XWORD
+VarUI8FromCy PROTO :XWORD, :XWORD, :XWORD
+VarUI8FromDate PROTO :XWORD, :XWORD, :XWORD
+VarUI8FromDec PROTO :XWORD, :XWORD
+VarUI8FromDisp PROTO :XWORD, :XWORD, :XWORD
+VarUI8FromI1 PROTO :XWORD, :XWORD
+VarUI8FromI2 PROTO :XWORD, :XWORD
+VarUI8FromI8 PROTO :XWORD, :XWORD, :XWORD
+VarUI8FromR4 PROTO :XWORD, :XWORD
+VarUI8FromR8 PROTO :XWORD, :XWORD, :XWORD
+VarUI8FromStr PROTO :XWORD, :XWORD, :XWORD, :XWORD
+VarUI8FromUI1 PROTO :XWORD, :XWORD
+VarUI8FromUI2 PROTO :XWORD, :XWORD
+VarUI8FromUI4 PROTO :XWORD, :XWORD
+VarWeekdayName PROTO :XWORD, :XWORD, :XWORD, :XWORD, :XWORD
+VarXor PROTO :XWORD, :XWORD, :XWORD
+VectorFromBstr PROTO :XWORD, :XWORD
+
+VarUI1FromInt EQU <VarUI1FromI4>
+VarUI1FromUint EQU <VarUI1FromUI4>
+VarI2FromInt EQU <VarI2FromI4>
+VarI2FromUint EQU <VarI2FromUI4>
+VarI4FromInt EQU <VarI4FromI4>
+VarI4FromUint EQU <VarI4FromUI4>
+VarI8FromUint EQU <VarI8FromUI4>
+VarR4FromInt EQU <VarR4FromI4>
+VarR4FromUint EQU <VarR4FromUI4>
+VarR8FromInt EQU <VarR8FromI4>
+VarR8FromUint EQU <VarR8FromUI4>
+VarDateFromInt EQU <VarDateFromI4>
+VarDateFromUint EQU <VarDateFromUI4>
+VarCyFromInt EQU <VarCyFromI4>
+VarCyFromUint EQU <VarCyFromUI4>
+VarBstrFromInt EQU <VarBstrFromI4>
+VarBstrFromUint EQU <VarBstrFromUI4>
+VarBoolFromInt EQU <VarBoolFromI4>
+VarBoolFromUint EQU <VarBoolFromUI4>
+VarI1FromInt EQU <VarI1FromI4>
+VarI1FromUint EQU <VarI1FromUI4>
+VarUI2FromInt EQU <VarUI2FromI4>
+VarUI2FromUint EQU <VarUI2FromUI4>
+VarUI4FromInt EQU <VarUI4FromI4>
+VarUI4FromUint EQU <VarUI4FromUI4>
+VarDecFromInt EQU <VarDecFromI4>
+VarDecFromUint EQU <VarDecFromUI4>
+VarIntFromUI1 EQU <VarI4FromUI1>
+VarIntFromI2 EQU <VarI4FromI2>
+VarIntFromI4 EQU <VarI4FromI4>
+VarIntFromI8 EQU <VarI4FromI8>
+VarIntFromR4 EQU <VarI4FromR4>
+VarIntFromR8 EQU <VarI4FromR8>
+VarIntFromDate EQU <VarI4FromDate>
+VarIntFromCy EQU <VarI4FromCy>
+VarIntFromStr EQU <VarI4FromStr>
+VarIntFromDisp EQU <VarI4FromDisp>
+VarIntFromBool EQU <VarI4FromBool>
+VarIntFromI1 EQU <VarI4FromI1>
+VarIntFromUI2 EQU <VarI4FromUI2>
+VarIntFromUI4 EQU <VarI4FromUI4>
+VarIntFromUI8 EQU <VarI4FromUI8>
+VarIntFromDec EQU <VarI4FromDec>
+VarIntFromUint EQU <VarI4FromUI4>
+VarUintFromUI1 EQU <VarUI4FromUI1>
+VarUintFromI2 EQU <VarUI4FromI2>
+VarUintFromI4 EQU <VarUI4FromI4>
+VarUintFromI8 EQU <VarUI4FromI8>
+VarUintFromR4 EQU <VarUI4FromR4>
+VarUintFromR8 EQU <VarUI4FromR8>
+VarUintFromDate EQU <VarUI4FromDate>
+VarUintFromCy EQU <VarUI4FromCy>
+VarUintFromStr EQU <VarUI4FromStr>
+VarUintFromDisp EQU <VarUI4FromDisp>
+VarUintFromBool EQU <VarUI4FromBool>
+VarUintFromI1 EQU <VarUI4FromI1>
+VarUintFromUI2 EQU <VarUI4FromUI2>
+VarUintFromUI4 EQU <VarUI4FromUI4>
+VarUintFromUI8 EQU <VarUI4FromUI8>
+VarUintFromDec EQU <VarUI4FromDec>
+VarUintFromInt EQU <VarUI4FromI4>
+
+
+;======================= Undocumented functions (unknown arguments) =======================;
+;OACleanup PROTO
+
+ENDIF ;OLEAUT32_INC

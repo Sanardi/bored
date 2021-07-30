@@ -1,0 +1,39 @@
+Easy Code® Visual Assembler v2
+32-bit/64-bit (Windows XP and later)
+Copyright © 2004-2021, Ramon Sala / Héctor A. Medina. All rights reserved.
+
+
+ASMC.TXT
+========
+
+- Remarks
+---------------
+    If your current version of Easy Code 2 is equal or previous to 2.00.0.0023 (January 24, 2017), please follow the instructions below.  Otherwise, you can disregard the infomation in this document, altogether.
+
+
+- Directives
+---------------
+    For Easy Code to properly highlight some new keywords, you should modify an entry in your "AsmC.cfg" and "AsmC64.cfg" configuration files (as is seen in the equivalent "AsmC.ori" and "AsmC64.ori" files).  The entry(ies) should read as follows:
+
+Group1=.Break,.Case,.Continue,.Default,.Else,.ElseIf,.EndC,.EndIf,.EndSW,.EndW,.If,.Ifb,.Ifd,.Ifs,.Ifsb,.Ifsd,.Ifsw,.Ifw,.Repeat,.Switch,.Until,.UntilAxz,.UntilBxz,.UntilCxz,.UntilDxz, .While
+
+Without this modification, Easy Code will not recognize the new keywords added to AsmC.
+
+
+- Important
+---------------
+     The "/Zne" option will not work with Easy Code, especially for 64-bit projects.
+
+
+
+............................................
+Please visit the Easy Code related forums:
+    http://www.masm32.com/board/index.php
+    http://board.flatassembler.net
+
+Thank you!
+
+Ramon Sala
+
+----------------
+Rev. 17-APR-2021

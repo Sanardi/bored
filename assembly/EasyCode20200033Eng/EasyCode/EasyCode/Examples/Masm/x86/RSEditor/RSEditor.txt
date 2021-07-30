@@ -1,0 +1,1267 @@
+The RSEditor is a line-based text editor packed in a dll file. It supports ANSI, UTF-8
+(up to 16-bit characters, that is, LEGAL UTF-8 = UP TO 3 BYTES OF STORAGE PER CHARACTER)
+and UTF-16 text (16-bit Unicode little and big endian), and all edition functions (Copy,
+Paste, Undo, Redo). Lines can be locked or bookmarked and searching functions are also
+included in order to find text up and down.
+
+If you are using Masm to build your application, include the RSEditor.inc and RSEditor.lib
+files in your project and define the following prototype:
+
+    RSCreateEditor Proto :HWND, :DWord, :DWord, :LONG, :LONG, :LONG, :LONG, :LONG, :BOOL
+
+
+On the other hand, if you are using GoAsm no prototype is needed and you have to include the
+RSEditor.inc and RSEditor.dll files in your project.
+
+Then call the RSCreateEditor function in the following way:
+
+    Invoke RSCreateEditor, hWndParent, dwStyle, dwExStyle, lLeft, lTop, lWidth, lHeight,
+                           lCtrlID, bAppUnicode
+    Mov hWndEditor, Eax
+
+    hWndParent  = Handle to the parent window
+    dwStyle     = The style for the editor (i.e. WS_VISIBLE Or WS_VSCROLL, etc.)
+    dwExStyle   = The extended style for the editor (i.e. WS_EX_CLIENTEDGE)
+    lLeft       = The x-coordinate for the editor (in pixels)
+    lTop        = The y-coordinate for the editor (in pixels)
+    lWidth      = The width for the editor (in pixels)
+    lHeight     = The height for the editor (in pixels)
+    lCtrlID     = A 16-bit value identifying the editor (0 for no identifier)
+    bAppUnicode = TRUE if the application has been compiled to accept Unicode text (Windows
+                  NT40 and later), or FALSE if not
+
+
+When returning from the RSCreateEditor function, Eax is loaded with the handle to the editor.
+You should save that handle to a variable (i.e. hWndEditor) and then you can start using the
+editor by sending messages to it.
+
+REMARKS:    The RSS_SPLIT style must be included in the dwStyle parameter if you
+            wish the editor to be splitted.
+
+
+IMPORTANT:  The RSEditor.dll should be placed in the System directory or in the directory where
+your application is, or the directory where the Editor.exe is if you are going to use it.
+
+
+NOTE:       When setting text with the WM_SETTEXT message, you first have to set the type of
+            text being set (ANSI, UTF-8 or UTF-16). For more information, please refer to the
+            RSM_SETTEXTUNICODE message.
+
+
+MOUSE:		Besides the corresponding options o f the 'Edit' menu, you can also manage bookmarks
+            with the mouse (by clicking on the selection bar) in the following way:
+            
+            Midle click        = Toggles bookmark
+            Left double-click  = Moves cursor to next bookamrk
+            Right double-click = Moves cursor to previous bookamrk
+            
+
+=============================== STYLES (RSEditor specific) ================================
+
+    RSS_SPLIT   = Allows the editor to be splitted.
+
+
+
+
+======================================= STRUCTURES ========================================
+
+RSSCHARSEL Struct
+        lMin    LONG
+        lMax    LONG
+RSSCHARSEL EndS
+
+
+Function:   Used to specify the minimum and maximum positions of text.
+
+Members:    lMin = Specifies the minimum position (index) inside the text.
+            lMax = Specifies the maximum position (index) inside the text.
+
+-------------------------------------------------------------------------------------------
+
+RSSFINDTEXT Struct
+        chr     RSSCHARSEL
+        lpstr   LPSTR
+RSSFINDTEXT EndS
+
+
+Function:   Used to find a text string inside the editor (used by the RSM_FINDTEXT message).
+
+Members:    chr.lMin = Specifies the minimum position inside text from where to search. It
+                       can be -1 for the first position.
+
+            chr.lMax = Specifies the maximum position inside text up to where to search. It
+                       can be -1 for the last position.
+
+            lpstr    = A null-terminated string containing the text to be searched.
+        
+REMARKS:    All text not being between the chr.lMin and chr.lMax positions will not be included
+            in the search. See the RSM_FINDTEXT message for more information.
+
+-------------------------------------------------------------------------------------------
+
+RSSEDITFONT Struct
+        lPoints         LONG    ?
+        lWeight         LONG    ?
+        bItalic         BOOL    ?
+        bStrikethru     BOOL    ?
+        bUnderline      BOOL    ?
+        dwCharSet       DWord   ?
+        szFaceName      CHAR    32   Dup(?)
+RSSEDITFONT EndS
+
+
+Function:   Used by the RSM_CREATEFONT message in order to create a font resource.
+
+Members:    lPointSize   = The size of the font (in points)
+            lWeight      = The weight of the font. It can be one of the following
+                           values:
+
+                               FW_DONTCARE
+                               FW_THIN 
+                               FW_EXTRALIGHT
+                               FW_LIGHT
+                               FW_NORMAL
+                               FW_MEDIUM
+                               FW_SEMIBOLD
+                               FW_BOLD 
+                               FW_EXTRABOLD
+                               FW_HEAVY 
+
+            bItalic      = TRUE for italic font
+            bStrikethru  = TRUE for strikethru font
+            bUnderlined  = TRUE for underlined font
+            dwCharSet    = The character set for the font. It can be one of the
+                           following values:
+
+                               ANSI_CHARSET
+                               BALTIC_CHARSET
+                               CHINESEBIG5_CHARSET
+                               DEFAULT_CHARSET
+                               EASTEUROPE_CHARSET
+                               GB2312_CHARSET
+                               GREEK_CHARSET
+                               HANGUL_CHARSET
+                               MAC_CHARSET
+                               OEM_CHARSET
+                               RUSSIAN_CHARSET
+                               SHIFTJIS_CHARSET
+                               SYMBOL_CHARSET
+                               TURKISH_CHARSET
+                               VIETNAMESE_CHARSET
+
+            szFaceName   = The typeface name of the font (i.e. Courier New). The length
+                           of this string must not exceed 32 characters.
+
+
+
+
+
+============================== MESSAGES (RSEditor specific) ===============================
+
+Message:        RSM_CHANGEACTIVEEDITOR
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_CHANGEACTIVEEDITOR, 0, 0
+
+Parameters:     None.
+
+Function:       When splitted, it toggles the active editor, that is, sets the focus to
+                the other editor. If the editor is not splitted, this message is ignored.
+
+Return:         None.
+
+REMARKS:        This function can also be accomplished by pressing the <F6> key.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_CLEARBOOKMARKS
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_CLEARBOOKMARKS, 0, 0
+
+Parameters:     None.
+
+Function:       Clears all bookmarks.
+
+Return:         None.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_CLEARUNDOBUFFER
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_CLEARUNDOBUFFER, 0, 0
+
+Parameters:     None.
+
+Function:       Clears all undo/redo buffer and releases the corresponding memory. As a
+                result, all undo/redo text is lost.
+
+Return:         None.
+
+REMARKS:        The undo/redo buffer is automatically cleared when the editor receives the
+                WM_SETTEXT or RSM_OPENFILE.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_CREATEFONT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_CREATEFONT, bRedraw, Addr ef
+
+Parameters:     bRedraw = TRUE if the control should be redrawn immediately upon setting
+                the font.
+
+                ef = RSSEDITFONT structure filled with the corresponding values.
+
+Function:       Creates the font specified by the ef structure and sends a WM_SETFONT
+                message to the editor (if splitted, both editors are affected).
+
+Return:         Eax = The handle to the created font object.
+
+REMARKS:        You do not need to take care of the font once created, as it is deleted by
+                the editor when destroyed or each time a WM_SETFONT is received.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_FINDTEXT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_FINDTEXT, lFlags, Addr ft
+
+Parameters:     lFlags = Flags specifying how the text will be searched. It can be a
+                         combination of the following values:
+
+                    RSC_UP          = Searches text up (should not be used with RSC_DOWN)
+                    RSC_DOWN        = Searches text down (should not be used with RSC_UP)
+                    RSC_MATCHCASE   = Search is case sensitive
+                    RSC_SELECTTEXT  = If found, text is selected
+                    RSC_WHOLEWORD   = Text is found ONLY if it is a whole word
+
+                ft     = RSSFINDTEXT structure filled with the corresponding values.
+
+Function:       Searches for the text specified by the ft.lpstr between the ft.chr.lMin and
+                ft.chr.lMax positions.
+
+Return:         Eax = The first position (index) for found text, or -1 if not found.
+
+REMARKS:        You can set ft.chr.lMin and/or ft.chr.lMax to -1 to specify, respectively,
+                the first and last positions of text.
+
+IMPORTANT:      When searching text up (RSC_UP flag), ft.chr.lMin must be se to the maximum
+                position while ft.chr.lMax must be set to the minimum position.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETBACKCOLOR
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETBACKCOLOR, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the current back color for normal text.
+
+Return:         Eax = The RGB back color for normal text.
+
+REMARKS:        If the high-order byte of Eax is 80H, it means a system color. For example,
+                80000005H means the system color number 5 (COLOR_WINDOW)
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETBACKSELBAR
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETBACKSELBAR, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the current selection bar back color.
+
+Return:         Eax = The RGB back color for the selection bar.
+
+REMARKS:        If the high-order byte of Eax is 80H, it means a system color. For example,
+                80000005H means the system color number 5 (COLOR_WINDOW)
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETBACKSELECT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETBACKSELECT, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the current back color for selected text.
+
+Return:         Eax = The RGB back color for selected text.
+
+REMARKS:        If the high-order byte of Eax is 80H, it means a system color. For example,
+                80000005H means the system color number 5 (COLOR_WINDOW)
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETEVENTMASK
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETEVENTMASK, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the event mask for the editor. The event mask determines the events
+                that will be notified to the parent.
+
+
+Return:         Eax = The event mask for the editor. It can be a combination of the following
+                values:
+
+                    RSV_CHANGE      = The EN_CHANGE message is sent to the parent
+                    RSV_HSCROLL     = The EN_HSCROLL message is sent to the parent
+                    RSV_KILLFOCUS   = The EN_KILLFOCUS message is sent to the parent
+                    RSV_SELCHANGE   = The EN_SELCHANGE message is sent to the parent
+                    RSV_SETFOCUS    = The EN_SETFOCUS message is sent to the parent
+                    RSV_UPDATE      = The EN_UPDATE message is sent to the parent
+                    RSV_VSCROLL     = The EN_VSCROLL message is sent to the parent
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETHIDESELECTION
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETHIDESELECTION, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the "hide selection" state for the editor.
+
+Return:         Eax = The "hide selection" state (TRUE or FALSE).
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETLASTPOSITION
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETLASTPOSITION, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the last character index (last position) of text.
+
+Return:         Eax = The last character index of text.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETLINECOUNT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETLINECOUNT, 0, 0
+
+Parameters:     None.
+
+Function:       Returns the number of text lines.
+
+Return:         Eax = The number of text lines.
+
+REMARKS:        The returned number of lines is 0 if there is no carriage return (ANSI
+                value 13) in text. A carriage return is inserted each time the <Enter>
+                key is pressed.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETLINELENGTH
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETLINELENGTH, lLine, 0
+
+Parameters:     lLine = Number of line whose length is to be retreived.
+
+Function:       Returns the length (in characters) of the specified line.
+
+Return:         Eax = The length of the line in characters.
+
+REMARKS:        If lLine is -1, the length of the current line is returned.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETLINESAVEFORMAT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETLINESAVEFORMAT, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the format in which lines will be saved to the file.
+
+Return:         The way in which lines will be saved to the file. It can be
+                one of the following values:
+
+                    RSC_CR_LF   = Each line will be saved with a carriage
+                                  return (CR) and a line feed (LF)
+                    RSC_CR      = Each line will be saved just with a
+                                  carriage return
+                    RSC_LF      = Each line will be saved just with a
+                                  line feed
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETLOCKEDBACKCOLOR
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETLOCKEDBACKCOLOR, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the current back color for locked lines.
+
+Return:         Eax = The RGB back color for locked lines.
+
+REMARKS:        If the high-order byte of Eax is 80H, it means a system color. For example,
+                80000005H means the system color number 5 (COLOR_WINDOW)
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETLOCKEDTEXTCOLOR
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETLOCKEDTEXTCOLOR, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the current text color for locked lines.
+
+Return:         Eax = The RGB text color for locked lines.
+
+REMARKS:        If the high-order byte of Eax is 80H, it means a system color. For example,
+                80000005H means the system color number 5 (COLOR_WINDOW)
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETNEXTBOOKMARK
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETNEXTBOOKMARK, 0, 0
+
+Parameters:     None.
+
+Function:       Searches the next bookmark from the current line.
+
+Return:         Eax = The line number of next bookmark, or -1 if not found.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETPOSITION
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETSPOSITION, lpLine, lpColumn
+
+Parameters:     lpLine   = The address of a 32-bit variable to receive the line number.
+                lpColumn = The address of a 32-bit variable to receive the column number.
+
+Function:       Gets the 1-based line and column for the current position (the column number
+                value is calculated with tabs expanded).
+
+Return:         None.
+
+REMARKS:        Both, lpLine and/or lpColumn can be NULL if you do not want to retrieve the
+                corresponding value.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETPREVBOOKMARK
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETPREVBOOKMARK, 0, 0
+
+Parameters:     None.
+
+Function:       Searches the previous bookmark from the current line.
+
+Return:         Eax = The line number of previous bookmark, or -1 if not found.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETPREVNEXTBOOKMARK
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETPREVNEXTBOOKMARK, lpPrev, lpNext
+
+Parameters:     lpPrev = The address of a 32-bit variable to receive the previous bookmark.
+                lpNext = The address of a 32-bit variable to receive the next bookmark.
+
+Function:       Searches the previous and the next bookmarks from the current line.
+
+Return:         lpPrev and lpNext filled with the line number for the corresponding
+                bookmarks, or -1 if bookmark not found.
+
+REMARKS:        Both, lpPrev and/or lpNext can be NULL if you do not want to retrieve the
+                corresponding bookmark.
+
+NOTE:           Instead of sending the RSM_GETNEXTBOOKMARK and RSM_GETPREVBOOKMARK messages,
+                you can retrieve both, next and previous bookmarks, in a single call.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETSELBARWIDTH
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETSELBARWIDTH, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the current selection bar width.
+
+Return:         Eax = The current selection bar width (in pixels).
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETSELECTEDTEXT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETSELECTEDTEXT, lChars, lpszBuf
+
+Parameters:     lChars  = Maximum number of characters to be retreived (-1 for whole text).
+                lpszBuf = Effective address of the buffer to receive the selected text.
+
+Function:       Retrieves the currently selected text.
+
+Return:         Eax = Number of characters copied (not including the terminating null character).
+
+REMARKS:        The buffer must be large enough to hold the selected text (or lChars if not
+                -1). You can call the RSM_GETSELTEXTLENGTH message to get the exact length).
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETSELECTION (same as EM_GETSEL)
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETSELECTION, lpMin, lpMax
+
+Parameters:     lpMin = The address of a 32-bit variable to receive the minimum position.
+                lpMax = The address of a 32-bit variable to receive the maximum position.
+
+Function:       Gets the current selection for the editor (minimum and maximun positions).
+
+Return:         None.
+
+REMARKS:        Both, lpMin and/or lpMax can be NULL if you do not want to retrieve the
+                corresponding position.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETSELTEXTLENGTH
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETSELTEXTLENGTH, 0, 0
+
+Parameters:     None.
+
+Function:       Retrieves the length of the currently selected text.
+
+Return:         Eax = Number of selected characters.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETTABSIZE
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETTABSIZE, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the current size (in spaces) for a <Tab> character.
+
+Return:         Eax = The number of spaces for a <Tab>.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETTABTOSPACES
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETTABTOSPACES, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the current state for converting <Tab> characters to spaces.
+
+Return:         Eax = TRUE if <Tab> characters are converted to spaces, or FALSE if not.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETTEXTCOLOR
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETTEXTCOLOR, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the current text color for normal text.
+
+Return:         Eax = The RGB text color for normal text.
+
+REMARKS:        If the high-order byte of Eax is 80H, it means a system color. For example,
+                80000005H means the system color number 5 (COLOR_WINDOW)
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETTEXTFORMAT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETTEXTFORMAT, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the format for the current text.
+
+Return:         Eax = The current text format. It can be one of the following values:
+                      1 = ANSI, 2 = Unicode UTF-16 (little endian), 3 = Unicode UTF-16
+                      (big endian), 4 = Unicode UTF-8 (up to 16-bit characters).
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETTEXTSELECT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETTEXTSELECT, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the current text color for selected text.
+
+Return:         Eax = The RGB text color for selected text.
+
+REMARKS:        If the high-order byte of Eax is 80H, it means a system color. For example,
+                80000005H means the system color number 5 (COLOR_WINDOW)
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETTOPLINEINDEX
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETTOPLINEINDEX, 0, 0
+
+Parameters:     None.
+
+Function:       Gets the current index for the first visible line (top line).
+
+Return:         Eax = The index for the first visible line (top line).
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETWORDFIRSTPOSITION
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETWORDFIRSTPOSITION, 0, lPos
+
+Parameters:     lPos = Character position (index) where to get the word. If lPos is -1,
+                       the current position is used.
+
+Function:       Gets the first position (index) of the word being at lPos.
+
+Return:         Eax = The character index of the first position.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETWORDLASTPOSITION
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETWORDLASTPOSITION, 0, lPos
+
+Parameters:     lPos = Character position (index) where to get the word. If lPos is -1,
+                       the current position is used.
+
+Function:       Gets the last position (index) of the word being at lPos.
+
+Return:         Eax = The character index of the last position.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GETWORDUNDERCURSOR
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GETWORDUNDERCURSOR, lChars, lpszBuf
+
+Parameters:     lChars  = Maximum number of characters to be retreived.
+                lpszBuf = Effective address of the buffer to receive the selected text.
+
+Function:       Gets the word under cursor (even if it is not selected).
+
+Return:         Eax = The number of characters copied to buffer (not including the null
+                      terminator).
+
+REMARKS:        Set lChars to -1 for retreiving the whole selected word.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GOTONEXTBOOKMARK
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GOTONEXTBOOKMARK, 0, 0
+
+Parameters:     None.
+
+Function:       Goes to next bookmark from the current line.
+
+Return:         Eax = TRUE if a next bookmark is found, or FALSE if not.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_GOTOPREVBOOKMARK
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_GOTOPREVBOOKMARK, 0, 0
+
+Parameters:     None.
+
+Function:       Goes to previous bookmark from the current line.
+
+Return:         Eax = TRUE if a previous bookmark is found, or FALSE if not.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_ISCURRENTLINEBOOKMARKED
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_ISCURRENTLINEBOOKMARKED, 0, 0
+
+Parameters:     None.
+
+Function:       Returns the bookmark state for the current line.
+
+Return:         Eax = TRUE if line is bookmarked, or FALSE if not.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_ISTEXTUNICODE
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_ISTEXTUNICODE, 0, 0
+
+Parameters:     None.
+
+Function:       Returns whether the text in the editor is Unicode or not.
+
+Return:         Eax = TRUE if text is Unicode, or FALSE if not.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_LOCKLINES
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_LOCKLINES, lFirstLine, lLasttLine
+
+Parameters:     lFirstLine = First line to be locked.
+                lLastLine  = Last line to be locked.
+
+Function:       Locks one or several lines.
+
+Return:         Eax = TRUE if lines were locked, or FALSE if not.
+
+REMARKS:        If lFirstLine and/or are not valid values, that is, being between 0 and the
+                maximun number of lines, the function fails.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_OPENFILE
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_OPENFILE, 0, lpszFileName
+
+Parameters:     lpszFileName = Effective address of a null terminated string specifying the
+                file to be open (it may include the whole path).
+
+Function:       Opens a file and loads it in the editor.
+
+Return:         Eax = The number of bytes loaded.
+
+REMARKS:        This message opens, reads and closes the specified file.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_RBUTTONCLICKED
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_RBUTTONCLICKED, lKeys, Addr pt
+
+Parameters:     lKeys (wParam) = Indicates whether various virtual keys are down. It can
+                                 be one or more of the following values:
+
+                                     MK_CONTROL = The CTRL key is down
+                                     MK_SHIFT   = The SHIFT key is down
+
+                pt (lParam)    = POINTL structure specifying the x and y coordinates
+                                 relative to the upper-left corner of the screen.
+
+Function:       This message is received by the parent of the editor each time mouse is
+                right-clicked.
+
+Return:         None.
+
+REMARKS:        The message has no effect if sent to the editor. It is just sent from the
+                editor to its parent after a right-click and it can be useful to show a
+                context menu.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_REPLACESELECTION
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_REPLACESELECTION, bSetSel, lpszNewText
+
+Parameters:     bSetSel     = Specifies whether the selection is set according to the new
+                              text and the EN_CHANGE message is sent to the parent.
+
+		lpszNewText = Effective address of a null terminated string specifying the
+                              text which is going to replace the selection.
+
+Function:       Replaces (or inserts) text in the editor.
+
+Return:         None
+
+REMARKS:        When there is no text selected, the new text is inserted in the current
+                position. On the other hand, if you just want to delete the selected text,
+                send this message with lpszNewText set to NULL or to an empty string.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SAVEFILE
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SAVEFILE, lFormat, lpszFileName
+
+Parameters:     lFormat = A value specifying the text format to be saved (1 = ANSI,
+                2 = Unicode, 3 = Unicode big endian).
+
+                lpszFileName = Effective address of a null terminated string specifying the
+                file name used to save the file (it may include the whole path).
+
+Function:       Saves the current text to the specified file name.
+
+Return:         Eax = TRUE if successful or FALSE if not.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SELECTALLTEXT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SELECTALLTEXT, 0, 0
+
+Parameters:     None.
+
+Function:       Selects all text, if any, inside the editor.
+
+Return:         None.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETAUTOINDENT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETAUTOINDENT, bAutoIndent, 0
+
+Parameters:     bAutoIndent = Specifies whether the editor automatically indents the next line
+                              when pressing the <Enter> key.
+
+Function:       Sets the automatic indentation state.
+
+Return:         Eax = The previous automatic indentation state.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETBACKCOLOR
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETBACKCOLOR, bUpdate, crColor
+
+Parameters:     bUpdate = TRUE if the editor has to be updated, or FALSE if not.
+                crColor = The new RGB color for normal text.
+
+Function:       Sets the back color for normal text.
+
+Return:         None.
+
+REMARKS:        You can use the system colors by setting the high-order byte of crColor to
+                80H. For example, a value of 80000005H means COLOR_WINDOW.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETBACKSELBAR
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETBACKSELBAR, bUpdate, crColor
+
+Parameters:     bUpdate = TRUE if the editor has to be updated, or FALSE if not.
+                crColor = The new RGB color for the editor's selection bar.
+
+Function:       Sets the back color for the selection bar.
+
+Return:         None.
+
+REMARKS:        You can use the system colors by setting the high-order byte of crColor to
+                80H. For example, a value of 80000005H means COLOR_WINDOW.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETBACKSELECT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETBACKSELECT, bUpdate, crColor
+
+Parameters:     bUpdate = TRUE if the editor has to be updated, or FALSE if not.
+                crColor = The new RGB back color for selected text.
+
+Function:       Sets the back color for selected text.
+
+Return:         None.
+
+REMARKS:        You can use the system colors by setting the high-order byte of crColor to
+                80H. For example, a value of 80000005H means COLOR_WINDOW.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETCHARPROCADDRESS
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETCHARPROCADDRESS, 0, Addr IsCharAlpha
+
+Parameters:     IsCharAlpha = The procedure where characters will be analized (see REMARKS).
+                If this parameter is NULL, the internal default procedure is set.
+
+Function:       Sets the address of the procedure that will be called for each character to
+                be searched or compared.
+
+Return:         Eax = The address of the previous procedure.
+
+REMARKS:        Use this message to set your own procedure in which you can determine which
+                characters are processed as alpha characters. The referred procedure must
+                have the following syntax:
+
+                    IsCharAlpha Proc lChar:LONG
+                        ;================
+                        ; Code goes here
+                        ;================
+                        Ret
+                    IsCharAlpha EndP
+
+NOTE:           It should return TRUE for lChar to be processed as an alpha character,
+                or FALSE if not.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETEVENTMASK
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETEVENTMASK, dwEventMask, 0
+
+Parameters:     dwEventMask = A combination of the following values.
+
+Function:       Sets the event mask for the editor. It can be a combination of the
+                following values:
+
+                        RSV_CHANGE      = The EN_CHANGE message is sent to the parent
+                        RSV_HSCROLL     = The EN_HSCROLL message is sent to the parent
+                        RSV_KILLFOCUS   = The EN_KILLFOCUS message is sent to the parent
+                        RSV_SELCHANGE   = The EN_SELCHANGE message is sent to the parent
+                        RSV_SETFOCUS    = The EN_SETFOCUS message is sent to the parent
+                        RSV_UPDATE      = The EN_UPDATE message is sent to the parent
+                        RSV_VSCROLL     = The EN_VSCROLL message is sent to the parent
+
+
+Return:         Eax = The previous event mask.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETHIDEGRIP
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETHIDEGRIP, bHideGrip, 0
+
+Parameters:     bHideGrip = TRUE if the editor's grip has to be hidden, or FALSE if not.
+
+Function:       Sets the visible state for the editor's grip.
+
+Return:         Eax = The previous grip's "hide state".
+
+REMARKS:        Use this message to show/hide the editor's resizing grip when necessary (i.e 
+                when the main window of the application has a status bar).
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETHIDESELECTION (same as EM_HIDESELECTION)
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETHIDESELECTION, bHideSelection, 0
+
+Parameters:     bHideSelection = TRUE for selection to be hidden when loosing the focus.
+
+Function:       Sets the "hide selection" state.
+
+Return:         Eax = The previous "hide selection" state.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETINDENT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETINDENT, bRemove, 0
+
+Parameters:     bRemove = FALSE for the indentation to be added (a TAB char is inserted at
+                          the begining of each selected line), or TRUE for indentation to
+                          be removed (the first TAB char in each selected line, if any, is
+                          removed).
+
+Function:       Adds/removes indentation.
+
+Return:         Eax = TRUE if indentation added/removed, or FALSE if not.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETLINESAVEFORMAT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETLINESAVEFORMAT, lFormat, 0
+
+Parameters:     lFormat = The new format in which lines will be saved in the file.
+                          It can be one of the following values:
+
+                              RSC_CR_LF  = Lines will be saved with a carriage
+                                           return (CR) and a line feed (LF)
+                              RSC_CR     = Lines will be saved just with a
+                                           carriage return (CR)
+                              RSC_LF     = Lines will be saved just with a
+                                           line feed (CR)
+
+Function:       Sets the format in which lines will be saved in the file.
+
+Return:         Eax = The previous format for lines, or (-1) if lFormat is invalid.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETLOCKEDBACKCOLOR
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETLOCKEDBACKCOLOR, bUpdate, crColor
+
+Parameters:     bUpdate = TRUE if the editor has to be updated, or FALSE if not.
+                crColor = The new RGB back color for locked lines.
+
+Function:       Sets the back color for locked lines.
+
+Return:         None.
+
+REMARKS:        You can use the system colors by setting the high-order byte of crColor to
+                80H. For example, a value of 80000005H means COLOR_WINDOW.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETLOCKEDTEXTCOLOR
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETLOCKEDTEXTCOLOR, bUpdate, crColor
+
+Parameters:     bUpdate = TRUE if the editor has to be updated, or FALSE if not.
+                crColor = The new RGB text color for locked lines.
+
+Function:       Sets the text color for locked lines.
+
+Return:         None.
+
+REMARKS:        You can use the system colors by setting the high-order byte of crColor to
+                80H. For example, a value of 80000005H means COLOR_WINDOW.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETSELBARWIDTH
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETSELBARWIDTH, lWidth, 0
+
+Parameters:     lWidth = The new selection bar width in pixels.
+
+Function:       Sets the selection bar width.
+
+Return:         None.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETREDRAWFLAG
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETREDRAWFLAG, bRedraw, bRepaint
+
+Parameters:     bRedraw  = The new redraw flag for the editor. If this parameter is FALSE
+                the editor is not painted.
+                bRepaint = Causes the editor to be totally repainted only if the redraw
+                flag is set to TRUE. Otherwise this parameter has no effect.
+
+Function:       Sets the redraw state for the editor.
+
+Return:         None.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETSEARCHHANDLE
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETSEARCHHANDLE, 0, hWndSearch
+
+Parameters:     hWndSearch = The handle to the search window.
+
+Function:       Sets the handle for the search window. Used internally by the editor.
+
+Return:         None.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETSELECTION (same as EM_SETSEL)
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETSELECTION, lMin, lMax
+
+Parameters:     lMin = The minimum position for the text to be selected.
+                lMax = The maximum position for the text to be selected.
+
+Function:       Selects text inside the editor or changes the insertion point.
+
+Return:         None.
+
+REMARKS:        Setting both, lMin and lMax to the same value, changes the position of the
+                insertion point.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETTABSIZE
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETTABSIZE, lSpaces, 0
+
+Parameters:     lSpaces = The number of spaces for a <Tab> character.
+
+Function:       Sets the current size (in spaces) for a <Tab> character.
+
+Return:         None.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETTABTOSPACES
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETTABTOSPACES, bTabToSpaces, 0
+
+Parameters:     bTabToSpaces =  TRUE if <Tab> characters have to be converted to spaces, or
+                                FALSE if not.
+
+Function:       Specifies whether <Tab> characters has to be converted to spaces.
+
+Return:         None.
+
+REMARKS:        This message DOES NOT AFFECT to text already loaded in the editor.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETTEXTCOLOR
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETTEXTCOLOR, bUpdate, crColor
+
+Parameters:     bUpdate = TRUE if the editor has to be updated, or FALSE if not.
+                crColor = The new RGB color for normal text.
+
+Function:       Sets the text color for normal text.
+
+Return:         None.
+
+REMARKS:        You can use the system colors by setting the high-order byte of crColor to
+                80H. For example, a value of 80000005H means COLOR_WINDOW.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETTEXTSELECT
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETTEXTSELECT, bUpdate, crColor
+
+Parameters:     bUpdate = TRUE if the editor has to be updated, or FALSE if not.
+                crColor = The new RGB color for selected text.
+
+Function:       Sets the text color for selected text.
+
+Return:         None.
+
+REMARKS:        You can use the system colors by setting the high-order byte of crColor to
+                80H. For example, a value of 80000005H means COLOR_WINDOW.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETTEXTUNICODE
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETTEXTUNICODE, bUnicode, bBigEndian
+
+Parameters:     bUnicode = Low word (less significant 16 bits) = TRUE if the editor has to
+                           be put in Unicode mode (UTF-16), or FALSE if not.
+                           High word (most significant 16 bits) = TRUE if the editor has to
+                           be put in UTF-8 mode, or FALSE if not.
+
+                bBigEndian = TRUE if the editor has to be put in Unicode big endian mode,
+                             or FALSE if not.
+
+Function:       Sets the editor in ANSI, UTF-8 or UTF-16 mode.
+
+Return:         Eax = The previous mode of the editor (in the same format of that described
+                      for the bUnicode parameter).
+
+REMARKS:        If you are going to set text with the WM_SETTEXT message, please first send
+                this message with the 'bUnicode' and 'bBigEndian' parameters set to the
+                corresponding value according to the type of text to be set.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SETTOPLINE
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_SETTOPLINE, lLine, 0
+
+Parameters:     lLine = The number of the line to be the fisrt visible one (top line).
+
+Function:       Sets the fisrt visible line (top line).
+
+Return:         Eax = The previous fisrt visible line.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_SHOWMESSAGEBOX
+
+Syntax:         Invoke SendMessage, hWndParent, RSM_SHOWMESSAGEBOX, lMessage, 0
+
+Parameters:     hWndParent = The handle to the parent of the editor (your application or
+                             the Editor.exe main window).
+                lMessage   = A constant for the message to be shown. It can be one of the
+                             following values:
+                               1 = RSC_ERRORMEMALLOC = Could not allocate memory
+                               2 = RSC_ERRORNOMEMORY = No more memory available
+                               3 = RSC_ERRORUNICODE  = Cannot open Unicode text files
+
+Function:       Sends a message to the editor's parent (the Editor.exe or your application)
+                asking for showing a message box.
+
+Return:         None.
+
+REMARKS:        Your application must process this message by showing a message box with
+                the corresponding text according to the lMessage value.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_TOGGLEBOOKMARK
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_TOGGLEBOOKMARK, 0, 0
+
+Parameters:     None.
+
+Function:       Sets/removes (toggles) the bookmark for the current line.
+
+Return:         None.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_UNLOCKLINES
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_UNLOCKLINES, lFirstLine, lLasttLine
+
+Parameters:     lFirstLine = First line to be unlocked.
+                lLastLine  = Last line to be unlocked.
+
+Function:       Unlocks one or several lines.
+
+Return:         Eax = TRUE if lines were unlocked, or FALSE if not.
+
+REMARKS:        If lFirstLine and/or are not valid values, that is, being between 0 and the
+                maximun number of lines, the function fails.
+
+-------------------------------------------------------------------------------------------
+
+Message:        RSM_UPDATEEDITFUNCTIONS
+
+Syntax:         Invoke SendMessage, hWndEditor, RSM_UPDATEEDITFUNCTIONS, 0, 0
+
+Parameters:     None.
+
+Function:       Sent to the parent window when some of the edit functions has changed.
+
+Return:         None.
+
+
+
+
+==================================== STANDARD MESSAGES ====================================
+
+The following standard messages are also supported by RS Editor:
+
+EM_CANREDO, EM_CANUNDO, EM_GETFIRSTVISIBLELINE, EM_GETLINE, EM_GETMODIFY, EM_LINEFROMCHAR,
+EM_LINEINDEX, EM_LINESCROLL, EM_REDO, EM_SCROLL, EM_SETMODIFY, EM_SETREADONLY and EM_UNDO.
+
+REMARKS:        Refer to Win32 help or MSDN library to get information about those messages.
+
+
+
+======================================== IMPORTANT ========================================
+
+When using the RSEditor.dll, the following key combination SHOULD NOT be used as accelarators
+by your application:
+
+        Ctrl+A                          Select all
+        Ctrl+C                          Copy
+        Ctrl+Insert                     Copy
+        Ctrl+V                          Paste
+        Shift+Insert                    Paste
+        Ctrl+X                          Cut
+        Ctrl+Y                          Redo
+        Ctrl+Z                          Undo
+        Del (Delete key)                Delete
+
+If you use any of the above key combination as an accelerator, you will have to manually code
+the corresponding function.
+
+
+
+Please report any bug or modification to one of the following email addresses:
+        rsala@easycode.cat
+        asm@easycode.cat
+
+Thank you,
+
+Ramon Sala

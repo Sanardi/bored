@@ -1,0 +1,11 @@
+; ==============================================================================
+; BEGIN FUNCTION
+; ------------------------------------------------------------------------------
+;    Created By: AUTHOR/PROGRAMMER'S NAME OR INITIALS GOES HERE
+;       Summary: BRIEF DESCRIPTION OR PURPOSE OF FUNCTION GOES HERE
+;    Parameters: LIST ANY PARAMETER/ARGUMENT NAMES AND DESCRIPTIONS HERE
+;       Returns: None (RETURNED DATA TYPE AND DESCRIPTION GO HERE. DEFAULT = "None")
+; Creation Date: DD-MMM-YYYY
+; Revision Date: See Creation Date
+;  Dependencies: None (LIST ANY EXTERNAL REFERENCED LIBRARIES. DEFAULT = "None")
+; ------------------------------------------------------------------------------

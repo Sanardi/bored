@@ -1,0 +1,13 @@
+MDI application
+
+This is an easy example to create an MDI application in Easy Code. At the same time, you can see how toolbars, tool tips, status bars, menus and accelarators work. Enjoy it!
+
+
+Regards,
+
+Ramon Sala
+
+rsala@easycode.cat
+
+
+IMPORTANT: In MDI Windows, the WM_COMMAND message must return FALSE (the default value) for those commands not being processed in the window procedure. If not, MDI child windows will not work properly (cannot be restored, minimized, etc.).

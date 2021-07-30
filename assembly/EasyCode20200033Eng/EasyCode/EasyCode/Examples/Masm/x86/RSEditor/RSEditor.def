@@ -1,0 +1,5 @@
+LIBRARY RSEditor
+
+EXPORTS
+
+	RSCreateEditor		@1

@@ -1,0 +1,1314 @@
+; ======================================================;
+;                                                       ;
+;  opengl32.inc for Easy Code 2.0 64-bit Masm projects  ;
+;                    (version 1.0.1)                    ;
+;                                                       ;
+;             Copyright © Ramon Sala - 2019             ;
+;                                                       ;
+; ======================================================;
+
+IFNDEF OPENGL32_INC
+OPENGL32_INC     EQU     1
+
+GL_VERSION_1_1                                  EQU     1
+
+GL_ACCUM                                        EQU     0100H
+GL_LOAD                                         EQU     0101H
+GL_RETURN                                       EQU     0102H
+GL_MULT                                         EQU     0103H
+GL_ADD                                          EQU     0104H
+
+GL_NEVER                                        EQU     0200H
+GL_LESS                                         EQU     0201H
+GL_EQUAL                                        EQU     0202H
+GL_LEQUAL                                       EQU     0203H
+GL_GREATER                                      EQU     0204H
+GL_NOTEQUAL                                     EQU     0205H
+GL_GEQUAL                                       EQU     0206H
+GL_ALWAYS                                       EQU     0207H
+
+GL_CURRENT_BIT                                  EQU     00000001H
+GL_POINT_BIT                                    EQU     00000002H
+GL_LINE_BIT                                     EQU     00000004H
+GL_POLYGON_BIT                                  EQU     00000008H
+GL_POLYGON_STIPPLE_BIT                          EQU     00000010H
+GL_PIXEL_MODE_BIT                               EQU     00000020H
+GL_LIGHTING_BIT                                 EQU     00000040H
+GL_FOG_BIT                                      EQU     00000080H
+GL_DEPTH_BUFFER_BIT                             EQU     00000100H
+GL_ACCUM_BUFFER_BIT                             EQU     00000200H
+GL_STENCIL_BUFFER_BIT                           EQU     00000400H
+GL_VIEWPORT_BIT                                 EQU     00000800H
+GL_TRANSFORM_BIT                                EQU     00001000H
+GL_ENABLE_BIT                                   EQU     00002000H
+GL_COLOR_BUFFER_BIT                             EQU     00004000H
+GL_HINT_BIT                                     EQU     00008000H
+GL_EVAL_BIT                                     EQU     00010000H
+GL_LIST_BIT                                     EQU     00020000H
+GL_TEXTURE_BIT                                  EQU     00040000H
+GL_SCISSOR_BIT                                  EQU     00080000H
+GL_ALL_ATTRIB_BITS                              EQU     000FFFFFH
+
+GL_POINTS                                       EQU     0000H
+GL_LINES                                        EQU     0001H
+GL_LINE_LOOP                                    EQU     0002H
+GL_LINE_STRIP                                   EQU     0003H
+GL_TRIANGLES                                    EQU     0004H
+GL_TRIANGLE_STRIP                               EQU     0005H
+GL_TRIANGLE_FAN                                 EQU     0006H
+GL_QUADS                                        EQU     0007H
+GL_QUAD_STRIP                                   EQU     0008H
+GL_POLYGON                                      EQU     0009H
+
+GL_ZERO                                         EQU     0
+GL_ONE                                          EQU     1
+GL_SRC_COLOR                                    EQU     0300H
+GL_ONE_MINUS_SRC_COLOR                          EQU     0301H
+GL_SRC_ALPHA                                    EQU     0302H
+GL_ONE_MINUS_SRC_ALPHA                          EQU     0303H
+GL_DST_ALPHA                                    EQU     0304H
+GL_ONE_MINUS_DST_ALPHA                          EQU     0305H
+GL_DST_COLOR                                    EQU     0306H
+GL_ONE_MINUS_DST_COLOR                          EQU     0307H
+GL_SRC_ALPHA_SATURATE                           EQU     0308H
+
+GL_TRUE                                         EQU     1
+GL_FALSE                                        EQU     0
+
+GL_CLIP_PLANE0                                  EQU     3000H
+GL_CLIP_PLANE1                                  EQU     3001H
+GL_CLIP_PLANE2                                  EQU     3002H
+GL_CLIP_PLANE3                                  EQU     3003H
+GL_CLIP_PLANE4                                  EQU     3004H
+GL_CLIP_PLANE5                                  EQU     3005H
+
+GL_BYTE                                         EQU     1400H
+GL_UNSIGNED_BYTE                                EQU     1401H
+GL_SHORT                                        EQU     1402H
+GL_UNSIGNED_SHORT                               EQU     1403H
+GL_INT                                          EQU     1404H
+GL_UNSIGNED_INT                                 EQU     1405H
+GL_FLOAT                                        EQU     1406H
+GL_2_BYTES                                      EQU     1407H
+GL_3_BYTES                                      EQU     1408H
+GL_4_BYTES                                      EQU     1409H
+GL_DOUBLE                                       EQU     140AH
+
+GL_NONE                                         EQU     0
+GL_FRONT_LEFT                                   EQU     0400H
+GL_FRONT_RIGHT                                  EQU     0401H
+GL_BACK_LEFT                                    EQU     0402H
+GL_BACK_RIGHT                                   EQU     0403H
+GL_FRONT                                        EQU     0404H
+GL_BACK                                         EQU     0405H
+GL_LEFT                                         EQU     0406H
+GL_RIGHT                                        EQU     0407H
+GL_FRONT_AND_BACK                               EQU     0408H
+GL_AUX0                                         EQU     0409H
+GL_AUX1                                         EQU     040AH
+GL_AUX2                                         EQU     040BH
+GL_AUX3                                         EQU     040CH
+
+GL_NO_ERROR                                     EQU     0
+GL_INVALID_ENUM                                 EQU     0500H
+GL_INVALID_VALUE                                EQU     0501H
+GL_INVALID_OPERATION                            EQU     0502H
+GL_STACK_OVERFLOW                               EQU     0503H
+GL_STACK_UNDERFLOW                              EQU     0504H
+GL_OUT_OF_MEMORY                                EQU     0505H
+
+GL_2D                                           EQU     0600H
+GL_3D                                           EQU     0601H
+GL_3D_COLOR                                     EQU     0602H
+GL_3D_COLOR_TEXTURE                             EQU     0603H
+GL_4D_COLOR_TEXTURE                             EQU     0604H
+
+GL_PASS_THROUGH_TOKEN                           EQU     0700H
+GL_POINT_TOKEN                                  EQU     0701H
+GL_LINE_TOKEN                                   EQU     0702H
+GL_POLYGON_TOKEN                                EQU     0703H
+GL_BITMAP_TOKEN                                 EQU     0704H
+GL_DRAW_PIXEL_TOKEN                             EQU     0705H
+GL_COPY_PIXEL_TOKEN                             EQU     0706H
+GL_LINE_RESET_TOKEN                             EQU     0707H
+
+GL_EXP                                          EQU     0800H
+GL_EXP2                                         EQU     0801H
+
+GL_CW                                           EQU     0900H
+GL_CCW                                          EQU     0901H
+
+GL_COEFF                                        EQU     0A00H
+GL_ORDER                                        EQU     0A01H
+GL_DOMAIN                                       EQU     0A02H
+
+GL_CURRENT_COLOR                                EQU     0B00H
+GL_CURRENT_INDEX                                EQU     0B01H
+GL_CURRENT_NORMAL                               EQU     0B02H
+GL_CURRENT_TEXTURE_COORDS                       EQU     0B03H
+GL_CURRENT_RASTER_COLOR                         EQU     0B04H
+GL_CURRENT_RASTER_INDEX                         EQU     0B05H
+GL_CURRENT_RASTER_TEXTURE_COORDS                EQU     0B06H
+GL_CURRENT_RASTER_POSITION                      EQU     0B07H
+GL_CURRENT_RASTER_POSITION_VALID                EQU     0B08H
+GL_CURRENT_RASTER_DISTANCE                      EQU     0B09H
+GL_POINT_SMOOTH                                 EQU     0B10H
+GL_POINT_SIZE                                   EQU     0B11H
+GL_POINT_SIZE_RANGE                             EQU     0B12H
+GL_POINT_SIZE_GRANULARITY                       EQU     0B13H
+GL_LINE_SMOOTH                                  EQU     0B20H
+GL_LINE_WIDTH                                   EQU     0B21H
+GL_LINE_WIDTH_RANGE                             EQU     0B22H
+GL_LINE_WIDTH_GRANULARITY                       EQU     0B23H
+GL_LINE_STIPPLE                                 EQU     0B24H
+GL_LINE_STIPPLE_PATTERN                         EQU     0B25H
+GL_LINE_STIPPLE_REPEAT                          EQU     0B26H
+GL_LIST_MODE                                    EQU     0B30H
+GL_MAX_LIST_NESTING                             EQU     0B31H
+GL_LIST_BASE                                    EQU     0B32H
+GL_LIST_INDEX                                   EQU     0B33H
+GL_POLYGON_MODE                                 EQU     0B40H
+GL_POLYGON_SMOOTH                               EQU     0B41H
+GL_POLYGON_STIPPLE                              EQU     0B42H
+GL_EDGE_FLAG                                    EQU     0B43H
+GL_CULL_FACE                                    EQU     0B44H
+GL_CULL_FACE_MODE                               EQU     0B45H
+GL_FRONT_FACE                                   EQU     0B46H
+GL_LIGHTING                                     EQU     0B50H
+GL_LIGHT_MODEL_LOCAL_VIEWER                     EQU     0B51H
+GL_LIGHT_MODEL_TWO_SIDE                         EQU     0B52H
+GL_LIGHT_MODEL_AMBIENT                          EQU     0B53H
+GL_SHADE_MODEL                                  EQU     0B54H
+GL_COLOR_MATERIAL_FACE                          EQU     0B55H
+GL_COLOR_MATERIAL_PARAMETER                     EQU     0B56H
+GL_COLOR_MATERIAL                               EQU     0B57H
+GL_FOG                                          EQU     0B60H
+GL_FOG_INDEX                                    EQU     0B61H
+GL_FOG_DENSITY                                  EQU     0B62H
+GL_FOG_START                                    EQU     0B63H
+GL_FOG_END                                      EQU     0B64H
+GL_FOG_MODE                                     EQU     0B65H
+GL_FOG_COLOR                                    EQU     0B66H
+GL_DEPTH_RANGE                                  EQU     0B70H
+GL_DEPTH_TEST                                   EQU     0B71H
+GL_DEPTH_WRITEMASK                              EQU     0B72H
+GL_DEPTH_CLEAR_VALUE                            EQU     0B73H
+GL_DEPTH_FUNC                                   EQU     0B74H
+GL_ACCUM_CLEAR_VALUE                            EQU     0B80H
+GL_STENCIL_TEST                                 EQU     0B90H
+GL_STENCIL_CLEAR_VALUE                          EQU     0B91H
+GL_STENCIL_FUNC                                 EQU     0B92H
+GL_STENCIL_VALUE_MASK                           EQU     0B93H
+GL_STENCIL_FAIL                                 EQU     0B94H
+GL_STENCIL_PASS_DEPTH_FAIL                      EQU     0B95H
+GL_STENCIL_PASS_DEPTH_PASS                      EQU     0B96H
+GL_STENCIL_REF                                  EQU     0B97H
+GL_STENCIL_WRITEMASK                            EQU     0B98H
+GL_MATRIX_MODE                                  EQU     0BA0H
+GL_NORMALIZE                                    EQU     0BA1H
+GL_VIEWPORT                                     EQU     0BA2H
+GL_MODELVIEW_STACK_DEPTH                        EQU     0BA3H
+GL_PROJECTION_STACK_DEPTH                       EQU     0BA4H
+GL_TEXTURE_STACK_DEPTH                          EQU     0BA5H
+GL_MODELVIEW_MATRIX                             EQU     0BA6H
+GL_PROJECTION_MATRIX                            EQU     0BA7H
+GL_TEXTURE_MATRIX                               EQU     0BA8H
+GL_ATTRIB_STACK_DEPTH                           EQU     0BB0H
+GL_CLIENT_ATTRIB_STACK_DEPTH                    EQU     0BB1H
+GL_ALPHA_TEST                                   EQU     0BC0H
+GL_ALPHA_TEST_FUNC                              EQU     0BC1H
+GL_ALPHA_TEST_REF                               EQU     0BC2H
+GL_DITHER                                       EQU     0BD0H
+GL_BLEND_DST                                    EQU     0BE0H
+GL_BLEND_SRC                                    EQU     0BE1H
+GL_BLEND                                        EQU     0BE2H
+GL_LOGIC_OP_MODE                                EQU     0BF0H
+GL_INDEX_LOGIC_OP                               EQU     0BF1H
+GL_COLOR_LOGIC_OP                               EQU     0BF2H
+GL_AUX_BUFFERS                                  EQU     0C00H
+GL_DRAW_BUFFER                                  EQU     0C01H
+GL_READ_BUFFER                                  EQU     0C02H
+GL_SCISSOR_BOX                                  EQU     0C10H
+GL_SCISSOR_TEST                                 EQU     0C11H
+GL_INDEX_CLEAR_VALUE                            EQU     0C20H
+GL_INDEX_WRITEMASK                              EQU     0C21H
+GL_COLOR_CLEAR_VALUE                            EQU     0C22H
+GL_COLOR_WRITEMASK                              EQU     0C23H
+GL_INDEX_MODE                                   EQU     0C30H
+GL_RGBA_MODE                                    EQU     0C31H
+GL_DOUBLEBUFFER                                 EQU     0C32H
+GL_STEREO                                       EQU     0C33H
+GL_RENDER_MODE                                  EQU     0C40H
+GL_PERSPECTIVE_CORRECTION_HINT                  EQU     0C50H
+GL_POINT_SMOOTH_HINT                            EQU     0C51H
+GL_LINE_SMOOTH_HINT                             EQU     0C52H
+GL_POLYGON_SMOOTH_HINT                          EQU     0C53H
+GL_FOG_HINT                                     EQU     0C54H
+GL_TEXTURE_GEN_S                                EQU     0C60H
+GL_TEXTURE_GEN_T                                EQU     0C61H
+GL_TEXTURE_GEN_R                                EQU     0C62H
+GL_TEXTURE_GEN_Q                                EQU     0C63H
+GL_PIXEL_MAP_I_TO_I                             EQU     0C70H
+GL_PIXEL_MAP_S_TO_S                             EQU     0C71H
+GL_PIXEL_MAP_I_TO_R                             EQU     0C72H
+GL_PIXEL_MAP_I_TO_G                             EQU     0C73H
+GL_PIXEL_MAP_I_TO_B                             EQU     0C74H
+GL_PIXEL_MAP_I_TO_A                             EQU     0C75H
+GL_PIXEL_MAP_R_TO_R                             EQU     0C76H
+GL_PIXEL_MAP_G_TO_G                             EQU     0C77H
+GL_PIXEL_MAP_B_TO_B                             EQU     0C78H
+GL_PIXEL_MAP_A_TO_A                             EQU     0C79H
+GL_PIXEL_MAP_I_TO_I_SIZE                        EQU     0CB0H
+GL_PIXEL_MAP_S_TO_S_SIZE                        EQU     0CB1H
+GL_PIXEL_MAP_I_TO_R_SIZE                        EQU     0CB2H
+GL_PIXEL_MAP_I_TO_G_SIZE                        EQU     0CB3H
+GL_PIXEL_MAP_I_TO_B_SIZE                        EQU     0CB4H
+GL_PIXEL_MAP_I_TO_A_SIZE                        EQU     0CB5H
+GL_PIXEL_MAP_R_TO_R_SIZE                        EQU     0CB6H
+GL_PIXEL_MAP_G_TO_G_SIZE                        EQU     0CB7H
+GL_PIXEL_MAP_B_TO_B_SIZE                        EQU     0CB8H
+GL_PIXEL_MAP_A_TO_A_SIZE                        EQU     0CB9H
+GL_UNPACK_SWAP_BYTES                            EQU     0CF0H
+GL_UNPACK_LSB_FIRST                             EQU     0CF1H
+GL_UNPACK_ROW_LENGTH                            EQU     0CF2H
+GL_UNPACK_SKIP_ROWS                             EQU     0CF3H
+GL_UNPACK_SKIP_PIXELS                           EQU     0CF4H
+GL_UNPACK_ALIGNMENT                             EQU     0CF5H
+GL_PACK_SWAP_BYTES                              EQU     0D00H
+GL_PACK_LSB_FIRST                               EQU     0D01H
+GL_PACK_ROW_LENGTH                              EQU     0D02H
+GL_PACK_SKIP_ROWS                               EQU     0D03H
+GL_PACK_SKIP_PIXELS                             EQU     0D04H
+GL_PACK_ALIGNMENT                               EQU     0D05H
+GL_MAP_COLOR                                    EQU     0D10H
+GL_MAP_STENCIL                                  EQU     0D11H
+GL_INDEX_SHIFT                                  EQU     0D12H
+GL_INDEX_OFFSET                                 EQU     0D13H
+GL_RED_SCALE                                    EQU     0D14H
+GL_RED_BIAS                                     EQU     0D15H
+GL_ZOOM_X                                       EQU     0D16H
+GL_ZOOM_Y                                       EQU     0D17H
+GL_GREEN_SCALE                                  EQU     0D18H
+GL_GREEN_BIAS                                   EQU     0D19H
+GL_BLUE_SCALE                                   EQU     0D1AH
+GL_BLUE_BIAS                                    EQU     0D1BH
+GL_ALPHA_SCALE                                  EQU     0D1CH
+GL_ALPHA_BIAS                                   EQU     0D1DH
+GL_DEPTH_SCALE                                  EQU     0D1EH
+GL_DEPTH_BIAS                                   EQU     0D1FH
+GL_MAX_EVAL_ORDER                               EQU     0D30H
+GL_MAX_LIGHTS                                   EQU     0D31H
+GL_MAX_CLIP_PLANES                              EQU     0D32H
+GL_MAX_TEXTURE_SIZE                             EQU     0D33H
+GL_MAX_PIXEL_MAP_TABLE                          EQU     0D34H
+GL_MAX_ATTRIB_STACK_DEPTH                       EQU     0D35H
+GL_MAX_MODELVIEW_STACK_DEPTH                    EQU     0D36H
+GL_MAX_NAME_STACK_DEPTH                         EQU     0D37H
+GL_MAX_PROJECTION_STACK_DEPTH                   EQU     0D38H
+GL_MAX_TEXTURE_STACK_DEPTH                      EQU     0D39H
+GL_MAX_VIEWPORT_DIMS                            EQU     0D3AH
+GL_MAX_CLIENT_ATTRIB_STACK_DEPTH                EQU     0D3BH
+GL_SUBPIXEL_BITS                                EQU     0D50H
+GL_INDEX_BITS                                   EQU     0D51H
+GL_RED_BITS                                     EQU     0D52H
+GL_GREEN_BITS                                   EQU     0D53H
+GL_BLUE_BITS                                    EQU     0D54H
+GL_ALPHA_BITS                                   EQU     0D55H
+GL_DEPTH_BITS                                   EQU     0D56H
+GL_STENCIL_BITS                                 EQU     0D57H
+GL_ACCUM_RED_BITS                               EQU     0D58H
+GL_ACCUM_GREEN_BITS                             EQU     0D59H
+GL_ACCUM_BLUE_BITS                              EQU     0D5AH
+GL_ACCUM_ALPHA_BITS                             EQU     0D5BH
+GL_NAME_STACK_DEPTH                             EQU     0D70H
+GL_AUTO_NORMAL                                  EQU     0D80H
+GL_MAP1_COLOR_4                                 EQU     0D90H
+GL_MAP1_INDEX                                   EQU     0D91H
+GL_MAP1_NORMAL                                  EQU     0D92H
+GL_MAP1_TEXTURE_COORD_1                         EQU     0D93H
+GL_MAP1_TEXTURE_COORD_2                         EQU     0D94H
+GL_MAP1_TEXTURE_COORD_3                         EQU     0D95H
+GL_MAP1_TEXTURE_COORD_4                         EQU     0D96H
+GL_MAP1_VERTEX_3                                EQU     0D97H
+GL_MAP1_VERTEX_4                                EQU     0D98H
+GL_MAP2_COLOR_4                                 EQU     0DB0H
+GL_MAP2_INDEX                                   EQU     0DB1H
+GL_MAP2_NORMAL                                  EQU     0DB2H
+GL_MAP2_TEXTURE_COORD_1                         EQU     0DB3H
+GL_MAP2_TEXTURE_COORD_2                         EQU     0DB4H
+GL_MAP2_TEXTURE_COORD_3                         EQU     0DB5H
+GL_MAP2_TEXTURE_COORD_4                         EQU     0DB6H
+GL_MAP2_VERTEX_3                                EQU     0DB7H
+GL_MAP2_VERTEX_4                                EQU     0DB8H
+GL_MAP1_GRID_DOMAIN                             EQU     0DD0H
+GL_MAP1_GRID_SEGMENTS                           EQU     0DD1H
+GL_MAP2_GRID_DOMAIN                             EQU     0DD2H
+GL_MAP2_GRID_SEGMENTS                           EQU     0DD3H
+GL_TEXTURE_1D                                   EQU     0DE0H
+GL_TEXTURE_2D                                   EQU     0DE1H
+GL_FEEDBACK_BUFFER_POINTER                      EQU     0DF0H
+GL_FEEDBACK_BUFFER_SIZE                         EQU     0DF1H
+GL_FEEDBACK_BUFFER_TYPE                         EQU     0DF2H
+GL_SELECTION_BUFFER_POINTER                     EQU     0DF3H
+GL_SELECTION_BUFFER_SIZE                        EQU     0DF4H
+
+GL_TEXTURE_WIDTH                                EQU     1000H
+GL_TEXTURE_HEIGHT                               EQU     1001H
+GL_TEXTURE_INTERNAL_FORMAT                      EQU     1003H
+GL_TEXTURE_BORDER_COLOR                         EQU     1004H
+GL_TEXTURE_BORDER                               EQU     1005H
+
+GL_DONT_CARE                                    EQU     1100H
+GL_FASTEST                                      EQU     1101H
+GL_NICEST                                       EQU     1102H
+
+GL_LIGHT0                                       EQU     4000H
+GL_LIGHT1                                       EQU     4001H
+GL_LIGHT2                                       EQU     4002H
+GL_LIGHT3                                       EQU     4003H
+GL_LIGHT4                                       EQU     4004H
+GL_LIGHT5                                       EQU     4005H
+GL_LIGHT6                                       EQU     4006H
+GL_LIGHT7                                       EQU     4007H
+
+GL_AMBIENT                                      EQU     1200H
+GL_DIFFUSE                                      EQU     1201H
+GL_SPECULAR                                     EQU     1202H
+GL_POSITION                                     EQU     1203H
+GL_SPOT_DIRECTION                               EQU     1204H
+GL_SPOT_EXPONENT                                EQU     1205H
+GL_SPOT_CUTOFF                                  EQU     1206H
+GL_CONSTANT_ATTENUATION                         EQU     1207H
+GL_LINEAR_ATTENUATION                           EQU     1208H
+GL_QUADRATIC_ATTENUATION                        EQU     1209H
+
+GL_COMPILE                                      EQU     1300H
+GL_COMPILE_AND_EXECUTE                          EQU     1301H
+
+GL_CLEAR                                        EQU     1500H
+GL_AND                                          EQU     1501H
+GL_AND_REVERSE                                  EQU     1502H
+GL_COPY                                         EQU     1503H
+GL_AND_INVERTED                                 EQU     1504H
+GL_NOOP                                         EQU     1505H
+GL_XOR                                          EQU     1506H
+GL_OR                                           EQU     1507H
+GL_NOR                                          EQU     1508H
+GL_EQUIV                                        EQU     1509H
+GL_INVERT                                       EQU     150AH
+GL_OR_REVERSE                                   EQU     150BH
+GL_COPY_INVERTED                                EQU     150CH
+GL_OR_INVERTED                                  EQU     150DH
+GL_NAND                                         EQU     150EH
+GL_SET                                          EQU     150FH
+
+GL_EMISSION                                     EQU     1600H
+GL_SHININESS                                    EQU     1601H
+GL_AMBIENT_AND_DIFFUSE                          EQU     1602H
+GL_COLOR_INDEXES                                EQU     1603H
+
+GL_MODELVIEW                                    EQU     1700H
+GL_PROJECTION                                   EQU     1701H
+GL_TEXTURE                                      EQU     1702H
+
+GL_COLOR                                        EQU     1800H
+GL_DEPTH                                        EQU     1801H
+GL_STENCIL                                      EQU     1802H
+
+GL_COLOR_INDEX                                  EQU     1900H
+GL_STENCIL_INDEX                                EQU     1901H
+GL_DEPTH_COMPONENT                              EQU     1902H
+GL_RED                                          EQU     1903H
+GL_GREEN                                        EQU     1904H
+GL_BLUE                                         EQU     1905H
+GL_ALPHA                                        EQU     1906H
+GL_RGB                                          EQU     1907H
+GL_RGBA                                         EQU     1908H
+GL_LUMINANCE                                    EQU     1909H
+GL_LUMINANCE_ALPHA                              EQU     190AH
+
+GL_BITMAP                                       EQU     1A00H
+
+GL_POINT                                        EQU     1B00H
+GL_LINE                                         EQU     1B01H
+GL_FILL                                         EQU     1B02H
+
+GL_RENDER                                       EQU     1C00H
+GL_FEEDBACK                                     EQU     1C01H
+GL_SELECT                                       EQU     1C02H
+
+GL_FLAT                                         EQU     1D00H
+GL_SMOOTH                                       EQU     1D01H
+
+GL_KEEP                                         EQU     1E00H
+GL_REPLACE                                      EQU     1E01H
+GL_INCR                                         EQU     1E02H
+GL_DECR                                         EQU     1E03H
+
+GL_VENDOR                                       EQU     1F00H
+GL_RENDERER                                     EQU     1F01H
+GL_VERSION                                      EQU     1F02H
+GL_EXTENSIONS                                   EQU     1F03H
+
+GL_S                                            EQU     2000H
+GL_T                                            EQU     2001H
+GL_R                                            EQU     2002H
+GL_Q                                            EQU     2003H
+
+GL_MODULATE                                     EQU     2100H
+GL_DECAL                                        EQU     2101H
+
+GL_TEXTURE_ENV_MODE                             EQU     2200H
+GL_TEXTURE_ENV_COLOR                            EQU     2201H
+
+GL_TEXTURE_ENV                                  EQU     2300H
+
+GL_EYE_LINEAR                                   EQU     2400H
+GL_OBJECT_LINEAR                                EQU     2401H
+GL_SPHERE_MAP                                   EQU     2402H
+
+GL_TEXTURE_GEN_MODE                             EQU     2500H
+GL_OBJECT_PLANE                                 EQU     2501H
+GL_EYE_PLANE                                    EQU     2502H
+
+GL_NEAREST                                      EQU     2600H
+GL_LINEAR                                       EQU     2601H
+
+GL_NEAREST_MIPMAP_NEAREST                       EQU     2700H
+GL_LINEAR_MIPMAP_NEAREST                        EQU     2701H
+GL_NEAREST_MIPMAP_LINEAR                        EQU     2702H
+GL_LINEAR_MIPMAP_LINEAR                         EQU     2703H
+
+GL_TEXTURE_MAG_FILTER                           EQU     2800H
+GL_TEXTURE_MIN_FILTER                           EQU     2801H
+GL_TEXTURE_WRAP_S                               EQU     2802H
+GL_TEXTURE_WRAP_T                               EQU     2803H
+
+GL_CLAMP                                        EQU     2900H
+GL_REPEAT                                       EQU     2901H
+
+GL_CLIENT_PIXEL_STORE_BIT                       EQU     00000001H
+GL_CLIENT_VERTEX_ARRAY_BIT                      EQU     00000002H
+GL_CLIENT_ALL_ATTRIB_BITS                       EQU     0FFFFFFFFH
+
+GL_POLYGON_OFFSET_FACTOR                        EQU     8038H
+GL_POLYGON_OFFSET_UNITS                         EQU     2A00H
+GL_POLYGON_OFFSET_POINT                         EQU     2A01H
+GL_POLYGON_OFFSET_LINE                          EQU     2A02H
+GL_POLYGON_OFFSET_FILL                          EQU     8037H
+
+GL_ALPHA4                                       EQU     803BH
+GL_ALPHA8                                       EQU     803CH
+GL_ALPHA12                                      EQU     803DH
+GL_ALPHA16                                      EQU     803EH
+GL_LUMINANCE4                                   EQU     803FH
+GL_LUMINANCE8                                   EQU     8040H
+GL_LUMINANCE12                                  EQU     8041H
+GL_LUMINANCE16                                  EQU     8042H
+GL_LUMINANCE4_ALPHA4                            EQU     8043H
+GL_LUMINANCE6_ALPHA2                            EQU     8044H
+GL_LUMINANCE8_ALPHA8                            EQU     8045H
+GL_LUMINANCE12_ALPHA4                           EQU     8046H
+GL_LUMINANCE12_ALPHA12                          EQU     8047H
+GL_LUMINANCE16_ALPHA16                          EQU     8048H
+GL_INTENSITY                                    EQU     8049H
+GL_INTENSITY4                                   EQU     804AH
+GL_INTENSITY8                                   EQU     804BH
+GL_INTENSITY12                                  EQU     804CH
+GL_INTENSITY16                                  EQU     804DH
+GL_R3_G3_B2                                     EQU     2A10H
+GL_RGB4                                         EQU     804FH
+GL_RGB5                                         EQU     8050H
+GL_RGB8                                         EQU     8051H
+GL_RGB10                                        EQU     8052H
+GL_RGB12                                        EQU     8053H
+GL_RGB16                                        EQU     8054H
+GL_RGBA2                                        EQU     8055H
+GL_RGBA4                                        EQU     8056H
+GL_RGB5_A1                                      EQU     8057H
+GL_RGBA8                                        EQU     8058H
+GL_RGB10_A2                                     EQU     8059H
+GL_RGBA12                                       EQU     805AH
+GL_RGBA16                                       EQU     805BH
+GL_TEXTURE_RED_SIZE                             EQU     805CH
+GL_TEXTURE_GREEN_SIZE                           EQU     805DH
+GL_TEXTURE_BLUE_SIZE                            EQU     805EH
+GL_TEXTURE_ALPHA_SIZE                           EQU     805FH
+GL_TEXTURE_LUMINANCE_SIZE                       EQU     8060H
+GL_TEXTURE_INTENSITY_SIZE                       EQU     8061H
+GL_PROXY_TEXTURE_1D                             EQU     8063H
+GL_PROXY_TEXTURE_2D                             EQU     8064H
+
+GL_TEXTURE_PRIORITY                             EQU     8066H
+GL_TEXTURE_RESIDENT                             EQU     8067H
+GL_TEXTURE_BINDING_1D                           EQU     8068H
+GL_TEXTURE_BINDING_2D                           EQU     8069H
+
+GL_VERTEX_ARRAY                                 EQU     8074H
+GL_NORMAL_ARRAY                                 EQU     8075H
+GL_COLOR_ARRAY                                  EQU     8076H
+GL_INDEX_ARRAY                                  EQU     8077H
+GL_TEXTURE_COORD_ARRAY                          EQU     8078H
+GL_EDGE_FLAG_ARRAY                              EQU     8079H
+GL_VERTEX_ARRAY_SIZE                            EQU     807AH
+GL_VERTEX_ARRAY_TYPE                            EQU     807BH
+GL_VERTEX_ARRAY_STRIDE                          EQU     807CH
+GL_NORMAL_ARRAY_TYPE                            EQU     807EH
+GL_NORMAL_ARRAY_STRIDE                          EQU     807FH
+GL_COLOR_ARRAY_SIZE                             EQU     8081H
+GL_COLOR_ARRAY_TYPE                             EQU     8082H
+GL_COLOR_ARRAY_STRIDE                           EQU     8083H
+GL_INDEX_ARRAY_TYPE                             EQU     8085H
+GL_INDEX_ARRAY_STRIDE                           EQU     8086H
+GL_TEXTURE_COORD_ARRAY_SIZE                     EQU     8088H
+GL_TEXTURE_COORD_ARRAY_TYPE                     EQU     8089H
+GL_TEXTURE_COORD_ARRAY_STRIDE                   EQU     808AH
+GL_EDGE_FLAG_ARRAY_STRIDE                       EQU     808CH
+GL_VERTEX_ARRAY_POINTER                         EQU     808EH
+GL_NORMAL_ARRAY_POINTER                         EQU     808FH
+GL_COLOR_ARRAY_POINTER                          EQU     8090H
+GL_INDEX_ARRAY_POINTER                          EQU     8091H
+GL_TEXTURE_COORD_ARRAY_POINTER                  EQU     8092H
+GL_EDGE_FLAG_ARRAY_POINTER                      EQU     8093H
+GL_V2F                                          EQU     2A20H
+GL_V3F                                          EQU     2A21H
+GL_C4UB_V2F                                     EQU     2A22H
+GL_C4UB_V3F                                     EQU     2A23H
+GL_C3F_V3F                                      EQU     2A24H
+GL_N3F_V3F                                      EQU     2A25H
+GL_C4F_N3F_V3F                                  EQU     2A26H
+GL_T2F_V3F                                      EQU     2A27H
+GL_T4F_V4F                                      EQU     2A28H
+GL_T2F_C4UB_V3F                                 EQU     2A29H
+GL_T2F_C3F_V3F                                  EQU     2A2AH
+GL_T2F_N3F_V3F                                  EQU     2A2BH
+GL_T2F_C4F_N3F_V3F                              EQU     2A2CH
+GL_T4F_C4F_N3F_V4F                              EQU     2A2DH
+
+GL_EXT_vertex_array                             EQU     1
+GL_EXT_bgra                                     EQU     1
+GL_EXT_paletted_texture                         EQU     1
+GL_WIN_swap_hint                                EQU     1
+GL_WIN_draw_range_elements                      EQU     1
+
+GL_VERTEX_ARRAY_EXT                             EQU     8074H
+GL_NORMAL_ARRAY_EXT                             EQU     8075H
+GL_COLOR_ARRAY_EXT                              EQU     8076H
+GL_INDEX_ARRAY_EXT                              EQU     8077H
+GL_TEXTURE_COORD_ARRAY_EXT                      EQU     8078H
+GL_EDGE_FLAG_ARRAY_EXT                          EQU     8079H
+GL_VERTEX_ARRAY_SIZE_EXT                        EQU     807AH
+GL_VERTEX_ARRAY_TYPE_EXT                        EQU     807BH
+GL_VERTEX_ARRAY_STRIDE_EXT                      EQU     807CH
+GL_VERTEX_ARRAY_COUNT_EXT                       EQU     807DH
+GL_NORMAL_ARRAY_TYPE_EXT                        EQU     807EH
+GL_NORMAL_ARRAY_STRIDE_EXT                      EQU     807FH
+GL_NORMAL_ARRAY_COUNT_EXT                       EQU     8080H
+GL_COLOR_ARRAY_SIZE_EXT                         EQU     8081H
+GL_COLOR_ARRAY_TYPE_EXT                         EQU     8082H
+GL_COLOR_ARRAY_STRIDE_EXT                       EQU     8083H
+GL_COLOR_ARRAY_COUNT_EXT                        EQU     8084H
+GL_INDEX_ARRAY_TYPE_EXT                         EQU     8085H
+GL_INDEX_ARRAY_STRIDE_EXT                       EQU     8086H
+GL_INDEX_ARRAY_COUNT_EXT                        EQU     8087H
+GL_TEXTURE_COORD_ARRAY_SIZE_EXT                 EQU     8088H
+GL_TEXTURE_COORD_ARRAY_TYPE_EXT                 EQU     8089H
+GL_TEXTURE_COORD_ARRAY_STRIDE_EXT               EQU     808AH
+GL_TEXTURE_COORD_ARRAY_COUNT_EXT                EQU     808BH
+GL_EDGE_FLAG_ARRAY_STRIDE_EXT                   EQU     808CH
+GL_EDGE_FLAG_ARRAY_COUNT_EXT                    EQU     808DH
+GL_VERTEX_ARRAY_POINTER_EXT                     EQU     808EH
+GL_NORMAL_ARRAY_POINTER_EXT                     EQU     808FH
+GL_COLOR_ARRAY_POINTER_EXT                      EQU     8090H
+GL_INDEX_ARRAY_POINTER_EXT                      EQU     8091H
+GL_TEXTURE_COORD_ARRAY_POINTER_EXT              EQU     8092H
+GL_EDGE_FLAG_ARRAY_POINTER_EXT                  EQU     8093H
+GL_DOUBLE_EXT                                   EQU     GL_DOUBLE
+
+GL_BGR_EXT                                      EQU     80E0H
+GL_BGRA_EXT                                     EQU     80E1H
+
+GL_COLOR_TABLE_FORMAT_EXT                       EQU     80D8H
+GL_COLOR_TABLE_WIDTH_EXT                        EQU     80D9H
+GL_COLOR_TABLE_RED_SIZE_EXT                     EQU     80DAH
+GL_COLOR_TABLE_GREEN_SIZE_EXT                   EQU     80DBH
+GL_COLOR_TABLE_BLUE_SIZE_EXT                    EQU     80DCH
+GL_COLOR_TABLE_ALPHA_SIZE_EXT                   EQU     80DDH
+GL_COLOR_TABLE_LUMINANCE_SIZE_EXT               EQU     80DEH
+GL_COLOR_TABLE_INTENSITY_SIZE_EXT               EQU     80DFH
+
+GL_COLOR_INDEX1_EXT                             EQU     80E2H
+GL_COLOR_INDEX2_EXT                             EQU     80E3H
+GL_COLOR_INDEX4_EXT                             EQU     80E4H
+GL_COLOR_INDEX8_EXT                             EQU     80E5H
+GL_COLOR_INDEX12_EXT                            EQU     80E6H
+GL_COLOR_INDEX16_EXT                            EQU     80E7H
+
+GL_MAX_ELEMENTS_VERTICES_WIN                    EQU     80E8H
+GL_MAX_ELEMENTS_INDICES_WIN                     EQU     80E9H
+
+GL_PHONG_WIN                                    EQU     80EAH
+GL_PHONG_HINT_WIN                               EQU     80EBH
+
+GL_FOG_SPECULAR_TEXTURE_WIN                     EQU     80ECH
+
+GL_LOGIC_OP                                     EQU     GL_INDEX_LOGIC_OP
+GL_TEXTURE_COMPONENTS                           EQU     GL_TEXTURE_INTERNAL_FORMAT
+
+;======================= OpenGL Utility Library definitions =======================
+GLU_VERSION_1_1                                 EQU     1
+GLU_VERSION_1_2                                 EQU     1
+
+GLU_INVALID_ENUM                                EQU     100900
+GLU_INVALID_VALUE                               EQU     100901
+GLU_OUT_OF_MEMORY                               EQU     100902
+GLU_INCOMPATIBLE_GL_VERSION                     EQU     100903
+
+GLU_VERSION                                     EQU     100800
+GLU_EXTENSIONS                                  EQU     100801
+
+GLU_TRUE                                        EQU     GL_TRUE
+GLU_FALSE                                       EQU     GL_FALSE
+
+GLU_SMOOTH                                      EQU     100000
+GLU_FLAT                                        EQU     100001
+GLU_NONE                                        EQU     100002
+
+GLU_POINT                                       EQU     100010
+GLU_LINE                                        EQU     100011
+GLU_FILL                                        EQU     100012
+GLU_SILHOUETTE                                  EQU     100013
+
+GLU_OUTSIDE                                     EQU     100020
+GLU_INSIDE                                      EQU     100021
+
+GLU_TESS_MAX_COORD                              EQU     1.0E150
+
+GLU_TESS_WINDING_RULE                           EQU     100140
+GLU_TESS_BOUNDARY_ONLY                          EQU     100141
+GLU_TESS_TOLERANCE                              EQU     100142
+
+GLU_TESS_WINDING_ODD                            EQU     100130
+GLU_TESS_WINDING_NONZERO                        EQU     100131
+GLU_TESS_WINDING_POSITIVE                       EQU     100132
+GLU_TESS_WINDING_NEGATIVE                       EQU     100133
+GLU_TESS_WINDING_ABS_GEQ_TWO                    EQU     100134
+
+GLU_TESS_BEGIN                                  EQU     100100
+GLU_TESS_VERTEX                                 EQU     100101
+GLU_TESS_END                                    EQU     100102
+GLU_TESS_ERROR                                  EQU     100103
+GLU_TESS_EDGE_FLAG                              EQU     100104
+GLU_TESS_COMBINE                                EQU     100105
+GLU_TESS_BEGIN_DATA                             EQU     100106
+GLU_TESS_VERTEX_DATA                            EQU     100107
+GLU_TESS_END_DATA                               EQU     100108
+GLU_TESS_ERROR_DATA                             EQU     100109
+GLU_TESS_EDGE_FLAG_DATA                         EQU     100110
+GLU_TESS_COMBINE_DATA                           EQU     100111
+
+GLU_TESS_ERROR1                                 EQU     100151
+GLU_TESS_ERROR2                                 EQU     100152
+GLU_TESS_ERROR3                                 EQU     100153
+GLU_TESS_ERROR4                                 EQU     100154
+GLU_TESS_ERROR5                                 EQU     100155
+GLU_TESS_ERROR6                                 EQU     100156
+GLU_TESS_ERROR7                                 EQU     100157
+GLU_TESS_ERROR8                                 EQU     100158
+
+GLU_TESS_MISSING_BEGIN_POLYGON                  EQU     GLU_TESS_ERROR1
+GLU_TESS_MISSING_BEGIN_CONTOUR                  EQU     GLU_TESS_ERROR2
+GLU_TESS_MISSING_END_POLYGON                    EQU     GLU_TESS_ERROR3
+GLU_TESS_MISSING_END_CONTOUR                    EQU     GLU_TESS_ERROR4
+GLU_TESS_COORD_TOO_LARGE                        EQU     GLU_TESS_ERROR5
+GLU_TESS_NEED_COMBINE_CALLBACK                  EQU     GLU_TESS_ERROR6
+
+GLU_AUTO_LOAD_MATRIX                            EQU     100200
+GLU_CULLING                                     EQU     100201
+GLU_SAMPLING_TOLERANCE                          EQU     100203
+GLU_DISPLAY_MODE                                EQU     100204
+GLU_PARAMETRIC_TOLERANCE                        EQU     100202
+GLU_SAMPLING_METHOD                             EQU     100205
+GLU_U_STEP                                      EQU     100206
+GLU_V_STEP                                      EQU     100207
+
+GLU_PATH_LENGTH                                 EQU     100215
+GLU_PARAMETRIC_ERROR                            EQU     100216
+GLU_DOMAIN_DISTANCE                             EQU     100217
+
+GLU_MAP1_TRIM_2                                 EQU     100210
+GLU_MAP1_TRIM_3                                 EQU     100211
+
+GLU_OUTLINE_POLYGON                             EQU     100240
+GLU_OUTLINE_PATCH                               EQU     100241
+
+GLU_NURBS_ERROR1                                EQU     100251
+GLU_NURBS_ERROR2                                EQU     100252
+GLU_NURBS_ERROR3                                EQU     100253
+GLU_NURBS_ERROR4                                EQU     100254
+GLU_NURBS_ERROR5                                EQU     100255
+GLU_NURBS_ERROR6                                EQU     100256
+GLU_NURBS_ERROR7                                EQU     100257
+GLU_NURBS_ERROR8                                EQU     100258
+GLU_NURBS_ERROR9                                EQU     100259
+GLU_NURBS_ERROR10                               EQU     100260
+GLU_NURBS_ERROR11                               EQU     100261
+GLU_NURBS_ERROR12                               EQU     100262
+GLU_NURBS_ERROR13                               EQU     100263
+GLU_NURBS_ERROR14                               EQU     100264
+GLU_NURBS_ERROR15                               EQU     100265
+GLU_NURBS_ERROR16                               EQU     100266
+GLU_NURBS_ERROR17                               EQU     100267
+GLU_NURBS_ERROR18                               EQU     100268
+GLU_NURBS_ERROR19                               EQU     100269
+GLU_NURBS_ERROR20                               EQU     100270
+GLU_NURBS_ERROR21                               EQU     100271
+GLU_NURBS_ERROR22                               EQU     100272
+GLU_NURBS_ERROR23                               EQU     100273
+GLU_NURBS_ERROR24                               EQU     100274
+GLU_NURBS_ERROR25                               EQU     100275
+GLU_NURBS_ERROR26                               EQU     100276
+GLU_NURBS_ERROR27                               EQU     100277
+GLU_NURBS_ERROR28                               EQU     100278
+GLU_NURBS_ERROR29                               EQU     100279
+GLU_NURBS_ERROR30                               EQU     100280
+GLU_NURBS_ERROR31                               EQU     100281
+GLU_NURBS_ERROR32                               EQU     100282
+GLU_NURBS_ERROR33                               EQU     100283
+GLU_NURBS_ERROR34                               EQU     100284
+GLU_NURBS_ERROR35                               EQU     100285
+GLU_NURBS_ERROR36                               EQU     100286
+GLU_NURBS_ERROR37                               EQU     100287
+
+GLU_CW                                          EQU     100120  ;obsolete
+GLU_CCW                                         EQU     100121  ;obsolete
+GLU_INTERIOR                                    EQU     100122  ;obsolete
+GLU_EXTERIOR                                    EQU     100123  ;obsolete
+GLU_UNKNOWN                                     EQU     100124  ;obsolete
+
+GLU_BEGIN                                       EQU     GLU_TESS_BEGIN
+GLU_VERTEX                                      EQU     GLU_TESS_VERTEX
+GLU_END                                         EQU     GLU_TESS_END
+GLU_ERROR                                       EQU     GLU_TESS_ERROR
+GLU_EDGE_FLAG                                   EQU     GLU_TESS_EDGE_FLAG
+
+;====================== OpenGL Auxiliary Library definitions ======================
+AUX_RGB                                         EQU     0
+AUX_RGBA                                        EQU     AUX_RGB
+AUX_INDEX                                       EQU     1
+AUX_SINGLE                                      EQU     0
+AUX_DOUBLE                                      EQU     2
+AUX_DIRECT                                      EQU     0
+AUX_INDIRECT                                    EQU     4
+
+AUX_ACCUM                                       EQU     8
+AUX_ALPHA                                       EQU     16
+AUX_DEPTH24                                     EQU     32
+AUX_STENCIL                                     EQU     64
+AUX_AUX                                         EQU     128
+AUX_DEPTH16                                     EQU     256
+AUX_FIXED_332_PAL                               EQU     512
+AUX_DEPTH                                       EQU     AUX_DEPTH16
+
+AUX_EXPOSE                                      EQU     1
+AUX_CONFIG                                      EQU     2
+AUX_DRAW                                        EQU     4
+AUX_KEYEVENT                                    EQU     8
+AUX_MOUSEDOWN                                   EQU     16
+AUX_MOUSEUP                                     EQU     32
+AUX_MOUSELOC                                    EQU     64
+
+AUX_WINDOWX                                     EQU     0
+AUX_WINDOWY                                     EQU     1
+AUX_MOUSEX                                      EQU     0
+AUX_MOUSEY                                      EQU     1
+AUX_MOUSESTATUS                                 EQU     3
+AUX_KEY                                         EQU     0
+AUX_KEYSTATUS                                   EQU     1
+
+AUX_LEFTBUTTON                                  EQU     1
+AUX_RIGHTBUTTON                                 EQU     2
+AUX_MIDDLEBUTTON                                EQU     4
+AUX_SHIFT                                       EQU     1
+AUX_CONTROL                                     EQU     2
+
+AUX_RETURN                                      EQU     0DH
+AUX_ESCAPE                                      EQU     1BH
+AUX_SPACE                                       EQU     20H
+AUX_LEFT                                        EQU     25H
+AUX_UP                                          EQU     26H
+AUX_RIGHT                                       EQU     27H
+AUX_DOWN                                        EQU     28H
+AUX_A                                           EQU     'A'
+AUX_B                                           EQU     'B'
+AUX_C                                           EQU     'C'
+AUX_D                                           EQU     'D'
+AUX_E                                           EQU     'E'
+AUX_F                                           EQU     'F'
+AUX_G                                           EQU     'G'
+AUX_H                                           EQU     'H'
+AUX_I                                           EQU     'I'
+AUX_J                                           EQU     'J'
+AUX_K                                           EQU     'K'
+AUX_L                                           EQU     'L'
+AUX_M                                           EQU     'M'
+AUX_N                                           EQU     'N'
+AUX_O                                           EQU     'O'
+AUX_P                                           EQU     'P'
+AUX_Q                                           EQU     'Q'
+AUX_R                                           EQU     'R'
+AUX_S                                           EQU     'S'
+AUX_T                                           EQU     'T'
+AUX_U                                           EQU     'U'
+AUX_V                                           EQU     'V'
+AUX_W                                           EQU     'W'
+AUX_X                                           EQU     'X'
+AUX_Y                                           EQU     'Y'
+AUX_Z                                           EQU     'Z'
+AUX_a                                           EQU     'a'
+AUX_b                                           EQU     'b'
+AUX_c                                           EQU     'c'
+AUX_d                                           EQU     'd'
+AUX_e                                           EQU     'e'
+AUX_f                                           EQU     'f'
+AUX_g                                           EQU     'g'
+AUX_h                                           EQU     'h'
+AUX_i                                           EQU     'i'
+AUX_j                                           EQU     'j'
+AUX_k                                           EQU     'k'
+AUX_l                                           EQU     'l'
+AUX_m                                           EQU     'm'
+AUX_n                                           EQU     'n'
+AUX_o                                           EQU     'o'
+AUX_p                                           EQU     'p'
+AUX_q                                           EQU     'q'
+AUX_r                                           EQU     'r'
+AUX_s                                           EQU     's'
+AUX_t                                           EQU     't'
+AUX_u                                           EQU     'u'
+AUX_v                                           EQU     'v'
+AUX_w                                           EQU     'w'
+AUX_x                                           EQU     'x'
+AUX_y                                           EQU     'y'
+AUX_z                                           EQU     'z'
+AUX_0                                           EQU     '0'
+AUX_1                                           EQU     '1'
+AUX_2                                           EQU     '2'
+AUX_3                                           EQU     '3'
+AUX_4                                           EQU     '4'
+AUX_5                                           EQU     '5'
+AUX_6                                           EQU     '6'
+AUX_7                                           EQU     '7'
+AUX_8                                           EQU     '8'
+AUX_9                                           EQU     '9'
+
+AUX_FD                                          EQU     1
+AUX_COLORMAP                                    EQU     3
+AUX_GREYSCALEMAP                                EQU     4
+AUX_FOGMAP                                      EQU     5
+AUX_ONECOLOR                                    EQU     6
+
+AUX_BLACK                                       EQU     0
+AUX_RED                                         EQU     13
+AUX_GREEN                                       EQU     14
+AUX_YELLOW                                      EQU     15
+AUX_BLUE                                        EQU     16
+AUX_MAGENTA                                     EQU     17
+AUX_CYAN                                        EQU     18
+AUX_WHITE                                       EQU     19
+
+AUX_USE_ID                                      EQU     1
+AUX_EXACT_MATCH                                 EQU     2
+AUX_MINIMUM_CRITERIA                            EQU     3
+
+;======================================== Structures ======================================;
+AUX_EVENTREC STRUCT ALIGNMODE
+    event   DD ?
+    data    DD 4 Dup(?)
+AUX_EVENTREC ENDS
+
+AUX_RGBImageRec STRUCT ALIGNMODE
+    sizeX   DD ?
+    sizeY   DD ?
+    data    DD ?
+AUX_RGBImageRec ENDS
+
+;======================================== Functions =======================================;
+GlmfBeginGlsBlock PROTO :QWORD
+GlmfCloseMetaFile PROTO :QWORD
+GlmfEndGlsBlock PROTO :QWORD
+GlmfEndPlayback PROTO :QWORD
+GlmfInitPlayback PROTO :QWORD,:QWORD,:QWORD
+GlmfPlayGlsRecord PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glAccum PROTO :QWORD,:QWORD
+glAlphaFunc PROTO :QWORD,:QWORD
+glAreTexturesResident PROTO :QWORD,:QWORD,:QWORD
+glArrayElement PROTO :QWORD
+glBegin PROTO :QWORD
+glBindTexture PROTO :QWORD,:QWORD
+glBitmap PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glBlendFunc PROTO :QWORD,:QWORD
+glCallList PROTO :QWORD
+glCallLists PROTO :QWORD,:QWORD,:QWORD
+glClear PROTO :QWORD
+glClearAccum PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glClearColor PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glClearDepth PROTO :QWORD,:QWORD
+glClearIndex PROTO :QWORD
+glClearStencil PROTO :QWORD
+glClipPlane PROTO :QWORD,:QWORD
+glColor3b PROTO :QWORD,:QWORD,:QWORD
+glColor3bv PROTO :QWORD
+glColor3d PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glColor3dv PROTO :QWORD
+glColor3f PROTO :QWORD,:QWORD,:QWORD
+glColor3fv PROTO :QWORD
+glColor3i PROTO :QWORD,:QWORD,:QWORD
+glColor3iv PROTO :QWORD
+glColor3s PROTO :QWORD,:QWORD,:QWORD
+glColor3sv PROTO :QWORD
+glColor3ub PROTO :QWORD,:QWORD,:QWORD
+glColor3ubv PROTO :QWORD
+glColor3ui PROTO :QWORD,:QWORD,:QWORD
+glColor3uiv PROTO :QWORD
+glColor3us PROTO :QWORD,:QWORD,:QWORD
+glColor3usv PROTO :QWORD
+glColor4b PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glColor4bv PROTO :QWORD
+glColor4d PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glColor4dv PROTO :QWORD
+glColor4f PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glColor4fv PROTO :QWORD
+glColor4i PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glColor4iv PROTO :QWORD
+glColor4s PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glColor4sv PROTO :QWORD
+glColor4ub PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glColor4ubv PROTO :QWORD
+glColor4ui PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glColor4uiv PROTO :QWORD
+glColor4us PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glColor4usv PROTO :QWORD
+glColorMask PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glColorMaterial PROTO :QWORD,:QWORD
+glColorPointer PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glCopyPixels PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glCopyTexImage1D PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glCopyTexImage2D PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glCopyTexSubImage1D PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glCopyTexSubImage2D PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glCullFace PROTO :QWORD
+glDebugEntry PROTO :QWORD,:QWORD
+glDeleteLists PROTO :QWORD,:QWORD
+glDeleteTextures PROTO :QWORD,:QWORD
+glDepthFunc PROTO :QWORD
+glDepthMask PROTO :QWORD
+glDepthRange PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glDisable PROTO :QWORD
+glDisableClientState PROTO :QWORD
+glDrawArrays PROTO :QWORD,:QWORD,:QWORD
+glDrawBuffer PROTO :QWORD
+glDrawElements PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glDrawPixels PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glEdgeFlag PROTO :QWORD
+glEdgeFlagPointer PROTO :QWORD,:QWORD
+glEdgeFlagv PROTO :QWORD
+glEnable PROTO :QWORD
+glEnableClientState PROTO :QWORD
+glEnd PROTO
+glEndList PROTO
+glEvalCoord1d PROTO :QWORD,:QWORD
+glEvalCoord1dv PROTO :QWORD
+glEvalCoord1f PROTO :QWORD
+glEvalCoord1fv PROTO :QWORD
+glEvalCoord2d PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glEvalCoord2dv PROTO :QWORD
+glEvalCoord2f PROTO :QWORD,:QWORD
+glEvalCoord2fv PROTO :QWORD
+glEvalMesh1 PROTO :QWORD,:QWORD,:QWORD
+glEvalMesh2 PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glEvalPoint1 PROTO :QWORD
+glEvalPoint2 PROTO :QWORD,:QWORD
+glFeedbackBuffer PROTO :QWORD,:QWORD,:QWORD
+glFinish PROTO
+glFlush PROTO
+glFogf PROTO :QWORD,:QWORD
+glFogfv PROTO :QWORD,:QWORD
+glFogi PROTO :QWORD,:QWORD
+glFogiv PROTO :QWORD,:QWORD
+glFrontFace PROTO :QWORD
+glFrustum PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glGenLists PROTO :QWORD
+glGenTextures PROTO :QWORD,:QWORD
+glGetBooleanv PROTO :QWORD,:QWORD
+glGetClipPlane PROTO :QWORD,:QWORD
+glGetDoublev PROTO :QWORD,:QWORD
+glGetError PROTO
+glGetFloatv PROTO :QWORD,:QWORD
+glGetIntegerv PROTO :QWORD,:QWORD
+glGetLightfv PROTO :QWORD,:QWORD,:QWORD
+glGetLightiv PROTO :QWORD,:QWORD,:QWORD
+glGetMapdv PROTO :QWORD,:QWORD,:QWORD
+glGetMapfv PROTO :QWORD,:QWORD,:QWORD
+glGetMapiv PROTO :QWORD,:QWORD,:QWORD
+glGetMaterialfv PROTO :QWORD,:QWORD,:QWORD
+glGetMaterialiv PROTO :QWORD,:QWORD,:QWORD
+glGetPixelMapfv PROTO :QWORD,:QWORD
+glGetPixelMapuiv PROTO :QWORD,:QWORD
+glGetPixelMapusv PROTO :QWORD,:QWORD
+glGetPointerv PROTO :QWORD,:QWORD
+glGetPolygonStipple PROTO :QWORD
+glGetString PROTO :QWORD
+glGetTexEnvfv PROTO :QWORD,:QWORD,:QWORD
+glGetTexEnviv PROTO :QWORD,:QWORD,:QWORD
+glGetTexGendv PROTO :QWORD,:QWORD,:QWORD
+glGetTexGenfv PROTO :QWORD,:QWORD,:QWORD
+glGetTexGeniv PROTO :QWORD,:QWORD,:QWORD
+glGetTexImage PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glGetTexLevelParameterfv PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glGetTexLevelParameteriv PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glGetTexParameterfv PROTO :QWORD,:QWORD,:QWORD
+glGetTexParameteriv PROTO :QWORD,:QWORD,:QWORD
+glHint PROTO :QWORD,:QWORD
+glIndexMask PROTO :QWORD
+glIndexPointer PROTO :QWORD,:QWORD,:QWORD
+glIndexd PROTO :QWORD,:QWORD
+glIndexdv PROTO :QWORD
+glIndexf PROTO :QWORD
+glIndexfv PROTO :QWORD
+glIndexi PROTO :QWORD
+glIndexiv PROTO :QWORD
+glIndexs PROTO :QWORD
+glIndexsv PROTO :QWORD
+glIndexub PROTO :QWORD
+glIndexubv PROTO :QWORD
+glInitNames PROTO
+glInterleavedArrays PROTO :QWORD,:QWORD,:QWORD
+glIsEnabled PROTO :QWORD
+glIsList PROTO :QWORD
+glIsTexture PROTO :QWORD
+glLightModelf PROTO :QWORD,:QWORD
+glLightModelfv PROTO :QWORD,:QWORD
+glLightModeli PROTO :QWORD,:QWORD
+glLightModeliv PROTO :QWORD,:QWORD
+glLightf PROTO :QWORD,:QWORD,:QWORD
+glLightfv PROTO :QWORD,:QWORD,:QWORD
+glLighti PROTO :QWORD,:QWORD,:QWORD
+glLightiv PROTO :QWORD,:QWORD,:QWORD
+glLineStipple PROTO :QWORD,:QWORD
+glLineWidth PROTO :QWORD
+glListBase PROTO :QWORD
+glLoadIdentity PROTO
+glLoadMatrixd PROTO :QWORD
+glLoadMatrixf PROTO :QWORD
+glLoadName PROTO :QWORD
+glLogicOp PROTO :QWORD
+glMap1d PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glMap1f PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glMap2d PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glMap2f PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glMapGrid1d PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glMapGrid1f PROTO :QWORD,:QWORD,:QWORD
+glMapGrid2d PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glMapGrid2f PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glMaterialf PROTO :QWORD,:QWORD,:QWORD
+glMaterialfv PROTO :QWORD,:QWORD,:QWORD
+glMateriali PROTO :QWORD,:QWORD,:QWORD
+glMaterialiv PROTO :QWORD,:QWORD,:QWORD
+glMatrixMode PROTO :QWORD
+glMultMatrixd PROTO :QWORD
+glMultMatrixf PROTO :QWORD
+glNewList PROTO :QWORD,:QWORD
+glNormal3b PROTO :QWORD,:QWORD,:QWORD
+glNormal3bv PROTO :QWORD
+glNormal3d PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glNormal3dv PROTO :QWORD
+glNormal3f PROTO :QWORD,:QWORD,:QWORD
+glNormal3fv PROTO :QWORD
+glNormal3i PROTO :QWORD,:QWORD,:QWORD
+glNormal3iv PROTO :QWORD
+glNormal3s PROTO :QWORD,:QWORD,:QWORD
+glNormal3sv PROTO :QWORD
+glNormalPointer PROTO :QWORD,:QWORD,:QWORD
+glOrtho PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glPassThrough PROTO :QWORD
+glPixelMapfv PROTO :QWORD,:QWORD,:QWORD
+glPixelMapuiv PROTO :QWORD,:QWORD,:QWORD
+glPixelMapusv PROTO :QWORD,:QWORD,:QWORD
+glPixelStoref PROTO :QWORD,:QWORD
+glPixelStorei PROTO :QWORD,:QWORD
+glPixelTransferf PROTO :QWORD,:QWORD
+glPixelTransferi PROTO :QWORD,:QWORD
+glPixelZoom PROTO :QWORD,:QWORD
+glPointSize PROTO :QWORD
+glPolygonMode PROTO :QWORD,:QWORD
+glPolygonOffset PROTO :QWORD,:QWORD
+glPolygonStipple PROTO :QWORD
+glPopAttrib PROTO
+glPopClientAttrib PROTO
+glPopMatrix PROTO
+glPopName PROTO
+glPrioritizeTextures PROTO :QWORD,:QWORD,:QWORD
+glPushAttrib PROTO :QWORD
+glPushClientAttrib PROTO :QWORD
+glPushMatrix PROTO
+glPushName PROTO :QWORD
+glRasterPos2d PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glRasterPos2dv PROTO :QWORD
+glRasterPos2f PROTO :QWORD,:QWORD
+glRasterPos2fv PROTO :QWORD
+glRasterPos2i PROTO :QWORD,:QWORD
+glRasterPos2iv PROTO :QWORD
+glRasterPos2s PROTO :QWORD,:QWORD
+glRasterPos2sv PROTO :QWORD
+glRasterPos3d PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glRasterPos3dv PROTO :QWORD
+glRasterPos3f PROTO :QWORD,:QWORD,:QWORD
+glRasterPos3fv PROTO :QWORD
+glRasterPos3i PROTO :QWORD,:QWORD,:QWORD
+glRasterPos3iv PROTO :QWORD
+glRasterPos3s PROTO :QWORD,:QWORD,:QWORD
+glRasterPos3sv PROTO :QWORD
+glRasterPos4d PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glRasterPos4dv PROTO :QWORD
+glRasterPos4f PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glRasterPos4fv PROTO :QWORD
+glRasterPos4i PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glRasterPos4iv PROTO :QWORD
+glRasterPos4s PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glRasterPos4sv PROTO :QWORD
+glReadBuffer PROTO :QWORD
+glReadPixels PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glRectd PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glRectdv PROTO :QWORD,:QWORD
+glRectf PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glRectfv PROTO :QWORD,:QWORD
+glRecti PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glRectiv PROTO :QWORD,:QWORD
+glRects PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glRectsv PROTO :QWORD,:QWORD
+glRenderMode PROTO :QWORD
+glRotated PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glRotatef PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glScaled PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glScalef PROTO :QWORD,:QWORD,:QWORD
+glScissor PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glSelectBuffer PROTO :QWORD,:QWORD
+glShadeModel PROTO :QWORD
+glStencilFunc PROTO :QWORD,:QWORD,:QWORD
+glStencilMask PROTO :QWORD
+glStencilOp PROTO :QWORD,:QWORD,:QWORD
+glTexCoord1d PROTO :QWORD,:QWORD
+glTexCoord1dv PROTO :QWORD
+glTexCoord1f PROTO :QWORD
+glTexCoord1fv PROTO :QWORD
+glTexCoord1i PROTO :QWORD
+glTexCoord1iv PROTO :QWORD
+glTexCoord1s PROTO :QWORD
+glTexCoord1sv PROTO :QWORD
+glTexCoord2d PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glTexCoord2dv PROTO :QWORD
+glTexCoord2f PROTO :QWORD,:QWORD
+glTexCoord2fv PROTO :QWORD
+glTexCoord2i PROTO :QWORD,:QWORD
+glTexCoord2iv PROTO :QWORD
+glTexCoord2s PROTO :QWORD,:QWORD
+glTexCoord2sv PROTO :QWORD
+glTexCoord3d PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glTexCoord3dv PROTO :QWORD
+glTexCoord3f PROTO :QWORD,:QWORD,:QWORD
+glTexCoord3fv PROTO :QWORD
+glTexCoord3i PROTO :QWORD,:QWORD,:QWORD
+glTexCoord3iv PROTO :QWORD
+glTexCoord3s PROTO :QWORD,:QWORD,:QWORD
+glTexCoord3sv PROTO :QWORD
+glTexCoord4d PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glTexCoord4dv PROTO :QWORD
+glTexCoord4f PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glTexCoord4fv PROTO :QWORD
+glTexCoord4i PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glTexCoord4iv PROTO :QWORD
+glTexCoord4s PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glTexCoord4sv PROTO :QWORD
+glTexCoordPointer PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glTexEnvf PROTO :QWORD,:QWORD,:QWORD
+glTexEnvfv PROTO :QWORD,:QWORD,:QWORD
+glTexEnvi PROTO :QWORD,:QWORD,:QWORD
+glTexEnviv PROTO :QWORD,:QWORD,:QWORD
+glTexGend PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glTexGendv PROTO :QWORD,:QWORD,:QWORD
+glTexGenf PROTO :QWORD,:QWORD,:QWORD
+glTexGenfv PROTO :QWORD,:QWORD,:QWORD
+glTexGeni PROTO :QWORD,:QWORD,:QWORD
+glTexGeniv PROTO :QWORD,:QWORD,:QWORD
+glTexImage1D PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glTexImage2D PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glTexParameterf PROTO :QWORD,:QWORD,:QWORD
+glTexParameterfv PROTO :QWORD,:QWORD,:QWORD
+glTexParameteri PROTO :QWORD,:QWORD,:QWORD
+glTexParameteriv PROTO :QWORD,:QWORD,:QWORD
+glTexSubImage1D PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glTexSubImage2D PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glTranslated PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glTranslatef PROTO :QWORD,:QWORD,:QWORD
+glVertex2d PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glVertex2dv PROTO :QWORD
+glVertex2f PROTO :QWORD,:QWORD
+glVertex2fv PROTO :QWORD
+glVertex2i PROTO :QWORD,:QWORD
+glVertex2iv PROTO :QWORD
+glVertex2s PROTO :QWORD,:QWORD
+glVertex2sv PROTO :QWORD
+glVertex3d PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glVertex3dv PROTO :QWORD
+glVertex3f PROTO :QWORD,:QWORD,:QWORD
+glVertex3fv PROTO :QWORD
+glVertex3i PROTO :QWORD,:QWORD,:QWORD
+glVertex3iv PROTO :QWORD
+glVertex3s PROTO :QWORD,:QWORD,:QWORD
+glVertex3sv PROTO :QWORD
+glVertex4d PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+glVertex4dv PROTO :QWORD
+glVertex4f PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glVertex4fv PROTO :QWORD
+glVertex4i PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glVertex4iv PROTO :QWORD
+glVertex4s PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glVertex4sv PROTO :QWORD
+glVertexPointer PROTO :QWORD,:QWORD,:QWORD,:QWORD
+glViewport PROTO :QWORD,:QWORD,:QWORD,:QWORD
+wglChoosePixelFormat PROTO :QWORD,:QWORD
+wglCopyContext PROTO :QWORD,:QWORD,:QWORD
+wglCreateContext PROTO :QWORD
+wglCreateLayerContext PROTO :QWORD,:QWORD
+wglDeleteContext PROTO :QWORD
+wglDescribeLayerPlane PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+wglDescribePixelFormat PROTO :QWORD,:QWORD,:QWORD,:QWORD
+wglGetCurrentContext PROTO
+wglGetCurrentDC PROTO
+wglGetDefaultProcAddress PROTO :QWORD
+wglGetLayerPaletteEntries PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+wglGetPixelFormat PROTO :QWORD
+wglGetProcAddress PROTO :QWORD
+wglMakeCurrent PROTO :QWORD,:QWORD
+wglRealizeLayerPalette PROTO :QWORD,:QWORD,:QWORD
+wglSetLayerPaletteEntries PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+wglSetPixelFormat PROTO :QWORD,:QWORD,:QWORD
+wglShareLists PROTO :QWORD,:QWORD
+wglSwapBuffers PROTO :QWORD
+wglSwapLayerBuffers PROTO :QWORD,:QWORD
+wglSwapMultipleBuffers PROTO :QWORD,:QWORD
+wglUseFontBitmapsA PROTO :QWORD,:QWORD,:QWORD,:QWORD
+wglUseFontBitmapsW PROTO :QWORD,:QWORD,:QWORD,:QWORD
+wglUseFontOutlinesA PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+wglUseFontOutlinesW PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+
+IFDEF APP_UNICODE
+    wglUseFontBitmaps EQU <wglUseFontBitmapsW>
+    wglUseFontOutlines EQU <wglUseFontOutlinesW>
+ELSE
+    wglUseFontBitmaps EQU <wglUseFontBitmapsA>
+    wglUseFontOutlines EQU <wglUseFontOutlinesA>
+ENDIF
+
+ENDIF ;OPENGL32_INC

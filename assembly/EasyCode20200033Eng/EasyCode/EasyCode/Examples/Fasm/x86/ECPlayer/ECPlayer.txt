@@ -1,0 +1,19 @@
+This is a complete Easy Code visual project (see below for getting the IDE).
+
+For the EC Player to be able to use the digital font, put the QuartzDB.ttf
+file (located at the \EasyCode\Common folder) in the same folder than the
+ECPlayer.exe file.
+
+Feel free to improve it and modify it at your own, and please do not forget
+to mention my name.
+
+
+Enjoy with Easy Code!
+
+Ramon Sala
+
+
+
+Get the Easy Code IDE at:
+
+	https://www.easycode.cat/English/index.htm

@@ -1,0 +1,30 @@
+Easy Code® Visual Assembler v2
+32-bit/64-bit (Windows XP and later)
+Copyright (C) 2004-2021, Ramon Sala.  All rights reserved.
+
+
+UASM.TXT
+========
+
+- Remarks
+---------------
+    If your current version of Easy Code 2 is equal to or later than 2.01.0.0002 (June 26, 2017) and you have already configured the new files included with this version ("UAsm.cfg" and "UAsm64.cfg"), you can disregard the infomation in this document, altogether.
+
+
+- Directives
+---------------
+    After downloading the UASM files (both the 32-bit and the 64-bit versions), it is recommended you place them in the JWASM folder since there are other needed resources in there, such as "jwlink.exe".  However, Easy Code 2.01.0.0002 and later versions also include specific configuration files for UASM, both 32-bit and 64-bit.  So, if you place "uasm32.exe" and "uasm64.exe" in the JWASM folder, your UASM configuration files might be copies of the JWASM configuration files.  To resolve this issue if it arises, you should replace "jwasm.exe" with "uasm32.exe" inside the "UAsm.cfg" file, or with "uasm64.exe" inside the "UAsm64.cfg" file.  As an alternative option, you may create a separate dedicated folder for the UASM files.
+
+
+
+............................................
+Please visit the Easy Code related forums:
+    http://www.masm32.com/board/index.php
+    http://board.flatassembler.net
+
+Thank you!
+
+Ramon Sala
+
+----------------
+Rev. 17-APR-2021

@@ -1,0 +1,19 @@
+Easy Code® Visual Assembler v2
+32-bit/64-bit (Windows XP and later)
+Copyright © 2004-2021, Ramon Sala / Héctor A. Medina.  All rights reserved.
+
+
+SOLASM.TXT
+==========
+
+- Remarks
+---------------
+    Because the #ifndef directive sometimes does not work properly, especially with structures, beginning with version 2.02.0.0011 some constants and almost all structures have been moved to the "windows.inc" file.  Please see the topic entitled 'The Solar Assembler' in the Easy Code help file.
+
+
+Thank you!
+
+Ramon Sala
+
+------------------------
+Rev. 17-APR-2021

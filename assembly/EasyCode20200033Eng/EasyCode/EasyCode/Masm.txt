@@ -1,0 +1,55 @@
+Easy Code® Visual Assembler v2
+32-bit/64-bit (Windows XP and later)
+Copyright © 2004-2021, Ramon Sala / Héctor A. Medina.
+All rights reserved.
+
+
+MASM.TXT
+========
+
+- Important
+---------------
+    Note: The information in this section applies ONLY if you are utilizing the
+    MASM32 SDK 11 kit downloaded from the MASM32 SDK Project's official website
+    at:
+
+    "http://www.masm32.com/download.htm"
+
+    which  is based on  Microsoft's  32-bit  Macro Assembler version 11.  It is
+    imperative  that  you  follow  all  supplied  directions  to  ensure proper
+    compilation of your programs. If, however, you are using an updated version
+    of Microsoft's macro  assembler and its associated libraries extracted from
+    a  different source,  such as any  one of  Microsoft's  newer  SDK packages
+    (version 12 or up),  the following  information  DOES NOT  apply to you and
+    should be disregarded.
+
+    1. Easy Code requires the MASM32 SDK in order to build 32-bit projects with
+    the ASMC, JWASM, MASM, POASM and UASM  assemblers. The  MASM32 SDK  also is
+    necessary for  building 32-bit visual/GUI projects with the FASM assembler,
+    but  FASM classic  projects  which are  non-visual/non-GUI  do not  require
+    MASM32, at all.  However, the  MASM32 SDK currently available contains some
+    errors in the  'kernel32'  and  'kernel32p' files which inadvertantly cause
+    the Easy Code  linker (link.exe)  to fail.  To resolve this problem, please
+    download the following file:
+
+    https://easycode.cat/English/Download/kernel.zip
+
+    2. After unzipping the downloaded contents, move the "kernel32.inc" and the
+    "kernel32p.inc"  files to the  "%root%\masm32\include"  folder, ensuring to
+    overwrite  any  existing copies.  Then,  move  the  "kernel32.lib"  and the
+    "kernel32p.lib" files to the "%root%\masm32\lib" folder, again, ensuring to
+    overwrite any existing copies.
+
+
+
+............................................
+Please visit the Easy Code related forums:
+    http://www.masm32.com/board/index.php
+    http://board.flatassembler.net
+
+Thank you!
+
+Ramon Sala
+
+----------------
+Rev. 17-APR-2021

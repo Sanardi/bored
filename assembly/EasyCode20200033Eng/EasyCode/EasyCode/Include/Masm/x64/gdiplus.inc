@@ -1,0 +1,1815 @@
+; =====================================================;
+;                                                      ;
+;  gdiplus.inc for Easy Code 2.0 64-bit Masm projects  ;
+;                  (version 1.0.1)                     ;
+;                                                      ;
+;           Copyright © Ramon Sala 2019-2020           ;
+;                                                      ;
+; =====================================================;
+
+IFNDEF GDIPLUS_INC
+GDIPLUS_INC   EQU     1
+
+IFNDEF LF_FACESIZE
+    LF_FACESIZE EQU 32 
+ENDIF
+
+AlphaShift                                      EQU     24
+RedShift                                        EQU     16
+GreenShift                                      EQU     8
+BlueShift                                       EQU     0
+AlphaMask                                       EQU     0FF000000H
+RedMask                                         EQU     000FF0000H
+GreenMask                                       EQU     00000FF00H
+BlueMask                                        EQU     0000000FFH
+
+ImageLockModeRead                               EQU     1
+ImageLockModeWrite                              EQU     2
+ImageLockModeReadWrite                          EQU     3
+ImageLockModeUserInputBuf                       EQU     4
+
+PixelFormat1bppIndexed                          EQU     30101H
+PixelFormat4bppIndexed                          EQU     30402H
+PixelFormat8bppIndexed                          EQU     30803H
+PixelFormat16bppGreyScale                       EQU     101004H
+PixelFormat16bppRGB555                          EQU     21005H
+PixelFormat16bppRGB565                          EQU     21006H
+PixelFormat16bppARGB1555                        EQU     61007H
+PixelFormat24bppRGB                             EQU     21808H
+PixelFormat32bppRGB                             EQU     22009
+PixelFormat32bppARGB                            EQU     26200AH
+PixelFormat32bppPARGB                           EQU     0E200BH
+PixelFormat48bppRGB                             EQU     10300CH
+PixelFormat64bppARGB                            EQU     34400DH
+PixelFormat64bppPARGB                           EQU     1C400EH
+PixelFormatMax                                  Equ     0FH
+
+PropertyTagTypeByte                             EQU     1
+PropertyTagTypeASCII                            EQU     2
+PropertyTagTypeShort                            EQU     3
+PropertyTagTypeLong                             EQU     4
+PropertyTagTypeRational                         EQU     5
+PropertyTagTypeUndefined                        EQU     7
+PropertyTagTypeSLONG                            EQU     9
+PropertyTagTypeSRational                        EQU     10
+
+PropertyTagExifIFD                              EQU     8769H
+PropertyTagGpsIFD                               EQU     8825H
+
+PropertyTagNewSubfileType                       EQU     0FEH
+PropertyTagSubfileType                          EQU     0FFH
+PropertyTagImageWidth                           EQU     100H
+PropertyTagImageHeight                          EQU     101H
+PropertyTagBitsPerSample                        EQU     102H
+PropertyTagCompression                          EQU     103H
+PropertyTagPhotometricInterp                    EQU     106H
+PropertyTagThreshHolding                        EQU     107H
+PropertyTagCellWidth                            EQU     108H
+PropertyTagCellHeight                           EQU     109H
+PropertyTagFillOrder                            EQU     10AH
+PropertyTagDocumentName                         EQU     10DH
+PropertyTagImageDescription                     EQU     10EH
+PropertyTagEquipMake                            EQU     10FH
+PropertyTagEquipModel                           EQU     110H
+PropertyTagStripOffsets                         EQU     111H
+PropertyTagOrientation                          EQU     112H
+PropertyTagSamplesPerPixel                      EQU     115H
+PropertyTagRowsPerStrip                         EQU     116H
+PropertyTagStripBytesCount                      EQU     117H
+PropertyTagMinSampleValue                       EQU     118H
+PropertyTagMaxSampleValue                       EQU     119H
+PropertyTagXResolution                          EQU     11AH
+PropertyTagYResolution                          EQU     11BH
+PropertyTagPlanarConfig                         EQU     11CH
+PropertyTagPageName                             EQU     11DH
+PropertyTagXPosition                            EQU     11EH
+PropertyTagYPosition                            EQU     11FH
+PropertyTagFreeOffset                           EQU     120H
+PropertyTagFreeByteCounts                       EQU     121H
+PropertyTagGrayResponseUnit                     EQU     122H
+PropertyTagGrayResponseCurve                    EQU     123H
+PropertyTagT4Option                             EQU     124H
+PropertyTagT6Option                             EQU     125H
+PropertyTagResolutionUnit                       EQU     128H
+PropertyTagPageNumber                           EQU     129H
+PropertyTagTransferFuncition                    EQU     12DH
+PropertyTagSoftwareUsed                         EQU     131H
+PropertyTagDateTime                             EQU     132H
+PropertyTagArtist                               EQU     13BH
+PropertyTagHostComputer                         EQU     13CH
+PropertyTagPredictor                            EQU     13DH
+PropertyTagWhitePoint                           EQU     13EH
+PropertyTagPrimaryChromaticities                EQU     13FH
+PropertyTagColorMap                             EQU     140H
+PropertyTagHalftoneHints                        EQU     141H
+PropertyTagTileWidth                            EQU     142H
+PropertyTagTileLength                           EQU     143H
+PropertyTagTileOffset                           EQU     144H
+PropertyTagTileByteCounts                       EQU     145H
+PropertyTagInkSet                               EQU     14CH
+PropertyTagInkNames                             EQU     14DH
+PropertyTagNumberOfInks                         EQU     14EH
+PropertyTagDotRange                             EQU     150H
+PropertyTagTargetPrinter                        EQU     151H
+PropertyTagExtraSamples                         EQU     152H
+PropertyTagSampleFormat                         EQU     153H
+PropertyTagSMinSampleValue                      EQU     154H
+PropertyTagSMaxSampleValue                      EQU     155H
+PropertyTagTransferRange                        EQU     156H
+
+PropertyTagJPEGProc                             EQU     200H
+PropertyTagJPEGInterFormat                      EQU     201H
+PropertyTagJPEGInterLength                      EQU     202H
+PropertyTagJPEGRestartInterval                  EQU     203H
+PropertyTagJPEGLosslessPredictors               EQU     205H
+PropertyTagJPEGPointTransforms                  EQU     206H
+PropertyTagJPEGQTables                          EQU     207H
+PropertyTagJPEGDCTables                         EQU     208H
+PropertyTagJPEGACTables                         EQU     209H
+PropertyTagYCbCrCoefficients                    EQU     211H
+PropertyTagYCbCrSubsampling                     EQU     212H
+PropertyTagYCbCrPositioning                     EQU     213H
+PropertyTagREFBlackWhite                        EQU     214H
+PropertyTagICCProfile                           EQU     8773H
+PropertyTagGamma                                EQU     301H
+PropertyTagICCProfileDescriptor                 EQU     302H
+PropertyTagSRGBRenderingIntent                  EQU     303H
+PropertyTagImageTitle                           EQU     320H
+PropertyTagCopyright                            EQU     8298H
+
+PropertyTagResolutionXUnit                      EQU     5001H
+PropertyTagResolutionYUnit                      EQU     5002H
+PropertyTagResolutionXLengthUnit                EQU     5003H
+PropertyTagResolutionYLengthUnit                EQU     5004H
+PropertyTagPrintFlags                           EQU     5005H
+PropertyTagPrintFlagsVersion                    EQU     5006H
+PropertyTagPrintFlagsCrop                       EQU     5007H
+PropertyTagPrintFlagsBleedWidth                 EQU     5008H
+PropertyTagPrintFlagsBleedWidthScale            EQU     5009H
+PropertyTagHalftoneLPI                          EQU     500AH
+PropertyTagHalftoneLPIUnit                      EQU     500BH
+PropertyTagHalftoneDegree                       EQU     500CH
+PropertyTagHalftoneShape                        EQU     500DH
+PropertyTagHalftoneMisc                         EQU     500EH
+PropertyTagHalftoneScreen                       EQU     500FH
+PropertyTagJPEGQuality                          EQU     5010H
+PropertyTagGridSize                             EQU     5011H
+PropertyTagThumbnailFormat                      EQU     5012H
+PropertyTagThumbnailWidth                       EQU     5013H
+PropertyTagThumbnailHeight                      EQU     5014H
+PropertyTagThumbnailColorDepth                  EQU     5015H
+PropertyTagThumbnailPlanes                      EQU     5016H
+PropertyTagThumbnailRawBytes                    EQU     5017H
+PropertyTagThumbnailSize                        EQU     5018H
+PropertyTagThumbnailCompressedSize              EQU     5019H
+PropertyTagColorTransferFunction                EQU     501AH
+PropertyTagThumbnailData                        EQU     501BH
+
+PropertyTagThumbnailImageWidth                  EQU     5020H
+PropertyTagThumbnailImageHeight                 EQU     5021H
+PropertyTagThumbnailBitsPerSample               EQU     5022H
+PropertyTagThumbnailCompression                 EQU     5023H
+PropertyTagThumbnailPhotometricInterp           EQU     5024H
+PropertyTagThumbnailImageDescription            EQU     5025H
+PropertyTagThumbnailEquipMake                   EQU     5026H
+PropertyTagThumbnailEquipModel                  EQU     5027H
+PropertyTagThumbnailStripOffsets                EQU     5028H
+PropertyTagThumbnailOrientation                 EQU     5029H
+PropertyTagThumbnailSamplesPerPixel             EQU     502AH
+PropertyTagThumbnailRowsPerStrip                EQU     502BH
+PropertyTagThumbnailStripBytesCount             EQU     502CH
+PropertyTagThumbnailResolutionX                 EQU     502DH
+PropertyTagThumbnailResolutionY                 EQU     502EH
+PropertyTagThumbnailPlanarConfig                EQU     502FH
+PropertyTagThumbnailResolutionUnit              EQU     5030H
+PropertyTagThumbnailTransferFunction            EQU     5031H
+PropertyTagThumbnailSoftwareUsed                EQU     5032H
+PropertyTagThumbnailDateTime                    EQU     5033H
+PropertyTagThumbnailArtist                      EQU     5034H
+PropertyTagThumbnailWhitePoint                  EQU     5035H
+PropertyTagThumbnailPrimaryChromaticities       EQU     5036H
+PropertyTagThumbnailYCbCrCoefficients           EQU     5037H
+PropertyTagThumbnailYCbCrSubsampling            EQU     5038H
+PropertyTagThumbnailYCbCrPositioning            EQU     5039H
+PropertyTagThumbnailRefBlackWhite               EQU     503AH
+PropertyTagThumbnailCopyRight                   EQU     503BH
+PropertyTagLuminanceTable                       EQU     5090H
+PropertyTagChrominanceTable                     EQU     5091H
+PropertyTagFrameDelay                           EQU     5100H
+PropertyTagLoopCount                            EQU     5101H
+PropertyTagPixelUnit                            EQU     5110H
+PropertyTagPixelPerUnitX                        EQU     5111H
+PropertyTagPixelPerUnitY                        EQU     5112H
+PropertyTagPaletteHistogram                     EQU     5113H
+
+PropertyTagExifExposureTime                     EQU     829AH
+PropertyTagExifFNumber                          EQU     829DH
+PropertyTagExifExposureProg                     EQU     8822H
+PropertyTagExifSpectralSense                    EQU     8824H
+PropertyTagExifISOSpeed                         EQU     8827H
+PropertyTagExifOECF                             EQU     8828H
+PropertyTagExifVer                              EQU     9000H
+PropertyTagExifDTOrig                           EQU     9003H
+PropertyTagExifDTDigitized                      EQU     9004H
+PropertyTagExifCompConfig                       EQU     9101H
+PropertyTagExifCompBPP                          EQU     9102H
+PropertyTagExifShutterSpeed                     EQU     9201H
+PropertyTagExifAperture                         EQU     9202H
+PropertyTagExifBrightness                       EQU     9203H
+PropertyTagExifExposureBias                     EQU     9204H
+PropertyTagExifMaxAperture                      EQU     9205H
+PropertyTagExifSubjectDist                      EQU     9206H
+PropertyTagExifMeteringMode                     EQU     9207H
+PropertyTagExifLightSource                      EQU     9208H
+PropertyTagExifFlash                            EQU     9209H
+PropertyTagExifFocalLength                      EQU     920AH
+PropertyTagExifMakerNote                        EQU     927CH
+PropertyTagExifUserComment                      EQU     9286H
+PropertyTagExifDTSubsec                         EQU     9290H
+PropertyTagExifDTOrigSS                         EQU     9291H
+PropertyTagExifDTDigSS                          EQU     9292H
+PropertyTagExifFPXVer                           EQU     0A000H
+PropertyTagExifColorSpace                       EQU     0A001H
+PropertyTagExifPixXDim                          EQU     0A002H
+PropertyTagExifPixYDim                          EQU     0A003H
+PropertyTagExifRelatedWav                       EQU     0A004H
+PropertyTagExifInterop                          EQU     0A005H
+PropertyTagExifFlashEnergy                      EQU     0A20BH
+PropertyTagExifSpatialFR                        EQU     0A20CH
+PropertyTagExifFocalXRes                        EQU     0A20EH
+PropertyTagExifFocalYRes                        EQU     0A20FH
+PropertyTagExifFocalResUnit                     EQU     0A210H
+PropertyTagExifSubjectLoc                       EQU     0A214H
+PropertyTagExifExposureIndex                    EQU     0A215H
+PropertyTagExifSensingMethod                    EQU     0A217H
+PropertyTagExifFileSource                       EQU     0A300H
+PropertyTagExifSceneType                        EQU     0A301H
+PropertyTagExifCfaPattern                       EQU     0A302H
+PropertyTagGpsVer                               EQU     0
+PropertyTagGpsLatitudeRef                       EQU     1
+PropertyTagGpsLatitude                          EQU     2
+PropertyTagGpsLongitudeRef                      EQU     3
+PropertyTagGpsLongitude                         EQU     4
+PropertyTagGpsAltitudeRef                       EQU     5
+PropertyTagGpsAltitude                          EQU     6
+PropertyTagGpsGpsTime                           EQU     7
+PropertyTagGpsGpsSatellites                     EQU     8
+PropertyTagGpsGpsStatus                         EQU     9
+PropertyTagGpsGpsMeasureMode                    EQU     0AH
+PropertyTagGpsGpsDop                            EQU     0BH
+PropertyTagGpsSpeedRef                          EQU     0CH
+PropertyTagGpsSpeed                             EQU     0DH
+PropertyTagGpsTrackRef                          EQU     0EH
+PropertyTagGpsTrack                             EQU     0FH
+PropertyTagGpsImgDirRef                         EQU     10H
+PropertyTagGpsImgDir                            EQU     11H
+PropertyTagGpsMapDatum                          EQU     12H
+PropertyTagGpsDestLatRef                        EQU     13H
+PropertyTagGpsDestLat                           EQU     14H
+PropertyTagGpsDestLongRef                       EQU     15H
+PropertyTagGpsDestLong                          EQU     16H
+PropertyTagGpsDestBearRef                       EQU     17H
+PropertyTagGpsDestBear                          EQU     18H
+PropertyTagGpsDestDistRef                       EQU     19H
+PropertyTagGpsDestDist                          EQU     1AH
+
+UnitWorld                                       EQU     0
+UnitDisplay                                     EQU     1
+UnitPixel                                       EQU     2
+UnitPoint                                       EQU     3
+UnitInch                                        EQU     4
+UnitDocument                                    EQU     5
+UnitMillimeter                                  EQU     6
+
+ColorsAliceBlue                                 EQU     0FFF0F8FFH
+ColorsAntiqueWhite                              EQU     0FFFAEBD7H
+ColorsAqua                                      EQU     0FF00FFFFH
+ColorsAquamarine                                EQU     0FF7FFFD4H
+ColorsAzure                                     EQU     0FFF0FFFFH
+ColorsBeige                                     EQU     0FFF5F5DCH
+ColorsBisque                                    EQU     0FFFFE4C4H
+ColorsBlack                                     EQU     0FF000000H
+ColorsBlanchedAlmond                            EQU     0FFFFEBCDH
+ColorsBlue                                      EQU     0FF0000FFH
+ColorsBlueViolet                                EQU     0FF8A2BE2H
+ColorsBrown                                     EQU     0FFA52A2AH
+ColorsBurlyWood                                 EQU     0FFDEB887H
+ColorsCadetBlue                                 EQU     0FF5F9EA0H
+ColorsChartreuse                                EQU     0FF7FFF00H
+ColorsChocolate                                 EQU     0FFD2691EH
+ColorsCoral                                     EQU     0FFFF7F50H
+ColorsCornflowerBlue                            EQU     0FF6495EDH
+ColorsCornsilk                                  EQU     0FFFFF8DCH
+ColorsCrimson                                   EQU     0FFDC143CH
+ColorsCyan                                      EQU     0FF00FFFFH
+ColorsDarkBlue                                  EQU     0FF00008BH
+ColorsDarkCyan                                  EQU     0FF008B8BH
+ColorsDarkGoldenrod                             EQU     0FFB8860BH
+ColorsDarkGray                                  EQU     0FFA9A9A9H
+ColorsDarkGreen                                 EQU     0FF006400H
+ColorsDarkKhaki                                 EQU     0FFBDB76BH
+ColorsDarkMagenta                               EQU     0FF8B008BH
+ColorsDarkOliveGreen                            EQU     0FF556B2FH
+ColorsDarkOrange                                EQU     0FFFF8C00H
+ColorsDarkOrchid                                EQU     0FF9932CCH
+ColorsDarkRed                                   EQU     0FF8B0000H
+ColorsDarkSalmon                                EQU     0FFE9967AH
+ColorsDarkSeaGreen                              EQU     0FF8FBC8BH
+ColorsDarkSlateBlue                             EQU     0FF483D8BH
+ColorsDarkSlateGray                             EQU     0FF2F4F4FH
+ColorsDarkTurquoise                             EQU     0FF00CED1H
+ColorsDarkViolet                                EQU     0FF9400D3H
+ColorsDeepPink                                  EQU     0FFFF1493H
+ColorsDeepSkyBlue                               EQU     0FF00BFFFH
+ColorsDimGray                                   EQU     0FF696969H
+ColorsDodgerBlue                                EQU     0FF1E90FFH
+ColorsFirebrick                                 EQU     0FFB22222H
+ColorsFloralWhite                               EQU     0FFFFFAF0H
+ColorsForestGreen                               EQU     0FF228B22H
+ColorsFuchsia                                   EQU     0FFFF00FFH
+ColorsGainsboro                                 EQU     0FFDCDCDCH
+ColorsGhostWhite                                EQU     0FFF8F8FFH
+ColorsGold                                      EQU     0FFFFD700H
+ColorsGoldenrod                                 EQU     0FFDAA520H
+ColorsGray                                      EQU     0FF808080H
+ColorsGreen                                     EQU     0FF008000H
+ColorsGreenYellow                               EQU     0FFADFF2FH
+ColorsHoneydew                                  EQU     0FFF0FFF0H
+ColorsHotPink                                   EQU     0FFFF69B4H
+ColorsIndianRed                                 EQU     0FFCD5C5CH
+ColorsIndigo                                    EQU     0FF4B0082H
+ColorsIvory                                     EQU     0FFFFFFF0H
+ColorsKhaki                                     EQU     0FFF0E68CH
+ColorsLavender                                  EQU     0FFE6E6FAH
+ColorsLavenderBlush                             EQU     0FFFFF0F5H
+ColorsLawnGreen                                 EQU     0FF7CFC00H
+ColorsLemonChiffon                              EQU     0FFFFFACDH
+ColorsLightBlue                                 EQU     0FFADD8E6H
+ColorsLightCoral                                EQU     0FFF08080H
+ColorsLightCyan                                 EQU     0FFE0FFFFH
+ColorsLightGoldenrodYellow                      EQU     0FFFAFAD2H
+ColorsLightGray                                 EQU     0FFD3D3D3H
+ColorsLightGreen                                EQU     0FF90EE90H
+ColorsLightPink                                 EQU     0FFFFB6C1H
+ColorsLightSalmon                               EQU     0FFFFA07AH
+ColorsLightSeaGreen                             EQU     0FF20B2AAH
+ColorsLightSkyBlue                              EQU     0FF87CEFAH
+ColorsLightSlateGray                            EQU     0FF778899H
+ColorsLightSteelBlue                            EQU     0FFB0C4DEH
+ColorsLightYellow                               EQU     0FFFFFFE0H
+ColorsLime                                      EQU     0FF00FF00H
+ColorsLimeGreen                                 EQU     0FF32CD32H
+ColorsLinen                                     EQU     0FFFAF0E6H
+ColorsMagenta                                   EQU     0FFFF00FFH
+ColorsMaroon                                    EQU     0FF800000H
+ColorsMediumAquamarine                          EQU     0FF66CDAAH
+ColorsMediumBlue                                EQU     0FF0000CDH
+ColorsMediumOrchid                              EQU     0FFBA55D3H
+ColorsMediumPurple                              EQU     0FF9370DBH
+ColorsMediumSeaGreen                            EQU     0FF3CB371H
+ColorsMediumSlateBlue                           EQU     0FF7B68EEH
+ColorsMediumSpringGreen                         EQU     0FF00FA9AH
+ColorsMediumTurquoise                           EQU     0FF48D1CCH
+ColorsMediumVioletRed                           EQU     0FFC71585H
+ColorsMidnightBlue                              EQU     0FF191970H
+ColorsMintCream                                 EQU     0FFF5FFFAH
+ColorsMistyRose                                 EQU     0FFFFE4E1H
+ColorsMoccasin                                  EQU     0FFFFE4B5H
+ColorsNavajoWhite                               EQU     0FFFFDEADH
+ColorsNavy                                      EQU     0FF000080H
+ColorsOldLace                                   EQU     0FFFDF5E6H
+ColorsOlive                                     EQU     0FF808000H
+ColorsOliveDrab                                 EQU     0FF6B8E23H
+ColorsOrange                                    EQU     0FFFFA500H
+ColorsOrangeRed                                 EQU     0FFFF4500H
+ColorsOrchid                                    EQU     0FFDA70D6H
+ColorsPaleGoldenrod                             EQU     0FFEEE8AAH
+ColorsPaleGreen                                 EQU     0FF98FB98H
+ColorsPaleTurquoise                             EQU     0FFAFEEEEH
+ColorsPaleVioletRed                             EQU     0FFDB7093H
+ColorsPapayaWhip                                EQU     0FFFFEFD5H
+ColorsPeachPuff                                 EQU     0FFFFDAB9H
+ColorsPeru                                      EQU     0FFCD853FH
+ColorsPink                                      EQU     0FFFFC0CBH
+ColorsPlum                                      EQU     0FFDDA0DDH
+ColorsPowderBlue                                EQU     0FFB0E0E6H
+ColorsPurple                                    EQU     0FF800080H
+ColorsRed                                       EQU     0FFFF0000H
+ColorsRosyBrown                                 EQU     0FFBC8F8FH
+ColorsRoyalBlue                                 EQU     0FF4169E1H
+ColorsSaddleBrown                               EQU     0FF8B4513H
+ColorsSalmon                                    EQU     0FFFA8072H
+ColorsSandyBrown                                EQU     0FFF4A460H
+ColorsSeaGreen                                  EQU     0FF2E8B57H
+ColorsSeaShell                                  EQU     0FFFFF5EEH
+ColorsSienna                                    EQU     0FFA0522DH
+ColorsSilver                                    EQU     0FFC0C0C0H
+ColorsSkyBlue                                   EQU     0FF87CEEBH
+ColorsSlateBlue                                 EQU     0FF6A5ACDH
+ColorsSlateGray                                 EQU     0FF708090H
+ColorsSnow                                      EQU     0FFFFFAFAH
+ColorsSpringGreen                               EQU     0FF00FF7FH
+ColorsSteelBlue                                 EQU     0FF4682B4H
+ColorsTan                                       EQU     0FFD2B48CH
+ColorsTeal                                      EQU     0FF008080H
+ColorsThistle                                   EQU     0FFD8BFD8H
+ColorsTomato                                    EQU     0FFFF6347H
+ColorsTransparent                               EQU     0FFFFFFH
+ColorsTurquoise                                 EQU     0FF40E0D0H
+ColorsViolet                                    EQU     0FFEE82EEH
+ColorsWheat                                     EQU     0FFF5DEB3H
+ColorsWhite                                     EQU     0FFFFFFFFH
+ColorsWhiteSmoke                                EQU     0FFF5F5F5H
+ColorsYellow                                    EQU     0FFFFFF00H
+ColorsYellowGreen                               EQU     0FF9ACD32H
+
+GpStatusOk                                      EQU     0
+GpStatusGenericError                            EQU     1
+GpStatusInvalidParameter                        EQU     2
+GpStatusOutOfMemory                             EQU     3
+GpStatusObjectBusy                              EQU     4
+GpStatusInsufficientBuffer                      EQU     5
+GpStatusNotImplemented                          EQU     6
+GpStatusWin32Error                              EQU     7
+GpStatusWrongState                              EQU     8
+GpStatusAborted                                 EQU     9
+GpStatusFileNotFound                            EQU     10
+GpStatusValueOverflow                           EQU     11
+GpStatusAccessDenied                            EQU     12
+GpStatusUnknownImageFormat                      EQU     13
+GpStatusFontFamilyNotFound                      EQU     14
+GpStatusFontStyleNotFound                       EQU     15
+GpStatusNotTrueTypeFont                         EQU     16
+GpStatusUnsupportedGdiplusVersion               EQU     17
+GpStatusGdiplusNotInitialized                   EQU     18
+GpStatusPropertyNotFound                        EQU     19
+GpStatusPropertyNotSupported                    EQU     20
+
+HatchStyleHorizontal                            EQU     0
+HatchStyleVertical                              EQU     1
+HatchStyleForwardDiagonal                       EQU     2
+HatchStyleBackwardDiagonal                      EQU     3
+HatchStyleCross                                 EQU     4
+HatchStyleDiagonalCross                         EQU     5
+HatchStyle05Percent                             EQU     6
+HatchStyle10Percent                             EQU     7
+HatchStyle20Percent                             EQU     8
+HatchStyle25Percent                             EQU     9
+HatchStyle30Percent                             EQU     10
+HatchStyle40Percent                             EQU     11
+HatchStyle50Percent                             EQU     12
+HatchStyle60Percent                             EQU     13
+HatchStyle70Percent                             EQU     14
+HatchStyle75Percent                             EQU     15
+HatchStyle80Percent                             EQU     16
+HatchStyle90Percent                             EQU     17
+HatchStyleLightDownwardDiagonal                 EQU     18
+HatchStyleLightUpwardDiagonal                   EQU     19
+HatchStyleDarkDownwardDiagonal                  EQU     20
+HatchStyleDarkUpwardDiagonal                    EQU     21
+HatchStyleWideDownwardDiagonal                  EQU     22
+HatchStyleWideUpwardDiagonal                    EQU     23
+HatchStyleLightVertical                         EQU     24
+HatchStyleLightHorizontal                       EQU     25
+HatchStyleNarrowVertical                        EQU     26
+HatchStyleNarrowHorizontal                      EQU     27
+HatchStyleDarkVertical                          EQU     28
+HatchStyleDarkHorizontal                        EQU     29
+HatchStyleDashedDownwardDiagonal                EQU     30
+HatchStyleDashedUpwardDiagonal                  EQU     31
+HatchStyleDashedHorizontal                      EQU     32
+HatchStyleDashedVertical                        EQU     33
+HatchStyleSmallConfetti                         EQU     34
+HatchStyleLargeConfetti                         EQU     35
+HatchStyleZigZag                                EQU     36
+HatchStyleWave                                  EQU     37
+HatchStyleDiagonalBrick                         EQU     38
+HatchStyleHorizontalBrick                       EQU     39
+HatchStyleWeave                                 EQU     40
+HatchStylePlaid                                 EQU     41
+HatchStyleDivot                                 EQU     42
+HatchStyleDottedGrid                            EQU     43
+HatchStyleDottedDiamond                         EQU     44
+HatchStyleShingle                               EQU     45
+HatchStyleTrellis                               EQU     46
+HatchStyleSphere                                EQU     47
+HatchStyleSmallGrid                             EQU     48
+HatchStyleSmallCheckerBoard                     EQU     49
+HatchStyleLargeCheckerBoard                     EQU     50
+HatchStyleOutlinedDiamond                       EQU     51
+HatchStyleSolidDiamond                          EQU     52
+HatchStyleTotal                                 EQU     53
+HatchStyleLargeGrid                             EQU     HatchStyleCross
+HatchStyleMin                                   EQU     HatchStyleHorizontal
+HatchStyleMax                                   EQU     (HatchStyleTotal - 1)
+
+QualityModeInvalid                              EQU     (-1)
+QualityModeDefault                              EQU     0
+QualityModeLow                                  EQU     1
+QualityModeHigh                                 EQU     2
+
+CompositingModeSourceOver                       EQU     0
+CompositingModeSourceCopy                       EQU     1
+
+CompositingQualityInvalid                       EQU     QualityModeInvalid
+CompositingQualityDefault                       EQU     QualityModeDefault
+CompositingQualityHighSpeed                     EQU     QualityModeLow
+CompositingQualityHighQuality                   EQU     QualityModeHigh
+CompositingQualityGammaCorrected                EQU     3
+CompositingQualityAssumeLinear                  EQU     4
+
+GenericFontFamilySerif                          EQU     0
+GenericFontFamilySansSerif                      EQU     1
+GenericFontFamilyMonospace                      EQU     2
+
+FontStyleRegular                                EQU     0
+FontStyleBold                                   EQU     1
+FontStyleItalic                                 EQU     2
+FontStyleBoldItalic                             EQU     3
+FontStyleUnderline                              EQU     4
+FontStyleStrikeout                              EQU     8
+SmoothingModeInvalid                            EQU     QualityModeInvalid
+SmoothingModeDefault                            EQU     QualityModeDefault
+SmoothingModeHighSpeed                          EQU     QualityModeLow
+SmoothingModeHighQuality                        EQU     QualityModeHigh
+SmoothingModeNone                               EQU     3
+SmoothingModeAntiAlias                          EQU     4
+FillModeAlternate                               EQU     0
+FillModeWinding                                 EQU     1
+InterpolationModeInvalid                        EQU     QualityModeInvalid
+InterpolationModeDefault                        EQU     QualityModeDefault
+InterpolationModeLowQuality                     EQU     QualityModeLow
+InterpolationModeHighQuality                    EQU     QualityModeHigh
+InterpolationModeBilinear                       EQU     3
+InterpolationModeBicubic                        EQU     4
+InterpolationModeNearestNeighbor                EQU     5
+InterpolationModeHighQualityBilinear            EQU     6
+InterpolationModeHighQualityBicubic             EQU     7
+
+WrapModeTile                                    EQU     0
+WrapModeTileFlipX                               EQU     1
+WrapModeTileFlipY                               EQU     2
+WrapModeTileFlipXY                              EQU     3
+WrapModeClamp                                   EQU     4
+LinearGradientModeHorizontal                    EQU     0
+LinearGradientModeVertical                      EQU     1
+LinearGradientModeForwardDiagonal               EQU     2
+LinearGradientModeBackwardDiagonal              EQU     3
+ImageTypeUnknown                                EQU     0
+ImageTypeBitmap                                 EQU     1
+ImageTypeMetafile                               EQU     2
+
+MatrixOrderPrepend                              EQU     0
+MatrixOrderAppend                               EQU     1
+UnitWorld                                       EQU     0
+UnitDisplay                                     EQU     1
+UnitPixel                                       EQU     2
+UnitPoint                                       EQU     3
+UnitInch                                        EQU     4
+UnitDocument                                    EQU     5
+UnitMillimeter                                  EQU     6
+
+ColorsAliceBlue                                 EQU     0FFF0F8FFH
+ColorsAntiqueWhite                              EQU     0FFFAEBD7H
+ColorsAqua                                      EQU     0FF00FFFFH
+ColorsAquamarine                                EQU     0FF7FFFD4H
+ColorsAzure                                     EQU     0FFF0FFFFH
+ColorsBeige                                     EQU     0FFF5F5DCH
+ColorsBisque                                    EQU     0FFFFE4C4H
+ColorsBlack                                     EQU     0FF000000H
+ColorsBlanchedAlmond                            EQU     0FFFFEBCDH
+ColorsBlue                                      EQU     0FF0000FFH
+ColorsBlueViolet                                EQU     0FF8A2BE2H
+ColorsBrown                                     EQU     0FFA52A2AH
+ColorsBurlyWood                                 EQU     0FFDEB887H
+ColorsCadetBlue                                 EQU     0FF5F9EA0H
+ColorsChartreuse                                EQU     0FF7FFF00H
+ColorsChocolate                                 EQU     0FFD2691EH
+ColorsCoral                                     EQU     0FFFF7F50H
+ColorsCornflowerBlue                            EQU     0FF6495EDH
+ColorsCornsilk                                  EQU     0FFFFF8DCH
+ColorsCrimson                                   EQU     0FFDC143CH
+ColorsCyan                                      EQU     0FF00FFFFH
+ColorsDarkBlue                                  EQU     0FF00008BH
+ColorsDarkCyan                                  EQU     0FF008B8BH
+ColorsDarkGoldenrod                             EQU     0FFB8860BH
+ColorsDarkGray                                  EQU     0FFA9A9A9H
+ColorsDarkGreen                                 EQU     0FF006400H
+ColorsDarkKhaki                                 EQU     0FFBDB76BH
+ColorsDarkMagenta                               EQU     0FF8B008BH
+ColorsDarkOliveGreen                            EQU     0FF556B2FH
+ColorsDarkOrange                                EQU     0FFFF8C00H
+ColorsDarkOrchid                                EQU     0FF9932CCH
+ColorsDarkRed                                   EQU     0FF8B0000H
+ColorsDarkSalmon                                EQU     0FFE9967AH
+ColorsDarkSeaGreen                              EQU     0FF8FBC8BH
+ColorsDarkSlateBlue                             EQU     0FF483D8BH
+ColorsDarkSlateGray                             EQU     0FF2F4F4FH
+ColorsDarkTurquoise                             EQU     0FF00CED1H
+ColorsDarkViolet                                EQU     0FF9400D3H
+ColorsDeepPink                                  EQU     0FFFF1493H
+ColorsDeepSkyBlue                               EQU     0FF00BFFFH
+ColorsDimGray                                   EQU     0FF696969H
+ColorsDodgerBlue                                EQU     0FF1E90FFH
+ColorsFirebrick                                 EQU     0FFB22222H
+ColorsFloralWhite                               EQU     0FFFFFAF0H
+ColorsForestGreen                               EQU     0FF228B22H
+ColorsFuchsia                                   EQU     0FFFF00FFH
+ColorsGainsboro                                 EQU     0FFDCDCDCH
+ColorsGhostWhite                                EQU     0FFF8F8FFH
+ColorsGold                                      EQU     0FFFFD700H
+ColorsGoldenrod                                 EQU     0FFDAA520H
+ColorsGray                                      EQU     0FF808080H
+ColorsGreen                                     EQU     0FF008000H
+ColorsGreenYellow                               EQU     0FFADFF2FH
+ColorsHoneydew                                  EQU     0FFF0FFF0H
+ColorsHotPink                                   EQU     0FFFF69B4H
+ColorsIndianRed                                 EQU     0FFCD5C5CH
+ColorsIndigo                                    EQU     0FF4B0082H
+ColorsIvory                                     EQU     0FFFFFFF0H
+ColorsKhaki                                     EQU     0FFF0E68CH
+ColorsLavender                                  EQU     0FFE6E6FAH
+ColorsLavenderBlush                             EQU     0FFFFF0F5H
+ColorsLawnGreen                                 EQU     0FF7CFC00H
+ColorsLemonChiffon                              EQU     0FFFFFACDH
+ColorsLightBlue                                 EQU     0FFADD8E6H
+ColorsLightCoral                                EQU     0FFF08080H
+ColorsLightCyan                                 EQU     0FFE0FFFFH
+ColorsLightGoldenrodYellow                      EQU     0FFFAFAD2H
+ColorsLightGray                                 EQU     0FFD3D3D3H
+ColorsLightGreen                                EQU     0FF90EE90H
+ColorsLightPink                                 EQU     0FFFFB6C1H
+ColorsLightSalmon                               EQU     0FFFFA07AH
+ColorsLightSeaGreen                             EQU     0FF20B2AAH
+ColorsLightSkyBlue                              EQU     0FF87CEFAH
+ColorsLightSlateGray                            EQU     0FF778899H
+ColorsLightSteelBlue                            EQU     0FFB0C4DEH
+ColorsLightYellow                               EQU     0FFFFFFE0H
+ColorsLime                                      EQU     0FF00FF00H
+ColorsLimeGreen                                 EQU     0FF32CD32H
+ColorsLinen                                     EQU     0FFFAF0E6H
+ColorsMagenta                                   EQU     0FFFF00FFH
+ColorsMaroon                                    EQU     0FF800000H
+ColorsMediumAquamarine                          EQU     0FF66CDAAH
+ColorsMediumBlue                                EQU     0FF0000CDH
+ColorsMediumOrchid                              EQU     0FFBA55D3H
+ColorsMediumPurple                              EQU     0FF9370DBH
+ColorsMediumSeaGreen                            EQU     0FF3CB371H
+ColorsMediumSlateBlue                           EQU     0FF7B68EEH
+ColorsMediumSpringGreen                         EQU     0FF00FA9AH
+ColorsMediumTurquoise                           EQU     0FF48D1CCH
+ColorsMediumVioletRed                           EQU     0FFC71585H
+ColorsMidnightBlue                              EQU     0FF191970H
+ColorsMintCream                                 EQU     0FFF5FFFAH
+ColorsMistyRose                                 EQU     0FFFFE4E1H
+ColorsMoccasin                                  EQU     0FFFFE4B5H
+ColorsNavajoWhite                               EQU     0FFFFDEADH
+ColorsNavy                                      EQU     0FF000080H
+ColorsOldLace                                   EQU     0FFFDF5E6H
+ColorsOlive                                     EQU     0FF808000H
+ColorsOliveDrab                                 EQU     0FF6B8E23H
+ColorsOrange                                    EQU     0FFFFA500H
+ColorsOrangeRed                                 EQU     0FFFF4500H
+ColorsOrchid                                    EQU     0FFDA70D6H
+ColorsPaleGoldenrod                             EQU     0FFEEE8AAH
+ColorsPaleGreen                                 EQU     0FF98FB98H
+ColorsPaleTurquoise                             EQU     0FFAFEEEEH
+ColorsPaleVioletRed                             EQU     0FFDB7093H
+ColorsPapayaWhip                                EQU     0FFFFEFD5H
+ColorsPeachPuff                                 EQU     0FFFFDAB9H
+ColorsPeru                                      EQU     0FFCD853FH
+ColorsPink                                      EQU     0FFFFC0CBH
+ColorsPlum                                      EQU     0FFDDA0DDH
+ColorsPowderBlue                                EQU     0FFB0E0E6H
+ColorsPurple                                    EQU     0FF800080H
+ColorsRed                                       EQU     0FFFF0000H
+ColorsRosyBrown                                 EQU     0FFBC8F8FH
+ColorsRoyalBlue                                 EQU     0FF4169E1H
+ColorsSaddleBrown                               EQU     0FF8B4513H
+ColorsSalmon                                    EQU     0FFFA8072H
+ColorsSandyBrown                                EQU     0FFF4A460H
+ColorsSeaGreen                                  EQU     0FF2E8B57H
+ColorsSeaShell                                  EQU     0FFFFF5EEH
+ColorsSienna                                    EQU     0FFA0522DH
+ColorsSilver                                    EQU     0FFC0C0C0H
+ColorsSkyBlue                                   EQU     0FF87CEEBH
+ColorsSlateBlue                                 EQU     0FF6A5ACDH
+ColorsSlateGray                                 EQU     0FF708090H
+ColorsSnow                                      EQU     0FFFFFAFAH
+ColorsSpringGreen                               EQU     0FF00FF7FH
+ColorsSteelBlue                                 EQU     0FF4682B4H
+ColorsTan                                       EQU     0FFD2B48CH
+ColorsTeal                                      EQU     0FF008080H
+ColorsThistle                                   EQU     0FFD8BFD8H
+ColorsTomato                                    EQU     0FFFF6347H
+ColorsTransparent                               EQU     0FFFFFFH
+ColorsTurquoise                                 EQU     0FF40E0D0H
+ColorsViolet                                    EQU     0FFEE82EEH
+ColorsWheat                                     EQU     0FFF5DEB3H
+ColorsWhite                                     EQU     0FFFFFFFFH
+ColorsWhiteSmoke                                EQU     0FFF5F5F5H
+ColorsYellow                                    EQU     0FFFFFF00H
+ColorsYellowGreen                               EQU     0FF9ACD32H
+
+ColorAdjustTypeDefault                          EQU     0
+ColorAdjustTypeBitmap                           EQU     1
+ColorAdjustTypeBrush                            EQU     2
+ColorAdjustTypePen                              EQU     3
+ColorAdjustTypeText                             EQU     4
+ColorAdjustTypeCount                            EQU     5
+ColorAdjustTypeAny                              EQU     6
+
+ColorChannelFlagsC                              EQU     0
+ColorChannelFlagsM                              EQU     1
+ColorChannelFlagsY                              EQU     2
+ColorChannelFlagsK                              EQU     3
+ColorChannelFlagsLast                           EQU     4
+
+ColorMatrixFlagsDefault                         EQU     0
+ColorMatrixFlagsSkipGrays                       EQU     1
+ColorMatrixFlagsAltGray                         EQU     2
+
+PenAlignmentCenter                              EQU     0
+PenAlignmentInset                               EQU     1
+
+BrushTypeSolidColor                             EQU     0
+BrushTypeHatchFill                              EQU     1
+BrushTypeTextureFill                            EQU     2
+BrushTypePathGradient                           EQU     3
+BrushTypeLinearGradient                         EQU     4
+
+DashStyleSolid                                  EQU     0
+DashStyleDash                                   EQU     1
+DashStyleDot                                    EQU     2
+DashStyleDashDot                                EQU     3
+DashStyleDashDotDot                             EQU     4
+DashStyleCustom                                 EQU     5
+
+DashCapFlat                                     EQU     0
+DashCapRound                                    EQU     2
+DashCapTriangle                                 EQU     3
+
+LineCapFlat                                     EQU     0
+LineCapSquare                                   EQU     1
+LineCapRound                                    EQU     2
+LineCapTriangle                                 EQU     3
+LineCapNoAnchor                                 EQU     010H
+LineCapSquareAnchor                             EQU     011H
+LineCapRoundAnchor                              EQU     012H
+LineCapDiamondAnchor                            EQU     013H
+LineCapArrowAnchor                              EQU     014H
+LineCapCustom                                   EQU     0FFH
+LineCapAnchorMask                               EQU     0F0H
+
+CustomLineCapTypeDefault                        EQU     0
+CustomLineCapTypeAdjustableArrow                EQU     1
+
+LineJoinMiter                                   EQU     0
+LineJoinBevel                                   EQU     1
+LineJoinRound                                   EQU     2
+LineJoinMiterClipped                            EQU     3
+
+PenTypeSolidColor                               EQU     BrushTypeSolidColor
+PenTypeHatchFill                                EQU     BrushTypeHatchFill
+PenTypeTextureFill                              EQU     BrushTypeTextureFill
+PenTypePathGradient                             EQU     BrushTypePathGradient
+PenTypeLinearGradient                           EQU     BrushTypeLinearGradient
+PenTypeUnknown                                  EQU     (-1)
+
+WarpModePerspective                             EQU     0
+WarpModeBilinear                                EQU     1
+
+CombineModeReplace                              EQU     0
+CombineModeIntersect                            EQU     1
+CombineModeUnion                                EQU     2
+CombineModeXor                                  EQU     3
+CombineModeExclude                              EQU     4
+CombineModeComplement                           EQU     5
+
+RotateNoneFlipNone                              EQU     0
+Rotate90FlipNone                                EQU     1
+Rotate180FlipNone                               EQU     2
+Rotate270FlipNone                               EQU     3
+RotateNoneFlipX                                 EQU     4
+Rotate90FlipX                                   EQU     5
+Rotate180FlipX                                  EQU     6
+Rotate270FlipX                                  EQU     7
+RotateNoneFlipY                                 EQU     Rotate180FlipX
+Rotate90FlipY                                   EQU     Rotate270FlipX
+Rotate180FlipY                                  EQU     RotateNoneFlipX
+Rotate270FlipY                                  EQU     Rotate90FlipX
+RotateNoneFlipXY                                EQU     Rotate180FlipNone
+Rotate90FlipXY                                  EQU     Rotate270FlipNone
+Rotate180FlipXY                                 EQU     RotateNoneFlipNone
+Rotate270FlipXY                                 EQU     Rotate90FlipNone
+
+StringFormatFlagsDirectionRightToLeft           EQU     01H
+StringFormatFlagsDirectionVertical              EQU     02H
+StringFormatFlagsNoFitBlackBox                  EQU     04H
+StringFormatFlagsDisplayFormatControl           EQU     020H
+StringFormatFlagsNoFontFallback                 EQU     0400H
+StringFormatFlagsMeasureTrailingSpaces          EQU     0800H
+StringFormatFlagsNoWrap                         EQU     01000H
+StringFormatFlagsLineLimit                      EQU     02000H
+
+StringFormatFlagsNoClip                         EQU     04000H
+
+StringTrimmingNone                              EQU     0
+StringTrimmingCharacter                         EQU     1
+StringTrimmingWord                              EQU     2
+StringTrimmingEllipsisCharacter                 EQU     3
+StringTrimmingEllipsisWord                      EQU     4
+StringTrimmingEllipsisPath                      EQU     5
+
+StringDigitSubstituteUser                       EQU     0
+StringDigitSubstituteNone                       EQU     1
+StringDigitSubstituteNational                   EQU     2
+StringDigitSubstituteTraditional                EQU     3
+
+HotkeyPrefixNone                                EQU     0
+HotkeyPrefixShow                                EQU     1
+HotkeyPrefixHide                                EQU     2
+
+StringAlignmentNear                             EQU     0
+StringAlignmentCenter                           EQU     1
+StringAlignmentFar                              EQU     2
+
+FlushIntentionFlush                             EQU     0
+FlushIntentionSync                              EQU     1
+
+EncoderParameterValueTypeByte                   EQU     1
+EncoderParameterValueTypeASCII                  EQU     2
+
+EncoderParameterValueTypeShort                  EQU     3
+EncoderParameterValueTypeLong                   EQU     4
+EncoderParameterValueTypeRational               EQU     5
+
+EncoderParameterValueTypeLongRange              EQU     6
+
+EncoderParameterValueTypeUndefined              EQU     7
+
+EncoderParameterValueTypeRationalRange          EQU     8
+
+EncoderValueColorTypeCMYK                       EQU     0
+EncoderValueColorTypeYCCK                       EQU     1
+EncoderValueCompressionLZW                      EQU     2
+EncoderValueCompressionCCITT3                   EQU     3
+EncoderValueCompressionCCITT4                   EQU     4
+EncoderValueCompressionRle                      EQU     5
+EncoderValueCompressionNone                     EQU     6
+EncoderValueScanMethodInterlaced                EQU     7
+EncoderValueScanMethodNonInterlaced             EQU     8
+EncoderValueVersionGif87                        EQU     9
+EncoderValueVersionGif89                        EQU     10
+EncoderValueRenderProgressive                   EQU     11
+EncoderValueRenderNonProgressive                EQU     12
+EncoderValueTransformRotate90                   EQU     13
+EncoderValueTransformRotate180                  EQU     14
+EncoderValueTransformRotate270                  EQU     15
+EncoderValueTransformFlipHorizontal             EQU     16
+EncoderValueTransformFlipVertical               EQU     17
+EncoderValueMultiFrame                          EQU     18
+EncoderValueLastFrame                           EQU     19
+EncoderValueFlush                               EQU     20
+EncoderValueFrameDimensionTime                  EQU     21
+EncoderValueFrameDimensionResolution            EQU     22
+EncoderValueFrameDimensionPage                  EQU     23
+
+EncoderCompression                              EQU     0
+EncoderColorDepth                               EQU     1
+EncoderScanMethod                               EQU     2
+EncoderVersion                                  EQU     3
+EncoderRenderMethod                             EQU     4
+EncoderQuality                                  EQU     5
+EncoderTransformation                           EQU     6
+EncoderLuminanceTable                           EQU     7
+EncoderChrominanceTable                         EQU     8
+EncoderSaveFlag                                 EQU     9
+
+PixelOffsetModeInvalid                          EQU     QualityModeInvalid
+PixelOffsetModeDefault                          EQU     QualityModeDefault
+PixelOffsetModeHighSpeed                        EQU     QualityModeLow
+PixelOffsetModeHighQuality                      EQU     QualityModeHigh
+PixelOffsetModeNone                             EQU     3
+PixelOffsetModeHalf                             EQU     4
+
+TextRenderingHintSystemDefault                  EQU     0
+TextRenderingHintSingleBitPerPixelGridFit       EQU     1
+TextRenderingHintSingleBitPerPixel              EQU     2
+TextRenderingHintAntiAliasGridFit               EQU     3
+TextRenderingHintAntiAlias                      EQU     4
+TextRenderingHintClearTypeGridFit               EQU     5
+
+MetafileTypeInvalid                             EQU     0
+MetafileTypeWmf                                 EQU     1
+MetafileTypeWmfPlaceable                        EQU     2
+MetafileTypeEmf                                 EQU     3
+MetafileTypeEmfPlusOnly                         EQU     4
+MetafileTypeEmfPlusDual                         EQU     5
+
+EmfTypeEmfOnly                                  EQU     MetafileTypeEmf
+EmfTypeEmfPlusOnly                              EQU     MetafileTypeEmfPlusOnly
+EmfTypeEmfPlusDual                              EQU     MetafileTypeEmfPlusDual
+
+ObjectTypeInvalid                               EQU     0
+ObjectTypeBrush                                 EQU     1
+ObjectTypePen                                   EQU     2
+ObjectTypePath                                  EQU     3
+ObjectTypeRegion                                EQU     4
+ObjectTypeImage                                 EQU     5
+ObjectTypeFont                                  EQU     6
+ObjectTypeStringFormat                          EQU     7
+ObjectTypeImageAttributes                       EQU     8
+ObjectTypeCustomLineCap                         EQU     9
+
+ObjectTypeMax                                   EQU     ObjectTypeCustomLineCap
+ObjectTypeMin                                   EQU     ObjectTypeBrush
+
+MetafileFrameUnitPixel                          EQU     UnitPixel
+MetafileFrameUnitPoint                          EQU     UnitPoint
+MetafileFrameUnitInch                           EQU     UnitInch
+MetafileFrameUnitDocument                       EQU     UnitDocument
+MetafileFrameUnitMillimeter                     EQU     UnitMillimeter
+MetafileFrameUnitGdi                            EQU     7
+
+CoordinateSpaceWorld                            EQU     0
+CoordinateSpacePage                             EQU     1
+CoordinateSpaceDevice                           EQU     2
+
+;========================================Structures======================================;
+GdiplusStartupInput STRUCT ALIGNMODE
+    GdiplusVersion              DWORD ?
+    DebugEventCallback          DWORD ?
+    SuppressBackgroundThread    DWORD ?
+    SuppressExternalCodecs      DWORD ?
+GdiplusStartupInput ENDS
+
+PointF STRUCT ALIGNMODE
+    x   REAL4 ?
+    y   REAL4 ?
+PointF ENDS
+
+RectF STRUCT ALIGNMODE
+    _Left   REAL4 ?
+    _Top    REAL4 ?
+    _Right  REAL4 ?
+    Bottom  REAL4 ?
+RectF ENDS
+
+SizeF STRUCT ALIGNMODE
+    sx  REAL4 ?
+    sy  REAL4 ?
+SizeF ENDS
+
+COLORBYTES STRUCT ALIGNMODE
+    BlueByte    BYTE ?
+    GreenByte   BYTE ?
+    RedByte     BYTE ?
+    AlphaByte   BYTE ?
+COLORBYTES ENDS
+
+COLORLONG STRUCT ALIGNMODE
+    longval DWORD ?
+COLORLONG ENDS
+
+ImageCodecInfo STRUCT ALIGNMODE
+    ClassID             GUID <>
+    FormatID            GUID <>
+    CodecName           DWORD ?
+    DllName             DWORD ?
+    FormatDescription   DWORD ?
+    FilenameExtension   DWORD ?
+    MimeType            DWORD ?
+    flags               DWORD ?
+    Version             DWORD ?
+    SigCount            DWORD ?
+    SigSize             DWORD ?
+    SigPattern          DWORD ?
+    SigMask             DWORD ?
+ImageCodecInfo ENDS
+
+EncoderParameter STRUCT ALIGNMODE
+    pGUID           DWORD ?
+    NumberOfValues  DWORD ?
+    vType           DWORD ?
+    value           DWORD ?
+EncoderParameter ENDS
+
+EncoderParameters STRUCT ALIGNMODE
+    Count       DWORD ?
+    Parameter   EncoderParameter <>
+EncoderParameters ENDS
+
+ColorPalette STRUCT ALIGNMODE
+    flags   DWORD ?
+    Count   DWORD ?
+    Entries DWORD ?
+ColorPalette ENDS
+
+ColorMatrix STRUCT ALIGNMODE
+    m11 REAL4 ?
+    m12 REAL4 ?
+    m13 REAL4 ?
+    m14 REAL4 ?
+    m15 REAL4 ?
+    m21 REAL4 ?
+    m22 REAL4 ?
+    m23 REAL4 ?
+    m24 REAL4 ?
+    m25 REAL4 ?
+    m31 REAL4 ?
+    m32 REAL4 ?
+    m33 REAL4 ?
+    m34 REAL4 ?
+    m35 REAL4 ?
+    m41 REAL4 ?
+    m42 REAL4 ?
+    m43 REAL4 ?
+    m44 REAL4 ?
+    m45 REAL4 ?
+    m51 REAL4 ?
+    m52 REAL4 ?
+    m53 REAL4 ?
+    m54 REAL4 ?
+    m55 REAL4 ?
+ColorMatrix ENDS
+
+BitmapData STRUCT ALIGNMODE
+    nWidth      DWORD ?
+    nHeight     DWORD ?
+    Stride      DWORD ?
+    PixelFormat DWORD ?
+    Scan0       DWORD ?
+    Reserved    DWORD ?
+BitmapData ENDS
+
+PathData STRUCT ALIGNMODE
+    Count   DWORD ?
+    pPoint  DWORD ?
+    types   DWORD ?
+PathData ENDS
+
+PropertyItem STRUCT ALIGNMODE
+    propId  DWORD ?
+    _length DWORD ?
+    nType   WORD  ?
+    value   DWORD ?
+PropertyItem ENDS
+
+IFNDEF LOGFONTA
+    LOGFONTA STRUCT ALIGNMODE
+        lfHeight            DWORD ?
+        lfWidth             DWORD ?
+        lfEscapement        DWORD ?
+        lfOrientation       DWORD ?
+        lfWeight            DWORD ?
+        lfItalic            BYTE ?
+        lfUnderline         BYTE ?
+        lfStrikeOut         BYTE ?
+        lfCharSet           BYTE ?
+        lfOutPrecision      BYTE ?
+        lfClipPrecision     BYTE ?
+        lfQuality           BYTE ?
+        lfPitchAndFamily    BYTE ?
+        lfFaceName          BYTE LF_FACESIZE DUP(?)
+    LOGFONTA ENDS
+ENDIF
+
+IFNDEF LOGFONTW
+    LOGFONTW STRUCT ALIGNMODE
+        lfHeight            DWORD ?
+        lfWidth             DWORD ?
+        lfEscapement        DWORD ?
+        lfOrientation       DWORD ?
+        lfWeight            DWORD ?
+        lfItalic            BYTE ?
+        lfUnderline         BYTE ?
+        lfStrikeOut         BYTE ?
+        lfCharSet           BYTE ?
+        lfOutPrecision      BYTE ?
+        lfClipPrecision     BYTE ?
+        lfQuality           BYTE ?
+        lfPitchAndFamily    BYTE ?
+        lfFaceName          WORD LF_FACESIZE DUP(?)
+    LOGFONTW ENDS
+ENDIF
+
+CharacterRange STRUCT ALIGNMODE
+    First   DWORD ?
+    _length DWORD ?
+CharacterRange ENDS
+
+PWMFRect16 STRUCT ALIGNMODE
+    nLEFT   WORD ?
+    nTop    WORD ?
+    nRIGHT  WORD ?
+    nBottom WORD ?
+PWMFRect16 ENDS
+
+WmfPlaceableFileHeader STRUCT ALIGNMODE
+    Key         DWORD ?
+    Hmf         WORD  ?
+    boundingBox PWMFRect16 <>
+    Inch        WORD  ?
+    Reserved    DWORD ?
+    Checksum    WORD  ?
+WmfPlaceableFileHeader ENDS
+
+IFNDEF ENHMETAHEADER3
+    ENHMETAHEADER3 STRUCT ALIGNMODE
+        itype           DWORD ?
+        nSize           DWORD ?
+        rclBounds       RECTL <>
+        rclFrame        RECTL <>
+        dSignature      DWORD ?
+        nVersion        DWORD ?
+        nBytes          DWORD ?
+        nRecords        DWORD ?
+        nHandles        WORD  ?
+        sReserved       WORD  ?
+        nDescription    DWORD ?
+        offDescription  DWORD ?
+        nPalEntries     DWORD ?
+        szlDevice       SIZEL <>
+        szlMillimeters  SIZEL <>
+    ENHMETAHEADER3 ENDS
+ENDIF
+
+MetafileHeader STRUCT ALIGNMODE
+    mType               DWORD ?
+    msize               DWORD ?
+    Version             DWORD ?
+    EmfPlusFlags        DWORD ?
+    DpiX                REAL4 ?
+    DpiY                REAL4 ?
+    x                   DWORD ?
+    y                   DWORD ?
+    nWIDTH              DWORD ?
+    Height              DWORD ?
+    EmfHeader           ENHMETAHEADER3 <>
+    EmfPlusHeaderSize   DWORD ?
+    LogicalDpiX         DWORD ?
+    LogicalDpiY         DWORD ?
+MetafileHeader ENDS
+
+;========================================Functions=======================================;
+GdipAddImageCodec PROTO :QWORD
+GdipAddPathArc PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathArcI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathBezier PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathBezierI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathBeziers PROTO :QWORD,:QWORD,:QWORD
+GdipAddPathBeziersI PROTO :QWORD,:QWORD,:QWORD
+GdipAddPathClosedCurve PROTO :QWORD,:QWORD,:QWORD
+GdipAddPathClosedCurve2 PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathClosedCurve2I PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathClosedCurveI PROTO :QWORD,:QWORD,:QWORD
+GdipAddPathCurve PROTO :QWORD,:QWORD,:QWORD
+GdipAddPathCurve2 PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathCurve2I PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathCurve3 PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathCurve3I PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathCurveI PROTO :QWORD,:QWORD,:QWORD
+GdipAddPathEllipse PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathEllipseI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathLine PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathLine2 PROTO :QWORD,:QWORD,:QWORD
+GdipAddPathLine2I PROTO :QWORD,:QWORD,:QWORD
+GdipAddPathLineI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathPath PROTO :QWORD,:QWORD,:QWORD
+GdipAddPathPie PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathPieI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathPolygon PROTO :QWORD,:QWORD,:QWORD
+GdipAddPathPolygonI PROTO :QWORD,:QWORD,:QWORD
+GdipAddPathRectangle PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathRectangleI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathRectangles PROTO :QWORD,:QWORD,:QWORD
+GdipAddPathRectanglesI PROTO :QWORD,:QWORD,:QWORD
+GdipAddPathString PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAddPathStringI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipAlloc PROTO :QWORD
+GdipBeginContainer PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipBeginContainer2 PROTO :QWORD,:QWORD
+GdipBeginContainerI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipBitmapApplyEffect PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipBitmapConvertFormat PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipBitmapCreateApplyEffect PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipBitmapGetHistogram PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipBitmapGetHistogramSize PROTO :QWORD,:QWORD
+GdipBitmapGetPixel PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipBitmapLockBits PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipBitmapSetPixel PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipBitmapSetResolution PROTO :QWORD,:QWORD,:QWORD
+GdipBitmapUnlockBits PROTO :QWORD,:QWORD
+GdipClearPathMarkers PROTO :QWORD
+GdipCloneBitmapArea PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCloneBitmapAreaI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCloneBrush PROTO :QWORD,:QWORD
+GdipCloneCustomLineCap PROTO :QWORD,:QWORD
+GdipCloneFont PROTO :QWORD,:QWORD
+GdipCloneFontFamily PROTO :QWORD,:QWORD
+GdipCloneImage PROTO :QWORD,:QWORD
+GdipCloneImageAttributes PROTO :QWORD,:QWORD
+GdipCloneMatrix PROTO :QWORD,:QWORD
+GdipClonePath PROTO :QWORD,:QWORD
+GdipClonePen PROTO :QWORD,:QWORD
+GdipCloneRegion PROTO :QWORD,:QWORD
+GdipCloneStringFormat PROTO :QWORD,:QWORD
+GdipClosePathFigure PROTO :QWORD
+GdipClosePathFigures PROTO :QWORD
+GdipCombineRegionPath PROTO :QWORD,:QWORD,:QWORD
+GdipCombineRegionRect PROTO :QWORD,:QWORD,:QWORD
+GdipCombineRegionRectI PROTO :QWORD,:QWORD,:QWORD
+GdipCombineRegionRegion PROTO :QWORD,:QWORD,:QWORD
+GdipComment PROTO :QWORD,:QWORD,:QWORD
+GdipConvertToEmfPlus PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipConvertToEmfPlusToFile PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipConvertToEmfPlusToStream PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateAdjustableArrowCap PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateBitmapFromDirectDrawSurface PROTO :QWORD,:QWORD
+GdipCreateBitmapFromFile PROTO :QWORD,:QWORD
+GdipCreateBitmapFromFileICM PROTO :QWORD,:QWORD
+GdipCreateBitmapFromGdiDib PROTO :QWORD,:QWORD,:QWORD
+GdipCreateBitmapFromGraphics PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateBitmapFromHBITMAP PROTO :QWORD,:QWORD,:QWORD
+GdipCreateBitmapFromHICON PROTO :QWORD,:QWORD
+GdipCreateBitmapFromResource PROTO :QWORD,:QWORD,:QWORD
+GdipCreateBitmapFromScan0 PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateBitmapFromStream PROTO :QWORD,:QWORD
+GdipCreateBitmapFromStreamICM PROTO :QWORD,:QWORD
+GdipCreateCachedBitmap PROTO :QWORD,:QWORD,:QWORD
+GdipCreateCustomLineCap PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateEffect PROTO :QWORD,:QWORD
+GdipCreateFont PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateFontFamilyFromName PROTO :QWORD,:QWORD,:QWORD
+GdipCreateFontFromDC PROTO :QWORD,:QWORD
+GdipCreateFontFromLogfontA PROTO :QWORD,:QWORD,:QWORD
+GdipCreateFontFromLogfontW PROTO :QWORD,:QWORD,:QWORD
+GdipCreateFromHDC PROTO :QWORD,:QWORD
+GdipCreateFromHDC2 PROTO :QWORD,:QWORD,:QWORD
+GdipCreateFromHWND PROTO :QWORD,:QWORD
+GdipCreateFromHWNDICM PROTO :QWORD,:QWORD
+GdipCreateHalftonePalette PROTO 
+GdipCreateHatchBrush PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateHBITMAPFromBitmap PROTO :QWORD,:QWORD,:QWORD
+GdipCreateHICONFromBitmap PROTO :QWORD,:QWORD
+GdipCreateImageAttributes PROTO :QWORD
+GdipCreateLineBrush PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateLineBrushFromRect PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateLineBrushFromRectI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateLineBrushFromRectWithAngle PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateLineBrushFromRectWithAngleI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateLineBrushI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateMatrix PROTO :QWORD
+GdipCreateMatrix2 PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateMatrix3 PROTO :QWORD,:QWORD,:QWORD
+GdipCreateMatrix3I PROTO :QWORD,:QWORD,:QWORD
+GdipCreateMetafileFromEmf PROTO :QWORD,:QWORD,:QWORD
+GdipCreateMetafileFromFile PROTO :QWORD,:QWORD
+GdipCreateMetafileFromStream PROTO :QWORD,:QWORD
+GdipCreateMetafileFromWmf PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateMetafileFromWmfFile PROTO :QWORD,:QWORD,:QWORD
+GdipCreatePath PROTO :QWORD,:QWORD
+GdipCreatePath2 PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreatePath2I PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreatePathGradient PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipCreatePathGradientFromPath PROTO :QWORD,:QWORD
+GdipCreatePathGradientI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipCreatePathIter PROTO :QWORD,:QWORD
+GdipCreatePen1 PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipCreatePen2 PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateRegion PROTO :QWORD
+GdipCreateRegionHrgn PROTO :QWORD,:QWORD
+GdipCreateRegionPath PROTO :QWORD,:QWORD
+GdipCreateRegionRect PROTO :QWORD,:QWORD
+GdipCreateRegionRectI PROTO :QWORD,:QWORD
+GdipCreateRegionRgnData PROTO :QWORD,:QWORD,:QWORD
+GdipCreateSolidFill PROTO :QWORD,:QWORD
+GdipCreateStreamOnFile PROTO :QWORD,:QWORD,:QWORD
+GdipCreateStringFormat PROTO :QWORD,:QWORD,:QWORD
+GdipCreateTexture PROTO :QWORD,:QWORD,:QWORD
+GdipCreateTexture2 PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateTexture2I PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipCreateTextureIA PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+IFNDEF APP_UNICODE
+    GdipCreateTextureI EQU <GdipCreateTextureIA>
+ENDIF
+GdipCreateTextureIAI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDeleteBrush PROTO :QWORD
+GdipDeleteCachedBitmap PROTO :QWORD
+GdipDeleteCustomLineCap PROTO :QWORD
+GdipDeleteEffect PROTO :QWORD
+GdipDeleteFont PROTO :QWORD
+GdipDeleteFontFamily PROTO :QWORD
+GdipDeleteGraphics PROTO :QWORD
+GdipDeleteMatrix PROTO :QWORD
+GdipDeletePath PROTO :QWORD
+GdipDeletePathIter PROTO :QWORD
+GdipDeletePen PROTO :QWORD
+GdipDeletePrivateFontCollection PROTO :QWORD
+GdipDeleteRegion PROTO :QWORD
+GdipDeleteStringFormat PROTO :QWORD
+GdipDisposeImage PROTO :QWORD
+GdipDisposeImageAttributes PROTO :QWORD
+GdipDrawArc PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawArcI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawBezier PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawBezierI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawBeziers PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawBeziersI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawCachedBitmap PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawClosedCurve PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawClosedCurve2 PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawClosedCurve2I PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawClosedCurveI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawCurve PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawCurve2 PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawCurve2I PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawCurve3 PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawCurve3I PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawCurveI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawDriverString PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawEllipse PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawEllipseI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawImage PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawImageFX PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawImageI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawImagePointRect PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawImagePointRectI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawImagePoints PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawImagePointsI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawImagePointsRect PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawImagePointsRectI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawImageRect PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawImageRectI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawImageRectRect PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawImageRectRectI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawLine PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawLineI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawLines PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawLinesI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawPath PROTO :QWORD,:QWORD,:QWORD
+GdipDrawPie PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawPieI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawPolygon PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawPolygonI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawRectangle PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawRectangleI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawRectangles PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawRectanglesI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipDrawString PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipEmfToWmfBits PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipEndContainer PROTO :QWORD,:QWORD
+GdipEnumerateMetafileDestPoint PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipEnumerateMetafileDestPointI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipEnumerateMetafileDestPoints PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipEnumerateMetafileDestPointsI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipEnumerateMetafileDestRect PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipEnumerateMetafileDestRectI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipEnumerateMetafileSrcRectDestPoint PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipEnumerateMetafileSrcRectDestPointI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipEnumerateMetafileSrcRectDestPoints PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipEnumerateMetafileSrcRectDestPointsI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipEnumerateMetafileSrcRectDestRect PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipEnumerateMetafileSrcRectDestRectI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipFillClosedCurve PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipFillClosedCurve2 PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipFillClosedCurve2I PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipFillClosedCurveI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipFillEllipse PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipFillEllipseI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipFillPath PROTO :QWORD,:QWORD,:QWORD
+GdipFillPie PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipFillPieI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipFillPolygon PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipFillPolygon2 PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipFillPolygon2I PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipFillPolygonI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipFillRectangle PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipFillRectangleI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipFillRectangles PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipFillRectanglesI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipFillRegion PROTO :QWORD,:QWORD,:QWORD
+GdipFindFirstImageItem PROTO :QWORD,:QWORD
+GdipFindNextImageItem PROTO :QWORD,:QWORD
+GdipFlattenPath PROTO :QWORD,:QWORD,:QWORD
+GdipFlush PROTO :QWORD,:QWORD
+GdipFree PROTO :QWORD
+GdipGetAdjustableArrowCapFillState PROTO :QWORD,:QWORD
+GdipGetAdjustableArrowCapHeight PROTO :QWORD,:QWORD
+GdipGetAdjustableArrowCapMiddleInset PROTO :QWORD,:QWORD
+GdipGetAdjustableArrowCapWidth PROTO :QWORD,:QWORD
+GdipGetAllPropertyItems PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetBrushType PROTO :QWORD,:QWORD
+GdipGetCellAscent PROTO :QWORD,:QWORD,:QWORD
+GdipGetCellDescent PROTO :QWORD,:QWORD,:QWORD
+GdipGetClip PROTO :QWORD,:QWORD
+GdipGetClipBounds PROTO :QWORD,:QWORD
+GdipGetClipBoundsI PROTO :QWORD,:QWORD
+GdipGetCompositingMode PROTO :QWORD,:QWORD
+GdipGetCompositingQuality PROTO :QWORD,:QWORD
+GdipGetCustomLineCapBaseCap PROTO :QWORD,:QWORD
+GdipGetCustomLineCapBaseInset PROTO :QWORD,:QWORD
+GdipGetCustomLineCapStrokeCaps PROTO :QWORD,:QWORD,:QWORD
+GdipGetCustomLineCapStrokeJoin PROTO :QWORD,:QWORD
+GdipGetCustomLineCapType PROTO :QWORD,:QWORD
+GdipGetCustomLineCapWidthScale PROTO :QWORD,:QWORD
+GdipGetDC PROTO :QWORD,:QWORD
+GdipGetDpiX PROTO :QWORD,:QWORD
+GdipGetDpiY PROTO :QWORD,:QWORD
+GdipGetEffectParameters PROTO :QWORD,:QWORD,:QWORD
+GdipGetEffectParameterSize PROTO :QWORD,:QWORD
+GdipGetEmHeight PROTO :QWORD,:QWORD,:QWORD
+GdipGetEncoderParameterList PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetEncoderParameterListSize PROTO :QWORD,:QWORD,:QWORD
+GdipGetFamily PROTO :QWORD,:QWORD
+GdipGetFamilyName PROTO :QWORD,:QWORD,:QWORD
+GdipGetFontCollectionFamilyCount PROTO :QWORD,:QWORD
+GdipGetFontCollectionFamilyList PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetFontHeight PROTO :QWORD,:QWORD,:QWORD
+GdipGetFontHeightGivenDPI PROTO :QWORD,:QWORD,:QWORD
+GdipGetFontSize PROTO :QWORD,:QWORD
+GdipGetFontStyle PROTO :QWORD,:QWORD
+GdipGetFontUnit PROTO :QWORD,:QWORD
+GdipGetGenericFontFamilyMonospace PROTO :QWORD
+GdipGetGenericFontFamilySansSerif PROTO :QWORD
+GdipGetGenericFontFamilySerif PROTO :QWORD
+GdipGetGraphicsLayout PROTO :QWORD,:QWORD
+GdipGetHatchBackgroundColor PROTO :QWORD,:QWORD
+GdipGetHatchForegroundColor PROTO :QWORD,:QWORD
+GdipGetHatchStyle PROTO :QWORD,:QWORD
+GdipGetHemfFromMetafile PROTO :QWORD,:QWORD
+GdipGetImageAttributesAdjustedPalette PROTO :QWORD,:QWORD,:QWORD
+GdipGetImageBounds PROTO :QWORD,:QWORD,:QWORD
+GdipGetImageDecoders PROTO :QWORD,:QWORD,:QWORD
+GdipGetImageDecodersSize PROTO :QWORD,:QWORD
+GdipGetImageDimension PROTO :QWORD,:QWORD,:QWORD
+GdipGetImageEncoders PROTO :QWORD,:QWORD,:QWORD
+GdipGetImageEncodersSize PROTO :QWORD,:QWORD
+GdipGetImageFlags PROTO :QWORD,:QWORD
+GdipGetImageGraphicsContext PROTO :QWORD,:QWORD
+GdipGetImageHeight PROTO :QWORD,:QWORD
+GdipGetImageHorizontalResolution PROTO :QWORD,:QWORD
+GdipGetImageLayout PROTO :QWORD,:QWORD
+GdipGetImagePalette PROTO :QWORD,:QWORD,:QWORD
+GdipGetImagePaletteSize PROTO :QWORD,:QWORD
+GdipGetImagePixelFormat PROTO :QWORD,:QWORD
+GdipGetImageRawFormat PROTO :QWORD,:QWORD
+GdipGetImageThumbnail PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipGetImageType PROTO :QWORD,:QWORD
+GdipGetImageVerticalResolution PROTO :QWORD,:QWORD
+GdipGetImageWidth PROTO :QWORD,:QWORD
+GdipGetInterpolationMode PROTO :QWORD,:QWORD
+GdipGetLineBlend PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetLineBlendCount PROTO :QWORD,:QWORD
+GdipGetLineColors PROTO :QWORD,:QWORD
+GdipGetLineGammaCorrection PROTO :QWORD,:QWORD
+GdipGetLinePoints PROTO :QWORD,:QWORD
+GdipGetLinePointsI PROTO :QWORD,:QWORD
+GdipGetLinePresetBlend PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetLinePresetBlendCount PROTO :QWORD,:QWORD
+GdipGetLineRect PROTO :QWORD,:QWORD
+GdipGetLineRectI PROTO :QWORD,:QWORD
+GdipGetLineSpacing PROTO :QWORD,:QWORD,:QWORD
+GdipGetLineTransform PROTO :QWORD,:QWORD
+GdipGetLineWrapMode PROTO :QWORD,:QWORD
+GdipGetLogFontA PROTO :QWORD,:QWORD,:QWORD
+GdipGetLogFontW PROTO :QWORD,:QWORD,:QWORD
+GdipGetMatrixElements PROTO :QWORD,:QWORD
+GdipGetMetafileDownLevelRasterizationLimit PROTO :QWORD,:QWORD
+GdipGetMetafileHeaderFromEmf PROTO :QWORD,:QWORD
+GdipGetMetafileHeaderFromFile PROTO :QWORD,:QWORD
+GdipGetMetafileHeaderFromMetafile PROTO :QWORD,:QWORD
+GdipGetMetafileHeaderFromStream PROTO :QWORD,:QWORD
+GdipGetMetafileHeaderFromWmf PROTO :QWORD,:QWORD,:QWORD
+GdipGetNearestColor PROTO :QWORD,:QWORD
+GdipGetPageScale PROTO :QWORD,:QWORD
+GdipGetPageUnit PROTO :QWORD,:QWORD
+GdipGetPathData PROTO :QWORD,:QWORD
+GdipGetPathFillMode PROTO :QWORD,:QWORD
+GdipGetPathGradientBlend PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetPathGradientBlendCount PROTO :QWORD,:QWORD
+GdipGetPathGradientCenterColor PROTO :QWORD,:QWORD
+GdipGetPathGradientCenterPoint PROTO :QWORD,:QWORD
+GdipGetPathGradientCenterPointI PROTO :QWORD,:QWORD
+GdipGetPathGradientFocusScales PROTO :QWORD,:QWORD,:QWORD
+GdipGetPathGradientGammaCorrection PROTO :QWORD,:QWORD
+GdipGetPathGradientPath PROTO :QWORD,:QWORD
+GdipGetPathGradientPointCount PROTO :QWORD,:QWORD
+GdipGetPathGradientPresetBlend PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetPathGradientPresetBlendCount PROTO :QWORD,:QWORD
+GdipGetPathGradientRect PROTO :QWORD,:QWORD
+GdipGetPathGradientRectI PROTO :QWORD,:QWORD
+GdipGetPathGradientSurroundColorCount PROTO :QWORD,:QWORD
+GdipGetPathGradientSurroundColorsWithCount PROTO :QWORD,:QWORD,:QWORD
+GdipGetPathGradientTransform PROTO :QWORD,:QWORD
+GdipGetPathGradientWrapMode PROTO :QWORD,:QWORD
+GdipGetPathLastPoint PROTO :QWORD,:QWORD
+GdipGetPathPoints PROTO :QWORD,:QWORD,:QWORD
+GdipGetPathPointsI PROTO :QWORD,:QWORD,:QWORD
+GdipGetPathTypes PROTO :QWORD,:QWORD,:QWORD
+GdipGetPathWorldBounds PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetPathWorldBoundsI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetPenBrushFill PROTO :QWORD,:QWORD
+GdipGetPenColor PROTO :QWORD,:QWORD
+GdipGetPenCompoundArray PROTO :QWORD,:QWORD,:QWORD
+GdipGetPenCompoundCount PROTO :QWORD,:QWORD
+GdipGetPenCustomEndCap PROTO :QWORD,:QWORD
+GdipGetPenCustomStartCap PROTO :QWORD,:QWORD
+GdipGetPenDashArray PROTO :QWORD,:QWORD,:QWORD
+GdipGetPenDashCap197819 PROTO :QWORD,:QWORD
+GdipGetPenDashCount PROTO :QWORD,:QWORD
+GdipGetPenDashOffset PROTO :QWORD,:QWORD
+GdipGetPenDashStyle PROTO :QWORD,:QWORD
+GdipGetPenEndCap PROTO :QWORD,:QWORD
+GdipGetPenFillType PROTO :QWORD,:QWORD
+GdipGetPenLineJoin PROTO :QWORD,:QWORD
+GdipGetPenMiterLimit PROTO :QWORD,:QWORD
+GdipGetPenMode PROTO :QWORD,:QWORD
+GdipGetPenStartCap PROTO :QWORD,:QWORD
+GdipGetPenTransform PROTO :QWORD,:QWORD
+GdipGetPenUnit PROTO :QWORD,:QWORD
+GdipGetPenWidth PROTO :QWORD,:QWORD
+GdipGetPixelOffsetMode PROTO :QWORD,:QWORD
+GdipGetPointCount PROTO :QWORD,:QWORD
+GdipGetPropertyCount PROTO :QWORD,:QWORD
+GdipGetPropertyIdList PROTO :QWORD,:QWORD,:QWORD
+GdipGetPropertyItem PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetPropertyItemSize PROTO :QWORD,:QWORD,:QWORD
+GdipGetPropertySize PROTO :QWORD,:QWORD,:QWORD
+GdipGetRegionBounds PROTO :QWORD,:QWORD,:QWORD
+GdipGetRegionBoundsI PROTO :QWORD,:QWORD,:QWORD
+GdipGetRegionData PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetRegionDataSize PROTO :QWORD,:QWORD
+GdipGetRegionHRgn PROTO :QWORD,:QWORD,:QWORD
+GdipGetRegionScans PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetRegionScansCount PROTO :QWORD,:QWORD,:QWORD
+GdipGetRegionScansI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetRenderingOrigin PROTO :QWORD,:QWORD,:QWORD
+GdipGetSmoothingMode PROTO :QWORD,:QWORD
+GdipGetSolidFillColor PROTO :QWORD,:QWORD
+GdipGetStringFormatAlign PROTO :QWORD,:QWORD
+GdipGetStringFormatDigitSubstitution PROTO :QWORD,:QWORD,:QWORD
+GdipGetStringFormatFlags PROTO :QWORD,:QWORD
+GdipGetStringFormatHotkeyPrefix PROTO :QWORD,:QWORD
+GdipGetStringFormatLineAlign PROTO :QWORD,:QWORD
+GdipGetStringFormatMeasurableCharacterRangeCount PROTO :QWORD,:QWORD
+GdipGetStringFormatTabStopCount PROTO :QWORD,:QWORD
+GdipGetStringFormatTabStops PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipGetStringFormatTrimming PROTO :QWORD,:QWORD
+GdipGetTextContrast PROTO :QWORD,:QWORD
+GdipGetTextRenderingHint PROTO :QWORD,:QWORD
+GdipGetTextureImage PROTO :QWORD,:QWORD
+GdipGetTextureTransform PROTO :QWORD,:QWORD
+GdipGetTextureWrapMode PROTO :QWORD,:QWORD
+GdipGetVisibleClipBounds PROTO :QWORD,:QWORD
+GdipGetVisibleClipBoundsI PROTO :QWORD,:QWORD
+GdipGetWorldTransform PROTO :QWORD,:QWORD
+GdipGraphicsClear PROTO :QWORD,:QWORD
+GdipGraphicsSetAbort PROTO :QWORD,:QWORD
+GdipImageForceValidation PROTO :QWORD
+GdipImageGetFrameCount PROTO :QWORD,:QWORD,:QWORD
+GdipImageGetFrameDimensionsCount PROTO :QWORD,:QWORD
+GdipImageGetFrameDimensionsList PROTO :QWORD,:QWORD,:QWORD
+GdipImageRotateFlip PROTO :QWORD,:QWORD
+GdipImageSelectActiveFrame PROTO :QWORD,:QWORD,:QWORD
+GdipImageSetAbort PROTO :QWORD,:QWORD
+GdipInitializePalette PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipInvertMatrix PROTO :QWORD
+GdipIsClipEmpty PROTO :QWORD,:QWORD
+GdipIsEmptyRegion PROTO :QWORD,:QWORD,:QWORD
+GdipIsEqualRegion PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipIsInfiniteRegion PROTO :QWORD,:QWORD,:QWORD
+GdipIsMatrixEqual PROTO :QWORD,:QWORD,:QWORD
+GdipIsMatrixIdentity PROTO :QWORD,:QWORD
+GdipIsMatrixInvertible PROTO :QWORD,:QWORD
+GdipIsOutlineVisiblePathPoint PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipIsOutlineVisiblePathPointI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipIsStyleAvailable PROTO :QWORD,:QWORD,:QWORD
+GdipIsVisibleClipEmpty PROTO :QWORD,:QWORD
+GdipIsVisiblePathPoint PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipIsVisiblePathPointI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipIsVisiblePoint PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipIsVisiblePointI PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipIsVisibleRect PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipIsVisibleRectI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipIsVisibleRegionPoint PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipIsVisibleRegionPointI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipIsVisibleRegionRect PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipIsVisibleRegionRectI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipLoadImageFromFile PROTO :QWORD,:QWORD
+GdipLoadImageFromFileICM PROTO :QWORD,:QWORD
+GdipLoadImageFromStream PROTO :QWORD,:QWORD
+GdipLoadImageFromStreamICM PROTO :QWORD,:QWORD
+GdipMeasureCharacterRanges PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipMeasureDriverString PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipMeasureString PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipMultiplyLineTransform PROTO :QWORD,:QWORD,:QWORD
+GdipMultiplyMatrix PROTO :QWORD,:QWORD,:QWORD
+GdipMultiplyPathGradientTransform PROTO :QWORD,:QWORD,:QWORD
+GdipMultiplyPenTransform PROTO :QWORD,:QWORD,:QWORD
+GdipMultiplyTextureTransform PROTO :QWORD,:QWORD,:QWORD
+GdipMultiplyWorldTransform PROTO :QWORD,:QWORD,:QWORD
+GdipNewInstalledFontCollection PROTO :QWORD
+GdipNewPrivateFontCollection PROTO :QWORD
+GdipPathIterCopyData PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipPathIterEnumerate PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipPathIterGetCount PROTO :QWORD,:QWORD
+GdipPathIterGetSubpathCount PROTO :QWORD,:QWORD
+GdipPathIterHasCurve PROTO :QWORD,:QWORD
+GdipPathIterIsValid PROTO :QWORD,:QWORD
+GdipPathIterNextMarker PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipPathIterNextMarkerPath PROTO :QWORD,:QWORD,:QWORD
+GdipPathIterNextPathType PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipPathIterNextSubpath PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipPathIterNextSubpathPath PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipPathIterRewind PROTO :QWORD
+GdipPlayMetafileRecord PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdiplusNotificationHook PROTO :QWORD
+GdiplusNotificationUnhook PROTO :QWORD
+GdiplusShutdown PROTO :QWORD
+GdiplusStartup PROTO :QWORD,:QWORD,:QWORD
+GdipPrivateAddFontFile PROTO :QWORD,:QWORD
+GdipPrivateAddMemoryFont PROTO :QWORD,:QWORD,:QWORD
+GdipRecordMetafile PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipRecordMetafileFileName PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipRecordMetafileFileNameI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipRecordMetafileI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipRecordMetafileStream PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipRecordMetafileStreamI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipReleaseDC PROTO :QWORD,:QWORD
+GdipRemoveImageCodec PROTO :QWORD
+GdipRemovePropertyItem PROTO :QWORD,:QWORD
+GdipResetClip PROTO :QWORD
+GdipResetImageAttributes PROTO :QWORD,:QWORD
+GdipResetLineTransform PROTO :QWORD
+GdipResetPageTransform PROTO :QWORD
+GdipResetPath PROTO :QWORD
+GdipResetPathGradientTransform PROTO :QWORD
+GdipResetPenTransform PROTO :QWORD
+GdipResetTextureTransform PROTO :QWORD
+GdipResetWorldTransform PROTO :QWORD
+GdipRestoreGraphics PROTO :QWORD,:QWORD
+GdipReversePath PROTO :QWORD
+GdipRotateLineTransform PROTO :QWORD,:QWORD,:QWORD
+GdipRotateMatrix PROTO :QWORD,:QWORD,:QWORD
+GdipRotatePathGradientTransform PROTO :QWORD,:QWORD,:QWORD
+GdipRotatePenTransform PROTO :QWORD,:QWORD,:QWORD
+GdipRotateTextureTransform PROTO :QWORD,:QWORD,:QWORD
+GdipRotateWorldTransform PROTO :QWORD,:QWORD,:QWORD
+GdipSaveAdd PROTO :QWORD,:QWORD
+GdipSaveAddImage PROTO :QWORD,:QWORD,:QWORD
+GdipSaveGraphics PROTO :QWORD,:QWORD
+GdipSaveImageToFile PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipSaveImageToStream PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipScaleLineTransform PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipScaleMatrix PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipScalePathGradientTransform PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipScalePenTransform PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipScaleTextureTransform PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipScaleWorldTransform PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipSetAdjustableArrowCapFillState PROTO :QWORD,:QWORD
+GdipSetAdjustableArrowCapHeight PROTO :QWORD,:QWORD
+GdipSetAdjustableArrowCapMiddleInset PROTO :QWORD,:QWORD
+GdipSetAdjustableArrowCapWidth PROTO :QWORD,:QWORD
+GdipSetClipGraphics PROTO :QWORD,:QWORD,:QWORD
+GdipSetClipHrgn PROTO :QWORD,:QWORD,:QWORD
+GdipSetClipPath PROTO :QWORD,:QWORD,:QWORD
+GdipSetClipRect PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipSetClipRectI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipSetClipRegion PROTO :QWORD,:QWORD,:QWORD
+GdipSetCompositingMode PROTO :QWORD,:QWORD
+GdipSetCompositingQuality PROTO :QWORD,:QWORD
+GdipSetCustomLineCapBaseCap PROTO :QWORD,:QWORD
+GdipSetCustomLineCapBaseInset PROTO :QWORD,:QWORD
+GdipSetCustomLineCapStrokeCaps PROTO :QWORD,:QWORD,:QWORD
+GdipSetCustomLineCapStrokeJoin PROTO :QWORD,:QWORD
+GdipSetCustomLineCapWidthScale PROTO :QWORD,:QWORD
+GdipSetEffectParameters PROTO :QWORD,:QWORD,:QWORD
+GdipSetEmpty PROTO :QWORD
+GdipSetGraphicsLayout PROTO :QWORD,:QWORD
+GdipSetImageAttributesCachedBackground PROTO :QWORD,:QWORD
+GdipSetImageAttributesColorKeys PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipSetImageAttributesColorMatrix PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipSetImageAttributesGamma PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipSetImageAttributesNoOp PROTO :QWORD,:QWORD,:QWORD
+GdipSetImageAttributesOutputChannel PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipSetImageAttributesOutputChannelColorProfile PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipSetImageAttributesRemapTable PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipSetImageAttributesThreshold PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipSetImageAttributesToIdentity PROTO :QWORD,:QWORD
+GdipSetImageAttributesWrapMode PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipSetImageLayout PROTO :QWORD,:QWORD
+GdipSetImagePalette PROTO :QWORD,:QWORD
+GdipSetInfinite PROTO :QWORD
+GdipSetInterpolationMode PROTO :QWORD,:QWORD
+GdipSetLineBlend PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipSetLineColors PROTO :QWORD,:QWORD,:QWORD
+GdipSetLineGammaCorrection PROTO :QWORD,:QWORD
+GdipSetLineLinearBlend PROTO :QWORD,:QWORD,:QWORD
+GdipSetLinePoints PROTO :QWORD,:QWORD,:QWORD
+GdipSetLinePointsI PROTO :QWORD,:QWORD,:QWORD
+GdipSetLinePresetBlend PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipSetLineSigmaBlend PROTO :QWORD,:QWORD,:QWORD
+GdipSetLineTransform PROTO :QWORD,:QWORD
+GdipSetLineWrapMode PROTO :QWORD,:QWORD
+GdipSetMatrixElements PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipSetMetafileDownLevelRasterizationLimit PROTO :QWORD,:QWORD
+GdipSetPageScale PROTO :QWORD,:QWORD
+GdipSetPageUnit PROTO :QWORD,:QWORD
+GdipSetPathFillMode PROTO :QWORD,:QWORD
+GdipSetPathGradientBlend PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipSetPathGradientCenterColor PROTO :QWORD,:QWORD
+GdipSetPathGradientCenterPoint PROTO :QWORD,:QWORD
+GdipSetPathGradientCenterPointI PROTO :QWORD,:QWORD
+GdipSetPathGradientFocusScales PROTO :QWORD,:QWORD,:QWORD
+GdipSetPathGradientGammaCorrection PROTO :QWORD,:QWORD
+GdipSetPathGradientLinearBlend PROTO :QWORD,:QWORD,:QWORD
+GdipSetPathGradientPath PROTO :QWORD,:QWORD
+GdipSetPathGradientPresetBlend PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipSetPathGradientSigmaBlend PROTO :QWORD,:QWORD,:QWORD
+GdipSetPathGradientSurroundColorsWithCount PROTO :QWORD,:QWORD,:QWORD
+GdipSetPathGradientTransform PROTO :QWORD,:QWORD
+GdipSetPathGradientWrapMode PROTO :QWORD,:QWORD
+GdipSetPathMarker PROTO :QWORD
+GdipSetPenBrushFill PROTO :QWORD,:QWORD
+GdipSetPenColor PROTO :QWORD,:QWORD
+GdipSetPenCompoundArray PROTO :QWORD,:QWORD,:QWORD
+GdipSetPenCustomEndCap PROTO :QWORD,:QWORD
+GdipSetPenCustomStartCap PROTO :QWORD,:QWORD
+GdipSetPenDashArray PROTO :QWORD,:QWORD,:QWORD
+GdipSetPenDashCap197819 PROTO :QWORD,:QWORD
+GdipSetPenDashOffset PROTO :QWORD,:QWORD
+GdipSetPenDashStyle PROTO :QWORD,:QWORD
+GdipSetPenEndCap PROTO :QWORD,:QWORD
+GdipSetPenLineCap197819 PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipSetPenLineJoin PROTO :QWORD,:QWORD
+GdipSetPenMiterLimit PROTO :QWORD,:QWORD
+GdipSetPenMode PROTO :QWORD,:QWORD
+GdipSetPenStartCap PROTO :QWORD,:QWORD
+GdipSetPenTransform PROTO :QWORD,:QWORD
+GdipSetPenUnit PROTO :QWORD,:QWORD
+GdipSetPenWidth PROTO :QWORD,:QWORD
+GdipSetPixelOffsetMode PROTO :QWORD,:QWORD
+GdipSetPropertyItem PROTO :QWORD,:QWORD
+GdipSetRenderingOrigin PROTO :QWORD,:QWORD,:QWORD
+GdipSetSmoothingMode PROTO :QWORD,:QWORD
+GdipSetSolidFillColor PROTO :QWORD,:QWORD
+GdipSetStringFormatAlign PROTO :QWORD,:QWORD
+GdipSetStringFormatDigitSubstitution PROTO :QWORD,:QWORD,:QWORD
+GdipSetStringFormatFlags PROTO :QWORD,:QWORD
+GdipSetStringFormatHotkeyPrefix PROTO :QWORD,:QWORD
+GdipSetStringFormatLineAlign PROTO :QWORD,:QWORD
+GdipSetStringFormatMeasurableCharacterRanges PROTO :QWORD,:QWORD,:QWORD
+GdipSetStringFormatTabStops PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipSetStringFormatTrimming PROTO :QWORD,:QWORD
+GdipSetTextContrast PROTO :QWORD,:QWORD
+GdipSetTextRenderingHint PROTO :QWORD,:QWORD
+GdipSetTextureTransform PROTO :QWORD,:QWORD
+GdipSetTextureWrapMode PROTO :QWORD,:QWORD
+GdipSetWorldTransform PROTO :QWORD,:QWORD
+GdipShearMatrix PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipStartPathFigure PROTO :QWORD
+GdipStringFormatGetGenericDefault PROTO :QWORD
+GdipStringFormatGetGenericTypographic PROTO :QWORD
+GdipTestControl PROTO :QWORD,:QWORD
+GdipTransformMatrixPoints PROTO :QWORD,:QWORD,:QWORD
+GdipTransformMatrixPointsI PROTO :QWORD,:QWORD,:QWORD
+GdipTransformPath PROTO :QWORD,:QWORD
+GdipTransformPoints PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipTransformPointsI PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipTransformRegion PROTO :QWORD,:QWORD
+GdipTranslateClip PROTO :QWORD,:QWORD,:QWORD
+GdipTranslateClipI PROTO :QWORD,:QWORD,:QWORD
+GdipTranslateLineTransform PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipTranslateMatrix PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipTranslatePathGradientTransform PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipTranslatePenTransform PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipTranslateRegion PROTO :QWORD,:QWORD,:QWORD
+GdipTranslateRegionI PROTO :QWORD,:QWORD,:QWORD
+GdipTranslateTextureTransform PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipTranslateWorldTransform PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipVectorTransformMatrixPoints PROTO :QWORD,:QWORD,:QWORD
+GdipVectorTransformMatrixPointsI PROTO :QWORD,:QWORD,:QWORD
+GdipWarpPath PROTO :QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD,:QWORD
+GdipWidenPath PROTO :QWORD,:QWORD,:QWORD,:QWORD
+GdipWindingModeOutline PROTO :QWORD,:QWORD,:QWORD
+
+IFDEF APP_UNICODE
+    IFNDEF LOGFONT
+        LOGFONT EQU <LOGFONTW>
+    ENDIF
+    GdipCreateFontFromLogfont EQU <GdipCreateFontFromLogfontW>
+    GdipGetLogFont EQU <GdipGetLogFontW>
+ELSE
+    IFNDEF LOGFONT
+        LOGFONT EQU <LOGFONTA>
+    ENDIF
+    GdipCreateFontFromLogfont EQU <GdipCreateFontFromLogfontA>
+    GdipGetLogFont EQU <GdipGetLogFontA>
+ENDIF
+
+;======================= Undocumented functions (unknown arguments) =======================;
+;GdipPlayTSClientRecord PROTO
+
+ENDIF ;GDIPLUS_INC

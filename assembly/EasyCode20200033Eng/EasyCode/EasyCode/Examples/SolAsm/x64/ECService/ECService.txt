@@ -1,0 +1,7 @@
+The "ECService" example included with Easy Code v2.0 is
+owned, programmed and copyrighted by Héctor A. Medina.
+Due to the lack of documentation, specially for 64-bit
+applications, we decided to include "ECService" as an
+example for users to see how to program a service, both
+for 32 and 64-bit Windows. No copy or distribution is
+allowed without its author permission.

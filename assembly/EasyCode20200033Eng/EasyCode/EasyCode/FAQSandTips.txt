@@ -1,0 +1,136 @@
+Easy Code® Visual Assembler v2
+32-bit/64-bit
+Copyright (c) 2004-2021, Ramon Sala / Héctor A. Medina. All rights reserved.
+
+
+FAQS, TIPS, AND HINTS
+=====================
+
+1. On  systems using  Microsoft Windows 8x/10  using the 128-bit protected mode
+encryption  setting  in group policy,  sometimes (but not often)  this  Windows
+security feature will conflict with 64-bit executables whereby it might prevent
+them from  running.  This known issue  arose during  testing of Easy Code which
+sometimes caused the application to close when compiling or completely building
+a program.  A simple solution to this issue  is to  right-click  on each of the
+executables (*.exe)  which are part of the  assembler application - the linker,
+the assembler/compiler, and the resource compiler - then do the following:
+
+- select "Properties" from the context menu.
+- select the "Compatibility" tab.
+- check the  "Run this program as administrator"  option under the  "Settings"
+  group.
+- click "Apply"
+- click "Ok"
+
+Running the  main executables as administrator  should now give each sufficient
+permissions  to compile / assemble your  program  and  successfully  create  an
+executable without causing Easy Code to crash.
+
+
+2. To  successfully assign a PDF file  to any of Easy Code's  customizable help
+menu  links, it  is required that  either Adobe  Reader  or  Adobe  Acrobat  is
+registered within  the Windows operating  system as the  default viewer for PDF
+files. At present,  Easy Code is not set up  (programmatically) to  launch  any
+other  PDF viewer  application.  This feature  might be expanded  to allow  for
+other PDF viewers  in future releases.  Currently, however,  there are no plans
+to do so. See also - FAQ #3.
+
+a.  Following a 'Threshold 2'  upgrade to the Windows 10  operating system, the
+Microsoft Edge internet  browser becomes  the default  PDF file viewer  even if
+Acrobat Reader/Adobe Acrobat or some other application happens to be the default
+viewer prior to the upgrad. Unfortunately, this change prohibits Easy Code from
+opening any PDF files through its customizable help menu. To resolve this issue
+you must  reset  Adobe  Reader or  Adobe  Acrobat as the default  PDF viewer by
+right-clicking  the thumbnail of any  PDF file, point to  "Open With", and then
+click  "Choose another app". In the dialog box that next appears, please choose
+"Acrobat Acrobat" or  "Adobe Acrobat Reader",  then select "Always use this app
+to open .pdf files" and click "OK". See also - FAQ #2.
+
+Update:  Regarding item 2a, recent  Microsoft Windows 10  security updates have
+changed  the manner by  which a user  may set default applications.  Many users
+with  up-to-date  systems will now  be required  to utilize the  'Default Apps'
+component within the Windows 10 operating system settings in order to assign an
+application as the default for  processing  any particular  file type,  such as
+setting either Adobe Acrobat or Adobe Acrobat Reader as the default application
+for viewing PDF files.
+
+
+3. To create a  non-compileable document within a project,  such as a text file
+containing a "to do list" or general project notes:
+
+a. Select "File --> New Text File" from the Easy Code user menu. If it does not
+already  exist,  a new node entitled  "Miscellaneous"  will be  created in  the
+project explorer  window along  with a new text file entitled  "TextFile1.txt".
+You can now easily edit  your document from within the  Easy Code IDE.  You may
+save it  by selecting  "File --> Save TextFile1.txt As..."  from the  Easy Code
+user menu, then select the project folder where you want  to save your document
+and type the file  name to which you want it  saved using the  "Save As" dialog
+box.
+
+Important:  the new text file MUST be saved to any name other  than the default
+"TextFile1.txt".  Otherwise, if you create another document, the older document
+named  "TextFile1.txt"  will automatically  be  over-written by a new text file
+named "TextFile1.txt".
+
+b.  Document files  of this  type will  not be compiled  or assembled into your
+program, and instead, this convenience is made available merely for the purpose
+of maintaining reference  information  and/or  planning  notes along  with your
+project. See also - FAQ #5.
+
+
+4. To insert a  non-compileable  document into  a project,  such as a text file
+containing a "to do list" or general notes:
+
+a. If  the document for  importation already exists,  skip ahead to instruction
+"b".  If,  however,  the desired  document  does not  yet exist,  create a  new
+document in an external editor, such as  Windows Notepad, then save the file in
+your project folder.  You may save the new document with ANSI, Unicode, Unicode
+Big Endian,  or UTF-8  encoding,  as  Easy Code can read  a standard text files
+containing any one of these types of encoding.
+
+b. Select "File --> Open Text File..."  from the  Easy Code  user  menu.  Next,
+navigate to your project folder and select  the text file you just created then
+import it into your project where it  will then appear  in the project explorer
+beneath the  node entitled  "Miscellaneous".  You  can  now  easily  edit  your
+document from within the Easy Code IDE.  You may save it by selecting "File -->
+Save [yourfilename.txt]" from the Easy Code user menu.
+
+c. Document files of this type (*.txt)  will not  be compiled or assembled into
+your program.  This  convenience  is made  available  merely for the purpose of
+maintaining reference information and  allowing planning  notes along with your
+project. See also - FAQ #4.
+
+
+5. In order to change the caption of any  customizable help  menu item,  simply
+double-click on the corresponding help item label within the  "Help" tab of the
+"Settings" dialog. The caption label will then take on the appearance of a text
+box while in edit  mode where you may then  change its text.  Any text which is
+displayed in  that  help item label is  also displayed as  the caption  for the
+corresponding item in the help menu.
+
+
+6. If the resource compiler cannot compile the resources,  that is, if it fires
+one or more errors, please attempt the following:
+
+a. Go to the "Tools-->Settings" menu and click the "Configurations" tab. Select
+the  corresponding  configuration in the  "Configuration"  combo  box and  then
+choose  "UTF-8" in the  "Text encoding"  combo box.  Exit Easy Code and run the
+compilation process again.
+
+b. Load the affected project  and open its  "Properties".  Uncheck the  "Always
+generate reosurce files in  ANSI mode" option  (checked by default) and  try to
+build the project again.
+
+
+
+............................................
+Please visit the Easy Code related forums:
+    http://www.masm32.com/board/index.php
+    http://board.flatassembler.net
+
+Thank you!
+
+Ramon Sala
+
+----------------
+Rev. 25-FEB-2021

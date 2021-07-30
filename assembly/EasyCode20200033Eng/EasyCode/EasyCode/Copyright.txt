@@ -1,0 +1,32 @@
+Easy Code® Visual Assembler v2
+32-bit/64-bit
+Copyright (C) 2004-2021, Ramon Sala.  All rights reserved.
+
+
+COPYRIGHT NOTICE
+================
+
+    This software program element and all contents herein are protected by the United States Copyright Act of 1976, the Digital Millennium Copyright Act of 1998, and applicable international treaties.  Excluding any distinct exemptions which might follow in this same notice, or which alternately might explicitly be annotated and/or fully granted within a separate license; any alteration of the aforementioned contents from their acquired original state, unauthorized reproduction toward an identical or similar likeness, or distribution of said contents in any form or by any means including but not limited to electronic or digital, mechanical or analog, photocopy, photograph, or video recording, as well as any other information storage/retrieval technology or system, is strictly prohibited without the express written consent of the copyright owner(s).  Violation of this copyright may be subject to civil and/or criminal penalty, and in such instance, will be prosecuted to the fullest extent allowed by law.
+
+
+- Addendum(s)
+---------------
+A. Any pictorial design, photographic image, icon, computer code segment, computer code library or component, user control, or any other media form which has been compiled within, is programmatically linked, is integrated in whole or in part, or is otherwise distributed in conjunction with this software component, was at the time of its procurement, the sole property of its respective owner(s) whereby such remains utilized under perpetual rights in accordance with its original license or obtained permissions.  Otherwise, said media, was at the time of its procurement, designated as a public domain entity or content, in which instance, neither permission nor license was either obtainable or necessary for use, regardless of whether such use was personal or commercial in nature.  If no such media form has been compiled within, is programmatically linked, is integrated in whole or in part, or is distributed in conjunction with this software component, this appended article is to be deemed null and void in its entirety.
+
+B. Any persona, trademark, service mark, product name, or other brand hallmark which has been compiled within, is programmatically linked, is integrated in whole or in part, or is otherwise distributed in conjunction with this software component, was at the time of its procurement, the sole property of its respective owner(s) whereby such remains utilized under perpetual rights in accordance with its original license or obtained permissions.  Otherwise, said persona, trademark, service mark, product name, or other brand hallmark, was at the time of its procurement, utilized for the strictly limited purpose(s) of comparison and/or reference in compliance with guidelines set forth in the 'Fair Use' doctrine.  If no such persona, trademark, service mark, product name, or other brand hallmark has been compiled within, is programmatically linked, is integrated in whole or in part, or is distributed in conjunction with this software component, this appended article is to be deemed null and void in its entirety.
+
+C. No endorsement or promotion, in either a direct or an indirect capacity and regarding any of the preceding entities mentioned in this copyright notice, is to be implied on the part of the author(s), publisher(s), or authorized distributor(s) of this software.
+
+
+
+............................................
+Please visit the Easy Code related forums:
+    http://www.masm32.com/board/index.php
+    http://board.flatassembler.net
+
+Thank you!
+
+Ramon Sala
+
+----------------
+Rev. 31-JAN-2021

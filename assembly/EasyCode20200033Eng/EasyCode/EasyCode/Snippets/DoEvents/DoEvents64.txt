@@ -1,0 +1,14 @@
+;=================================;
+; Syntax for ASMC, JWASM and UASM ;
+;=================================;
+DoEvents Proc Frame Uses R10 R11
+	Local msg:MSG
+
+@@: Invoke PeekMessage, Addr msg, 0, 0, 0, PM_REMOVE
+	Or Rax, Rax
+	Jz @F
+	Invoke TranslateMessage, Addr msg
+	Invoke DispatchMessage, Addr msg
+	Jmp @B
+@@: Ret
+DoEvents EndP
