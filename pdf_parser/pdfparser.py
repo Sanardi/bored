@@ -14,6 +14,7 @@ import errno
 from datetime import datetime
 from tika import parser
 import zipfile
+import csv
 
 
 class PdfParser:
@@ -23,10 +24,12 @@ class PdfParser:
     On linux make sure you have done:
     sudo apt install build-essential libpoppler-cpp-dev pkg-config python3-dev"""
 
-    def __init__(self, keywords='desired_skills.txt', cvs='cvs.zip'):
+    def __init__(self, keywords='desired_skills.txt', cvs='cvs.zip', skills='desired_skills.txt'):
         
         self.zipfolder = cvs
         self.keywords = keywords
+        self.skills_file = csv.reader(
+            open(skills, "rb"), delimiter=',')
 
         with open(keywords) as f:
             self.keywords_words = f.read().splitlines()
@@ -43,9 +46,7 @@ class PdfParser:
             if e.errno != errno.EEXIST:
                 raise
     
-        file_name = os.path.splitext(os.path.basename(os.path.realpath(__file__)))[0]
         full_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), directory1)
-        print(full_path)
 
         if not os.path.exists(full_path):
            os.mkdir(full_path)
@@ -58,8 +59,14 @@ class PdfParser:
 
     def scan_cvs(self):
         directory2 = "tmp_cvs"
-        tmp_cvs_path = os.path.join(os.path.dirname(
-            os.path.realpath(__file__)), directory2)
+
+        print(self.skills_file)
+        
+#        with open(self.skills_file) as f:
+#            skills = f.readlines()
+
+#         tmp_cvs_path = os.path.join(os.path.dirname(
+#             os.path.realpath(__file__)), directory2)
         with zipfile.ZipFile(self.zipfolder, 'r') as zip_ref:
             zip_ref.extractall(directory2)
 
