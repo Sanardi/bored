@@ -12,11 +12,9 @@ def connect(host, user, password):
         return False
 
 def main(targetHostAddress):
-    #Variables
-    #targetHostAddress = '10.0.0.24'
-    # targetHostAddress = 'https://t1ck.de'
-    
-    userNames = ['root', 'david', 'sagrdavi']
+
+
+    userNames = ['root', 'david', 'petname', 'admin']
     passwordsFilePath = 'rockyou.txt'
 
     #try to connect with anonymous credentials
